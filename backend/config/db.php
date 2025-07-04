@@ -1,0 +1,34 @@
+<?php
+// backend/config/db.php
+// Connexion PDO à MySQL (Aiven ou XAMPP)
+
+require_once __DIR__ . '/env.php';
+
+function getPDO(): PDO {
+    $host = DB_HOST;
+    $db   = DB_NAME;
+    $user = DB_USER;
+    $pass = DB_PASS;
+    $port = DB_PORT;
+    $ssl  = DB_SSL; // true/false selon besoin
+
+    $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4";
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
+    if ($ssl) {
+        $options[PDO::MYSQL_ATTR_SSL_CA] = DB_SSL_CA_PATH;
+    }
+    // Log temporaire pour debug
+    file_put_contents(__DIR__ . '/../logs/error.log', json_encode([
+        'dsn' => $dsn,
+        'user' => $user,
+        'ssl' => $ssl,
+        'ssl_ca' => DB_SSL_CA_PATH
+    ]) . PHP_EOL, FILE_APPEND);
+    return new PDO($dsn, $user, $pass, $options);
+}
+
+
