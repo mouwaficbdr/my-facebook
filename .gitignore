@@ -1,0 +1,62 @@
+# --- GLOBAL ---
+# Logs & temporaires
+logs/
+*.log
+*.tmp
+__debug__-*.log
+test-*.tmp
+
+# Environnements
+.env
+.env.local
+*.local
+
+# Certificats (exemple)
+*.pem
+
+# IDE/éditeur
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Debug npm/yarn/pnpm/lerna
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# --- FRONTEND ---
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.env.local
+frontend/logs/
+frontend/__debug__-*.log
+frontend/test-*.tmp
+
+# --- BACKEND ---
+backend/.env.local
+backend/logs/
+backend/*.pem
+backend/__debug__-*.log
+backend/test-*.tmp
+
+# Node modules à la racine (si jamais)
+node_modules/
+dist/
+dist-ssr/
+
+# --- CURSOR ---
+.cursor/
+.cursorignore
+.cursor-tmp/
+
+# --- SQL ---
+*.sql 
