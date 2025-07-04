@@ -60,3 +60,4 @@ dist-ssr/
 
 # --- SQL ---
 *.sql 
+!backend/db_schema.sql
