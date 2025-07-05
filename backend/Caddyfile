@@ -1,0 +1,5 @@
+:{$PORT}
+
+root * .
+php_fastcgi router.php
+file_server
