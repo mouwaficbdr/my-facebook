@@ -1,8 +1,4 @@
 <?php
-// FORCER L'AFFICHAGE DES ERREURS POUR LE DEBUG
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 // backend/router.php
 // Routeur simple pour le serveur PHP intégré
 
@@ -27,9 +23,7 @@ if (strpos($path, '/api/') === 0) {
     ];
     
     if (isset($endpoints[$api_path])) {
-        error_log("Router: Including endpoint: " . $endpoints[$api_path]);
         include $endpoints[$api_path];
-        error_log("Router: Finished including endpoint: " . $endpoints[$api_path]);
         return true;
     }
 }
@@ -47,4 +41,4 @@ echo json_encode([
     'message' => 'Endpoint non trouvé',
     'path' => $path
 ]);
-return true; 
+return true;
