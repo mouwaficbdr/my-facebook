@@ -1,2 +1,0 @@
-[deploy]
-startCommand = "composer start" 

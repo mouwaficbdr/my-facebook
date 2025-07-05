@@ -6,6 +6,5 @@
     "php": ">=8.0"
   },
   "scripts": {
-    "start": "php -S 0.0.0.0:80 router.php"
   }
 }
