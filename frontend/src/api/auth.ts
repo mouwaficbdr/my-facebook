@@ -39,3 +39,45 @@ export async function signup(data: {
   }
   return json;
 }
+
+export async function forgotPassword(email: string) {
+  const res = await fetch('/api/forgot_password.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    const error = data?.message || 'Erreur inconnue';
+    throw new Error(error);
+  }
+  return data;
+}
+
+export async function resetPassword(token: string, password: string) {
+  const res = await fetch('/api/reset_password.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, password }),
+  });
+  const json = await res.json();
+  if (!res.ok) {
+    // Peut contenir .errors (object) ou .message (string)
+    throw json;
+  }
+  return json;
+}
+
+export async function logout() {
+  const res = await fetch('/api/logout.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include', // pour cookie httpOnly
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    const error = data?.message || 'Erreur inconnue';
+    throw new Error(error);
+  }
+  return data;
+}
