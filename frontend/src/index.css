@@ -1,1 +1,48 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+.input {
+  @apply border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition w-full;
+}
+.btn-primary {
+  @apply bg-blue-600 text-white font-semibold py-2 px-4 rounded hover:bg-blue-700 transition;
+}
+.btn-green {
+  @apply bg-green-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-green-700 transition;
+}
+
+.animate-shake {
+  animation: shake 0.25s;
+}
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+.animate-fade-in-down {
+  animation: fadeInDown 0.4s;
+}
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
