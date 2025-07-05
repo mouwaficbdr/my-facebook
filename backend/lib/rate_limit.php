@@ -2,9 +2,9 @@
 // backend/lib/rate_limit.php
 require_once __DIR__ . '/log.php';
 
-const RATE_LIMIT_FILE = __DIR__ . '/../logs/rate_limit.json';
-const RATE_LIMIT_MAX = 5;
-const RATE_LIMIT_WINDOW = 600; // 10 minutes en secondes
+if (!defined('RATE_LIMIT_FILE')) define('RATE_LIMIT_FILE', __DIR__ . '/../logs/rate_limit.json');
+if (!defined('RATE_LIMIT_MAX')) define('RATE_LIMIT_MAX', 5);
+if (!defined('RATE_LIMIT_WINDOW')) define('RATE_LIMIT_WINDOW', 600); // 10 minutes en secondes
 
 function rate_limit_check(string $action, string $ip): bool {
     $now = time();
