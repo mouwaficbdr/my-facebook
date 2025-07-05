@@ -46,3 +46,293 @@
     transform: translateY(0);
   }
 }
+
+/* Animations pour le formulaire multi-étapes */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+/* Animations pour les transitions d'étapes */
+@keyframes slide-in-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-from-top {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.slide-in-from-right {
+  animation-name: slide-in-from-right;
+}
+
+.slide-in-from-top {
+  animation-name: slide-in-from-top;
+}
+
+/* Effets de gradient pour les boutons */
+.bg-size-200 {
+  background-size: 200% 200%;
+}
+
+.hover\:bg-pos-100:hover {
+  background-position: 100% 100%;
+}
+
+/* Effet de flottement pour les éléments */
+.hover\:shadow-3xl:hover {
+  box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Animations pour le Toast moderne */
+@keyframes toast-enter-right {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+}
+
+@keyframes toast-enter-left {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateX(-100px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+}
+
+@keyframes toast-enter-top {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes toast-enter-bottom {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes toast-exit-right {
+  from {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8) translateX(100px);
+  }
+}
+
+@keyframes toast-exit-left {
+  from {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8) translateX(-100px);
+  }
+}
+
+@keyframes toast-exit-top {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8) translateY(-20px);
+  }
+}
+
+@keyframes toast-exit-bottom {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+}
+
+@keyframes icon-enter {
+  from {
+    opacity: 0;
+    transform: rotate(-10deg) scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@keyframes message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes close-button-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes progress-bar {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* Classes d'animation pour le Toast */
+.toast-enter-right {
+  animation: toast-enter-right 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toast-enter-left {
+  animation: toast-enter-left 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toast-enter-top {
+  animation: toast-enter-top 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toast-enter-bottom {
+  animation: toast-enter-bottom 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.toast-exit-right {
+  animation: toast-exit-right 0.2s ease-out;
+}
+
+.toast-exit-left {
+  animation: toast-exit-left 0.2s ease-out;
+}
+
+.toast-exit-top {
+  animation: toast-exit-top 0.2s ease-out;
+}
+
+.toast-exit-bottom {
+  animation: toast-exit-bottom 0.2s ease-out;
+}
+
+.icon-enter {
+  animation: icon-enter 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.1s both;
+}
+
+.message-enter {
+  animation: message-enter 0.3s ease-out 0.15s both;
+}
+
+.close-button-enter {
+  animation: close-button-enter 0.2s ease-out 0.2s both;
+}
+
+.progress-bar {
+  animation: progress-bar 4s linear;
+  transform-origin: left;
+}
+
+/* Hover effects pour le Toast */
+.toast-hover {
+  transition: all 0.2s ease;
+}
+
+.toast-hover:hover {
+  transform: scale(1.02);
+}
+
+.close-button-hover {
+  transition: all 0.2s ease;
+}
+
+.close-button-hover:hover {
+  transform: scale(1.1);
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.close-button-hover:active {
+  transform: scale(0.95);
+}
