@@ -7,8 +7,12 @@ log {
     format json
 }
 
-# Toutes les requêtes sont traitées par router.php
-php_fastcgi {
-    root .
+handle {
+    # Réécrire toutes les requêtes vers router.php
+    rewrite * /router.php
+
+    # Passer la requête au moteur PHP-FPM intégré de FrankenPHP
+    php_fastcgi {
+        root .
+    }
 }
-rewrite * /router.php?{query}
