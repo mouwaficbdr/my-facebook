@@ -1,0 +1,9 @@
+backend/tests/
+backend/logs/
+backend/.env*
+.env*
+*.log
+*.tmp
+node_modules/
+.vscode/
+.git/ 
