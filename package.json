@@ -1,0 +1,12 @@
+{
+  "name": "my-facebook",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "dev": "cd frontend && npm run dev",
+    "vercel-build": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.10"
+  }
+}
