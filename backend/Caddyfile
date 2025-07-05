@@ -1,14 +1,14 @@
 :{$PORT}
 
 root * .
-file_server
 
 log {
     output stderr
     format json
 }
 
-# Fallback to router.php for API calls
-route /api/* {
-    php_fastcgi router.php
+# Toutes les requêtes sont traitées par router.php
+php_fastcgi {
+    root .
 }
+rewrite * /router.php?{query}
