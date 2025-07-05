@@ -12,6 +12,13 @@ function getPDO(): PDO {
     $port = DB_PORT;
     $ssl  = DB_SSL; // true/false selon besoin
 
+    // Gestion dynamique du certificat SSL depuis la variable d'environnement
+    if (getenv('DB_SSL_CA_CONTENT')) {
+        $caPath = sys_get_temp_dir() . '/ca.pem';
+        file_put_contents($caPath, getenv('DB_SSL_CA_CONTENT'));
+        define('DB_SSL_CA_PATH', $caPath);
+    }
+
     $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4";
     $options = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,

@@ -1,8 +1,10 @@
 <?php
 // api/confirm_email.php
-require_once __DIR__ . '/../backend/config/db.php';
-require_once __DIR__ . '/../backend/config/env.php';
-require_once __DIR__ . '/../backend/lib/log.php';
+header('Access-Control-Allow-Origin: https://my-facebook-by-mouwafic.vercel.app');
+header('Access-Control-Allow-Credentials: true');
+require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/env.php';
+require_once __DIR__ . '/../lib/log.php';
 
 header('Content-Type: application/json');
 

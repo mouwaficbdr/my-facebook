@@ -1,5 +1,8 @@
 <?php
 // api/logout.php
+header('Access-Control-Allow-Origin: https://my-facebook-by-mouwafic.vercel.app');
+header('Access-Control-Allow-Credentials: true');
+
 header('Content-Type: application/json');
 // Supprimer le cookie JWT (token)
 setcookie('token', '', [

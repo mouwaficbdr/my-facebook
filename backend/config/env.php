@@ -19,7 +19,8 @@ define('DB_USER', getenv('DB_USER') ?: 'root');
 define('DB_PASS', getenv('DB_PASS') ?: '');
 define('DB_PORT', getenv('DB_PORT') ?: 3306);
 define('DB_SSL', getenv('DB_SSL') === 'true');
-// Corriger le chemin du certificat SSL pour fonctionner depuis /api/
+
+// Gestion du certificat SSL MySQL (temporairement désactivé pour le build)
 define('DB_SSL_CA_PATH', __DIR__ . '/../ca.pem');
 
 // Variables d'environnement pour l'envoi d'emails

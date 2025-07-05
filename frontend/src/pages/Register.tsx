@@ -301,7 +301,7 @@ export default function Register() {
 
   const renderStep = () => {
     if (currentStep === 4) {
-      return (
+  return (
         <div className="text-center py-12">
           <div className="relative mb-8">
             <div className="w-24 h-24 mx-auto bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full flex items-center justify-center animate-pulse shadow-2xl">
@@ -384,12 +384,12 @@ export default function Register() {
                 <div className="group">
                   <label className="block text-sm font-semibold text-gray-700 mb-2 group-focus-within:text-blue-600 transition-colors">
                     Prénom
-                  </label>
-                  <input
+              </label>
+              <input
                     name="prenom"
-                    type="text"
+                type="text"
                     value={form.prenom}
-                    onChange={handleChange}
+                onChange={handleChange}
                     onFocus={() => setFocusedField('prenom')}
                     onBlur={() => {
                       setFocusedField('');
@@ -408,18 +408,18 @@ export default function Register() {
                     <p className="mt-2 text-sm text-red-600 animate-in slide-in-from-top duration-300">
                       {errors.prenom}
                     </p>
-                  )}
-                </div>
+              )}
+            </div>
 
                 <div className="group">
                   <label className="block text-sm font-semibold text-gray-700 mb-2 group-focus-within:text-blue-600 transition-colors">
                     Nom
-                  </label>
-                  <input
+              </label>
+              <input
                     name="nom"
-                    type="text"
+                type="text"
                     value={form.nom}
-                    onChange={handleChange}
+                onChange={handleChange}
                     onFocus={() => setFocusedField('nom')}
                     onBlur={() => {
                       setFocusedField('');
@@ -438,19 +438,19 @@ export default function Register() {
                     <p className="mt-2 text-sm text-red-600 animate-in slide-in-from-top duration-300">
                       {errors.nom}
                     </p>
-                  )}
-                </div>
-              </div>
+              )}
+            </div>
+          </div>
 
               <div className="group">
                 <label className="block text-sm font-semibold text-gray-700 mb-2 group-focus-within:text-blue-600 transition-colors">
                   Adresse email
-                </label>
-                <input
+            </label>
+            <input
                   name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
+              type="email"
+              value={form.email}
+              onChange={handleChange}
                   onFocus={() => setFocusedField('email')}
                   onBlur={() => {
                     setFocusedField('');
@@ -469,8 +469,8 @@ export default function Register() {
                   <p className="mt-2 text-sm text-red-600 animate-in slide-in-from-top duration-300">
                     {errors.email}
                   </p>
-                )}
-              </div>
+            )}
+          </div>
             </div>
           )}
 
@@ -489,12 +489,12 @@ export default function Register() {
               <div className="group">
                 <label className="block text-sm font-semibold text-gray-700 mb-2 group-focus-within:text-blue-600 transition-colors">
                   Mot de passe
-                </label>
-                <input
+            </label>
+            <input
                   name="password"
-                  type="password"
-                  value={form.password}
-                  onChange={handleChange}
+              type="password"
+              value={form.password}
+              onChange={handleChange}
                   onFocus={() => setFocusedField('password')}
                   onBlur={() => {
                     setFocusedField('');
@@ -575,7 +575,7 @@ export default function Register() {
                       : ''
                   }`}
                   placeholder="••••••••••••"
-                />
+            />
                 {errors.confirmPassword && (
                   <p className="mt-2 text-sm text-red-600 animate-in slide-in-from-top duration-300">
                     {errors.confirmPassword}
@@ -599,8 +599,8 @@ export default function Register() {
                         Les mots de passe correspondent
                       </span>
                     </div>
-                  )}
-              </div>
+            )}
+          </div>
             </div>
           )}
 
@@ -619,13 +619,13 @@ export default function Register() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="group">
                   <label className="block text-sm font-semibold text-gray-700 mb-2 group-focus-within:text-blue-600 transition-colors">
-                    Date de naissance
-                  </label>
-                  <input
+              Date de naissance
+            </label>
+            <input
                     name="date_naissance"
-                    type="date"
-                    value={form.date_naissance}
-                    onChange={handleChange}
+              type="date"
+              value={form.date_naissance}
+              onChange={handleChange}
                     onFocus={() => setFocusedField('date_naissance')}
                     onBlur={() => {
                       setFocusedField('');
@@ -646,18 +646,18 @@ export default function Register() {
                       minAge.setFullYear(today.getFullYear() - 13);
                       return minAge.toISOString().split('T')[0];
                     })()}
-                  />
+            />
                   {errors.date_naissance && (
                     <p className="mt-2 text-sm text-red-600 animate-in slide-in-from-top duration-300">
-                      {errors.date_naissance}
-                    </p>
-                  )}
-                </div>
+                {errors.date_naissance}
+              </p>
+            )}
+          </div>
 
                 <div className="group">
                   <label className="block text-sm font-semibold text-gray-700 mb-2 group-focus-within:text-blue-600 transition-colors">
                     Genre
-                  </label>
+            </label>
                   <select
                     name="genre"
                     value={form.genre}
@@ -679,14 +679,14 @@ export default function Register() {
                       <option key={g.value} value={g.value}>
                         {g.label}
                       </option>
-                    ))}
+              ))}
                   </select>
                   {errors.genre && (
                     <p className="mt-2 text-sm text-red-600 animate-in slide-in-from-top duration-300">
                       {errors.genre}
                     </p>
-                  )}
-                </div>
+            )}
+          </div>
               </div>
 
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
@@ -710,23 +710,23 @@ export default function Register() {
                       href="#"
                       className="text-blue-600 hover:text-blue-700 font-medium underline cursor-pointer"
                     >
-                      Conditions
-                    </a>
-                    , notre{' '}
+            Conditions
+          </a>
+          , notre{' '}
                     <a
                       href="#"
                       className="text-blue-600 hover:text-blue-700 font-medium underline cursor-pointer"
                     >
-                      Politique de confidentialité
-                    </a>{' '}
-                    et notre{' '}
+            Politique de confidentialité
+          </a>{' '}
+          et notre{' '}
                     <a
                       href="#"
                       className="text-blue-600 hover:text-blue-700 font-medium underline cursor-pointer"
                     >
-                      Politique d'utilisation des cookies
-                    </a>
-                    .
+            Politique d'utilisation des cookies
+          </a>
+          .
                   </div>
                 </div>
               </div>
@@ -900,15 +900,15 @@ export default function Register() {
 
           {/* Login Link */}
           <div className="text-center mt-8">
-            <p className="text-sm text-gray-600">
-              Vous avez déjà un compte ?{' '}
-              <Link
-                to="/login"
+          <p className="text-sm text-gray-600">
+            Vous avez déjà un compte ?{' '}
+            <Link
+              to="/login"
                 className="text-transparent bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 cursor-pointer"
-              >
-                Se connecter
-              </Link>
-            </p>
+            >
+              Se connecter
+            </Link>
+          </p>
           </div>
 
           {/* Footer */}

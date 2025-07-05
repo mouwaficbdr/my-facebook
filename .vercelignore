@@ -1,9 +1,53 @@
-backend/tests/
-backend/logs/
-backend/.env*
-.env*
-*.log
-*.tmp
+# Dependencies
 node_modules/
+frontend/node_modules/
+
+# Build outputs
+frontend/dist/
+dist/
+
+# Development files
+.env
+.env.local
+.env.development
+.env.test
+
+# Logs
+*.log
+logs/
+
+# IDE files
 .vscode/
-.git/ 
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+DEPLOYMENT.md
+
+# Test files
+**/tests/
+**/test_*.php
+
+# Development scripts
+scripts/
+
+# Large files that shouldn't be deployed
+backend/
+*.sql
+*.sqlite
+*.db
+
+# Temporary files
+*.tmp
+*.temp
+__debug__-*.log 
