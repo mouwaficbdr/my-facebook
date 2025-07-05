@@ -3,6 +3,11 @@
 root * .
 file_server
 
+log {
+    output stderr
+    format json
+}
+
 # Fallback to router.php for API calls
 route /api/* {
     php_fastcgi router.php
