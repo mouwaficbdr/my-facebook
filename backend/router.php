@@ -27,7 +27,9 @@ if (strpos($path, '/api/') === 0) {
     ];
     
     if (isset($endpoints[$api_path])) {
+        error_log("Router: Including endpoint: " . $endpoints[$api_path]);
         include $endpoints[$api_path];
+        error_log("Router: Finished including endpoint: " . $endpoints[$api_path]);
         return true;
     }
 }
