@@ -28,13 +28,13 @@ function getPDO(): PDO {
     if ($ssl) {
         $options[PDO::MYSQL_ATTR_SSL_CA] = DB_SSL_CA_PATH;
     }
-    // Log temporaire pour debug
-    file_put_contents(__DIR__ . '/../logs/error.log', json_encode([
+    // Log temporaire pour debug (commenté pour la production)
+    /* file_put_contents(__DIR__ . '/../logs/error.log', json_encode([
         'dsn' => $dsn,
         'user' => $user,
         'ssl' => $ssl,
         'ssl_ca' => DB_SSL_CA_PATH
-    ]) . PHP_EOL, FILE_APPEND);
+    ]) . PHP_EOL, FILE_APPEND); */
     return new PDO($dsn, $user, $pass, $options);
 }
 
