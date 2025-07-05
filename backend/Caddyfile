@@ -1,5 +1,9 @@
 :{$PORT}
 
 root * .
-php_fastcgi router.php
 file_server
+
+# Fallback to router.php for API calls
+route /api/* {
+    php_fastcgi router.php
+}
