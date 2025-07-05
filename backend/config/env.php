@@ -1,13 +1,15 @@
 <?php
 // backend/config/env.php
-// Chargement manuel du .env.local si présent
-$envFile = __DIR__ . '/../../.env.local';
-if (file_exists($envFile)) {
-    foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
-        if (strpos(trim($line), '#') === 0) continue;
-        if (!strpos($line, '=')) continue;
-        list($name, $value) = explode('=', $line, 2);
-        putenv(trim($name) . '=' . trim($value));
+// Chargement manuel du .env.local si présent (uniquement en développement)
+if (getenv('APP_ENV') !== 'production') {
+    $envFile = __DIR__ . '/../../.env.local';
+    if (file_exists($envFile)) {
+        foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+            if (strpos(trim($line), '#') === 0) continue;
+            if (!strpos($line, '=')) continue;
+            list($name, $value) = explode('=', $line, 2);
+            putenv(trim($name) . '=' . trim($value));
+        }
     }
 }
 
