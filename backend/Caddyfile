@@ -1,3 +1,12 @@
+{
+    frankenphp {
+        php_ini display_errors On
+        php_ini error_reporting E_ALL
+        php_ini log_errors On
+        php_ini error_log /dev/stderr
+    }
+}
+
 :{$PORT}
 
 root * .
@@ -5,13 +14,6 @@ root * .
 log {
     output stderr
     format json
-}
-
-frankenphp {
-    php_ini display_errors On
-    php_ini error_reporting E_ALL
-    php_ini log_errors On
-    php_ini error_log /dev/stderr
 }
 
 route {
