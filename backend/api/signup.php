@@ -1,7 +1,6 @@
 <?php
 // api/signup.php
-header('Access-Control-Allow-Origin: https://my-facebook-by-mouwafic.vercel.app');
-header('Access-Control-Allow-Credentials: true');
+require_once __DIR__ . '/../lib/cors.php';
 error_log("DEBUG: Before require_once db.php");
 require_once __DIR__ . '/../config/db.php';
 error_log("DEBUG: After require_once db.php");
@@ -20,6 +19,9 @@ error_log("DEBUG: After require_once log.php");
 error_log("DEBUG: Before require_once mail.php");
 require_once __DIR__ . '/../lib/mail.php';
 error_log("DEBUG: After require_once mail.php");
+
+// Gestion CORS
+handle_cors();
 
 header('Content-Type: application/json');
 
