@@ -27,7 +27,7 @@ Dans le dashboard Vercel, ajouter ces variables :
 ```bash
 # Configuration de l'application
 APP_ENV=production
-APP_URL=https://your-app.vercel.app
+APP_URL=https://my-facebook-backend-production.up.railway.app
 
 # Base de données MySQL (Aiven)
 DB_HOST=mysql-2350bdd7-my-facebook.c.aivencloud.com
@@ -90,8 +90,8 @@ Après le premier déploiement, chaque push sur `main` déclenchera un déploiem
 
 ### 3. **Vérification du déploiement**
 
-1. **Frontend** : `https://your-app.vercel.app`
-2. **API** : `https://your-app.vercel.app/api/signup.php`
+1. **Frontend** : `https://my-facebook-backend-production.up.railway.app`
+2. **API** : `https://my-facebook-backend-production.up.railway.app/api/signup.php`
 3. **Logs** : Dashboard Vercel → Functions → Logs
 
 ## 🔍 Tests post-déploiement
@@ -99,7 +99,7 @@ Après le premier déploiement, chaque push sur `main` déclenchera un déploiem
 ### 1. **Test d'inscription**
 
 ```bash
-curl -X POST https://your-app.vercel.app/api/signup.php \
+curl -X POST https://my-facebook-backend-production.up.railway.app/api/signup.php \
   -H "Content-Type: application/json" \
   -d '{
     "nom": "Test",
@@ -114,7 +114,7 @@ curl -X POST https://your-app.vercel.app/api/signup.php \
 ### 2. **Test de connexion**
 
 ```bash
-curl -X POST https://your-app.vercel.app/api/login.php \
+curl -X POST https://my-facebook-backend-production.up.railway.app/api/login.php \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
