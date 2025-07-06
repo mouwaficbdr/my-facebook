@@ -2,14 +2,28 @@
 // api/signup.php
 header('Access-Control-Allow-Origin: https://my-facebook-by-mouwafic.vercel.app');
 header('Access-Control-Allow-Credentials: true');
+error_log("DEBUG: Before require_once db.php");
 require_once __DIR__ . '/../config/db.php';
+error_log("DEBUG: After require_once db.php");
+error_log("DEBUG: Before require_once env.php");
 require_once __DIR__ . '/../config/env.php';
+error_log("DEBUG: After require_once env.php");
+error_log("DEBUG: Before require_once validation.php");
 require_once __DIR__ . '/../lib/validation.php';
+error_log("DEBUG: After require_once validation.php");
+error_log("DEBUG: Before require_once rate_limit.php");
 require_once __DIR__ . '/../lib/rate_limit.php';
+error_log("DEBUG: After require_once rate_limit.php");
+error_log("DEBUG: Before require_once log.php");
 require_once __DIR__ . '/../lib/log.php';
+error_log("DEBUG: After require_once log.php");
+error_log("DEBUG: Before require_once mail.php");
 require_once __DIR__ . '/../lib/mail.php';
+error_log("DEBUG: After require_once mail.php");
 
 header('Content-Type: application/json');
+
+error_log("DEBUG: Before JSON parsing");
 
 $env = defined('APP_ENV') ? APP_ENV : (getenv('APP_ENV') ?: 'development');
 
