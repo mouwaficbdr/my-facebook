@@ -7,8 +7,6 @@ log {
     format json
 }
 
-php_fastcgi {
-    root .
-}
+php_handler frankenphp
 
 try_files {path} /router.php?{query}
