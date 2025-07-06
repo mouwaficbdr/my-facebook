@@ -4,8 +4,10 @@
 // - export async function signup(data) { ... }
 // - etc.
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
 export async function login(email: string, password: string) {
-  const res = await fetch('/api/login.php', {
+  const res = await fetch(`${API_BASE}/api/login.php`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include', // pour cookie httpOnly
@@ -27,7 +29,7 @@ export async function signup(data: {
   genre: 'Homme' | 'Femme' | 'Autre';
   date_naissance: string;
 }) {
-  const res = await fetch('/api/signup.php', {
+  const res = await fetch(`${API_BASE}/api/signup.php`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -41,7 +43,7 @@ export async function signup(data: {
 }
 
 export async function forgotPassword(email: string) {
-  const res = await fetch('/api/forgot_password.php', {
+  const res = await fetch(`${API_BASE}/api/forgot_password.php`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
@@ -55,7 +57,7 @@ export async function forgotPassword(email: string) {
 }
 
 export async function resetPassword(token: string, password: string) {
-  const res = await fetch('/api/reset_password.php', {
+  const res = await fetch(`${API_BASE}/api/reset_password.php`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token, password }),
@@ -69,7 +71,7 @@ export async function resetPassword(token: string, password: string) {
 }
 
 export async function logout() {
-  const res = await fetch('/api/logout.php', {
+  const res = await fetch(`${API_BASE}/api/logout.php`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include', // pour cookie httpOnly
