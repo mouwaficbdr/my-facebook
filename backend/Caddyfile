@@ -1,6 +1,6 @@
 :{$PORT}
 
-root * /
+root * .
 
 log {
     output stderr
