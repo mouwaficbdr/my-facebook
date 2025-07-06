@@ -9,7 +9,7 @@
 
 :{$PORT}
 
-root * /app
+root * .
 
 log {
     output stderr
