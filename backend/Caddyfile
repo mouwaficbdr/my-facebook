@@ -17,5 +17,5 @@ log {
 }
 
 route {
-    php /router.php?{query}
+    php index.php
 }
