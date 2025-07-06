@@ -18,6 +18,13 @@ function getPDO(): PDO {
         file_put_contents($caPath, getenv('DB_SSL_CA_CONTENT'));
         define('DB_SSL_CA_PATH', $caPath);
     }
+    // Si pas de contenu, on prend le chemin local si défini
+    if (!defined('DB_SSL_CA_PATH')) {
+        $envCaPath = getenv('DB_SSL_CA_PATH');
+        if ($envCaPath) {
+            define('DB_SSL_CA_PATH', $envCaPath);
+        }
+    }
 
     $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4";
     $options = [
