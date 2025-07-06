@@ -7,6 +7,4 @@ log {
     format json
 }
 
-route {
-    php /router.php?{query}
-}
+php_server
