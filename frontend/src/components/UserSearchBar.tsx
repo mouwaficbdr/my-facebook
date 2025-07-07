@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { fetchUsers } from '../api/users';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
@@ -9,7 +9,6 @@ import Avatar from './Avatar';
 export default function UserSearchBar() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -31,8 +30,6 @@ export default function UserSearchBar() {
       setError(null);
       return;
     }
-    setLoading(true);
-    setError(null);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       fetchUsers(query)
@@ -45,8 +42,7 @@ export default function UserSearchBar() {
           setResults([]);
           setShowDropdown(false);
           toast.error(err.message || 'Erreur lors de la recherche utilisateur');
-        })
-        .finally(() => setLoading(false));
+        });
     }, 400);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);

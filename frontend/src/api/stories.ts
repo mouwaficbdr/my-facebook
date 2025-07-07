@@ -1,5 +1,3 @@
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-
 export async function fetchStories() {
   try {
     const res = await fetch('/api/stories.php');
@@ -18,8 +16,10 @@ export async function fetchStories() {
     return data.stories;
   } catch (err: any) {
     if (err.name === 'TypeError' && err.message.includes('Failed to fetch')) {
-      throw new Error('Connexion au serveur impossible. Vérifiez votre connexion ou réessayez plus tard.');
+      throw new Error(
+        'Connexion au serveur impossible. Vérifiez votre connexion ou réessayez plus tard.'
+      );
     }
     throw err;
   }
-} 
+}

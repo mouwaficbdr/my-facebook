@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface AvatarProps {
   prenom: string;
   nom: string;
@@ -8,7 +6,13 @@ interface AvatarProps {
   className?: string;
 }
 
-export default function Avatar({ prenom, nom, photo, size = 40, className = '' }: AvatarProps) {
+export default function Avatar({
+  prenom,
+  nom,
+  photo,
+  size = 40,
+  className = '',
+}: AvatarProps) {
   const initials = `${prenom?.[0] || ''}${nom?.[0] || ''}`.toUpperCase();
   if (photo) {
     return (
@@ -29,4 +33,4 @@ export default function Avatar({ prenom, nom, photo, size = 40, className = '' }
       {initials}
     </div>
   );
-} 
+}

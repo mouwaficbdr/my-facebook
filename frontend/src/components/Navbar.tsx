@@ -1,12 +1,4 @@
-import {
-  Search,
-  Home,
-  Users,
-  MessageCircle,
-  Bell,
-  Menu,
-  Plus,
-} from 'lucide-react';
+import { Search, Home, MessageCircle, Bell, Menu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/facebook-blue-logo-full.png';
 import logoMini from '../assets/facebook-logo-mini.png';

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchStories } from '../api/stories';
 import Loading from './Loading';
 import { useToast } from '../hooks/useToast';

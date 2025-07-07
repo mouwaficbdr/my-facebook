@@ -1,16 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import {
-  User,
-  Users,
-  Users2,
-  Play,
-  Bookmark,
-  MessageCircle,
-  Bell,
-  Camera,
-  ChefHat,
-  ChevronDown,
-} from 'lucide-react';
+import { User, Users, Users2, Play, Bookmark, ChevronDown } from 'lucide-react';
 import Avatar from './Avatar';
 
 const iconComponents = {
@@ -98,11 +87,6 @@ export default function LeftSidebar({ isOpen, onClose }: LeftSidebarProps) {
                     <span className="text-[15px] font-medium text-gray-700 flex-1 truncate">
                       {item.label}
                     </span>
-                    {item.count && (
-                      <span className="bg-red-500 text-white text-xs h-5 min-w-[20px] rounded-full flex items-center justify-center px-1">
-                        {item.count}
-                      </span>
-                    )}
                   </button>
                 );
               })}

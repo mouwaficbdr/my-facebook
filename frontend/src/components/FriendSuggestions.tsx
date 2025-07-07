@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { UserPlus, X } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
 

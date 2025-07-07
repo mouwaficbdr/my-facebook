@@ -123,10 +123,9 @@ export const toggleLike = async (
 };
 
 // Ajout d'un commentaire (à implémenter)
-export const addComment = async (
-  postId: number,
-  content: string
-): Promise<Comment> => {
+export const addComment = async (): // postId: number,
+// content: string
+Promise<Comment> => {
   // TODO: Implémenter l'endpoint de commentaires
   throw new Error('Fonctionnalité de commentaires à implémenter');
 };

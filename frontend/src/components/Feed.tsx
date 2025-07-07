@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import CreatePost from './CreatePost';
 import PostCard from './PostCard';
-import { getFeed, createPost, toggleLike, type Post } from '../api/feed';
+import { getFeed, toggleLike, type Post } from '../api/feed';
 import { useToast } from '../hooks/useToast';
 import { Search } from 'lucide-react';
 import Stories from './Stories';

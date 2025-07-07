@@ -12,7 +12,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
   const { success, error } = useToast();
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [isPublic, setIsPublic] = useState(true);
+  const [isPublic] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showImageInput, setShowImageInput] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
