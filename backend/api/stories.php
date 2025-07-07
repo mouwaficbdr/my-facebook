@@ -1,4 +1,7 @@
 <?php
+require_once __DIR__ . '/../lib/cors.php';
+handle_cors();
+
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../lib/jwt.php';
 require_once __DIR__ . '/../lib/auth_middleware.php';
