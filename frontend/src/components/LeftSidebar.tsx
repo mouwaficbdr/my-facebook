@@ -24,6 +24,7 @@ interface LeftSidebarProps {
 
 export default function LeftSidebar({ isOpen, onClose }: LeftSidebarProps) {
   const { user } = useAuth();
+  const { logout } = useAuth();
   return (
     <>
       {/* Mobile overlay */}
@@ -164,6 +165,15 @@ export default function LeftSidebar({ isOpen, onClose }: LeftSidebarProps) {
                 ))}
               </div>
             </div>
+          </div>
+          {/* Bouton temporaire de déconnexion en bas */}
+          <div className="p-4 border-t border-gray-100 mt-auto">
+            <button
+              onClick={logout}
+              className="w-full px-4 py-2 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 transition-colors"
+            >
+              Déconnexion
+            </button>
           </div>
         </div>
       </div>
