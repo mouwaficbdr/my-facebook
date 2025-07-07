@@ -14,6 +14,8 @@ interface FriendSuggestion {
   last_activity_formatted: string;
 }
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
 export default function FriendSuggestions() {
   const { success, error } = useToast();
   const [suggestions, setSuggestions] = useState<FriendSuggestion[]>([]);
@@ -28,7 +30,7 @@ export default function FriendSuggestions() {
 
   const loadSuggestions = async () => {
     try {
-      const response = await fetch('/api/friends/suggestions.php?limit=5', {
+      const response = await fetch(`${API_BASE}/api/friends/suggestions.php?limit=5`, {
         credentials: 'include',
       });
 

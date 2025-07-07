@@ -1,5 +1,7 @@
 // api/feed.ts - Fonctions API pour le feed et les posts
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
 export interface Post {
   id: number;
   contenu: string;
@@ -61,9 +63,12 @@ export const getFeed = async (
   page: number = 1,
   limit: number = 10
 ): Promise<FeedResponse> => {
-  const response = await fetch(`/api/feed.php?page=${page}&limit=${limit}`, {
-    credentials: 'include',
-  });
+  const response = await fetch(
+    `${API_BASE}/api/feed.php?page=${page}&limit=${limit}`,
+    {
+      credentials: 'include',
+    }
+  );
 
   const data = await response.json();
 
@@ -76,7 +81,7 @@ export const getFeed = async (
 
 // Création d'un nouveau post
 export const createPost = async (postData: CreatePostData): Promise<Post> => {
-  const response = await fetch('/api/posts/create.php', {
+  const response = await fetch(`${API_BASE}/api/posts/create.php`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -100,7 +105,7 @@ export const toggleLike = async (
   action: 'like' | 'unlike',
   type: string = 'like'
 ): Promise<LikeResponse> => {
-  const response = await fetch('/api/posts/like.php', {
+  const response = await fetch(`${API_BASE}/api/posts/like.php`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

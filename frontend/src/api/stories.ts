@@ -1,6 +1,8 @@
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
 export async function fetchStories() {
   try {
-    const res = await fetch('/api/stories.php');
+    const res = await fetch(`${API_BASE}/api/stories.php`, { credentials: 'include' });
     if (!res.ok) {
       let msg = `Erreur HTTP ${res.status}`;
       try {
