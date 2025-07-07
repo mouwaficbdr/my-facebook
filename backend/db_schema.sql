@@ -22,4 +22,14 @@ CREATE TABLE users (
     reset_token_expiry DATETIME DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Table pour les stories utilisateur
+CREATE TABLE IF NOT EXISTS stories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    image VARCHAR(255) NOT NULL, -- chemin relatif du fichier image
+    legend VARCHAR(255),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- À mettre à jour à chaque évolution du modèle ! 
