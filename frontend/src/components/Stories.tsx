@@ -4,6 +4,7 @@ import Loading from './Loading';
 import { useToast } from '../hooks/useToast';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 export default function Stories() {
   const [stories, setStories] = useState<any[]>([]);
@@ -83,7 +84,7 @@ export default function Stories() {
                   src={
                     story.image.startsWith('http')
                       ? story.image
-                      : `${BACKEND_URL}/${story.image}`
+                      : `${API_BASE}/${story.image}`
                   }
                   alt={story.user_prenom + ' ' + story.user_nom}
                   className="h-full w-full object-cover rounded-full group-hover:scale-105 transition-transform"
