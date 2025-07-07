@@ -104,9 +104,9 @@ $cookieOptions = [
     'expires' => time() + (7 * 24 * 60 * 60),
     'path' => '/',
     'domain' => '',
-    'secure' => ($env === 'production'),
+    'secure' => true,
     'httponly' => true,
-    'samesite' => 'Strict'
+    'samesite' => 'None'
 ];
 
 setcookie('token', $token, $cookieOptions);
