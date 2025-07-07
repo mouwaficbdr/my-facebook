@@ -3,13 +3,30 @@
 require_once __DIR__ . '/jwt.php';
 
 function require_auth() {
-    if (empty($_COOKIE['token'])) {
+    $token = null;
+    // 1. Vérifier le header Authorization
+    if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        if (preg_match('/Bearer\s+(.*)$/i', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
+            $token = trim($matches[1]);
+        }
+    } elseif (function_exists('apache_request_headers')) {
+        // Pour certains serveurs, le header peut être dans apache_request_headers
+        $headers = apache_request_headers();
+        if (isset($headers['Authorization']) && preg_match('/Bearer\s+(.*)$/i', $headers['Authorization'], $matches)) {
+            $token = trim($matches[1]);
+        }
+    }
+    // 2. Sinon, fallback sur le cookie
+    if (!$token && !empty($_COOKIE['token'])) {
+        $token = $_COOKIE['token'];
+    }
+    if (!$token) {
         http_response_code(401);
         header('Content-Type: application/json');
         echo json_encode(['success' => false, 'message' => 'Authentification requise.']);
         exit;
     }
-    $payload = validate_jwt($_COOKIE['token']);
+    $payload = validate_jwt($token);
     if (!$payload) {
         http_response_code(401);
         header('Content-Type: application/json');
