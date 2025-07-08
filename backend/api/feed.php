@@ -19,6 +19,12 @@ if (!$user) {
     exit;
 }
 
+// Désactiver l'affichage des erreurs PHP en production (préserver la sortie JSON)
+if (getenv('APP_ENV') === 'production' || getenv('APP_ENV') === 'prod') {
+    error_reporting(0);
+    ini_set('display_errors', 0);
+}
+
 try {
     $pdo = getPDO();
     
@@ -63,6 +69,9 @@ try {
     
     // Récupération des commentaires pour chaque post
     foreach ($posts as &$post) {
+        // Vérification de l'existence de la clé 'id' avant usage
+        if (!isset($post['id'])) continue;
+        
         // Commentaires récents (max 3)
         $commentsQuery = "
             SELECT 
@@ -96,8 +105,8 @@ try {
         $post['likes_count'] = intval($post['likes_count']);
         $post['comments_count'] = intval($post['comments_count']);
         $post['user_liked'] = boolval($post['user_liked']);
-        $post['user_id'] = intval($post['user_id']);
-        $post['id'] = intval($post['id']);
+        $post['user_id'] = isset($post['user_id']) ? intval($post['user_id']) : null;
+        $post['id'] = isset($post['id']) ? intval($post['id']) : null;
     }
     
     // Récupération du nombre total de posts pour la pagination

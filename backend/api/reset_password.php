@@ -1,5 +1,11 @@
 <?php
 // api/reset_password.php
+// Désactiver l'affichage des erreurs PHP en production (préserver la sortie JSON)
+if (getenv('APP_ENV') === 'production' || getenv('APP_ENV') === 'prod') {
+    error_reporting(0);
+    ini_set('display_errors', 0);
+}
+
 require_once __DIR__ . '/../lib/cors.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/env.php';
