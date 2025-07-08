@@ -10,7 +10,7 @@ export default function UserSearchBar() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
@@ -27,7 +27,6 @@ export default function UserSearchBar() {
     if (!query || query.length < 2) {
       setResults([]);
       setShowDropdown(false);
-      setError(null);
       return;
     }
     if (debounceRef.current) clearTimeout(debounceRef.current);
