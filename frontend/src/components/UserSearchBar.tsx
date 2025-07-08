@@ -134,8 +134,6 @@ export default function UserSearchBar() {
           </div>,
           document.body
         )}
-      {/* Message d'erreur */}
-      {error && <div className="mt-2 text-sm text-red-500">{error}</div>}
     </div>
   );
 }
