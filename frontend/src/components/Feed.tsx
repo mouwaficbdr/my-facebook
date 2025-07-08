@@ -13,6 +13,7 @@ export default function Feed() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     loadFeed();
@@ -29,8 +30,10 @@ export default function Feed() {
       }
       setCurrentPage(feedData.pagination.current_page);
       setHasMore(feedData.pagination.has_next);
+      setFetchError(null);
     } catch (err: any) {
       error(err?.message || 'Erreur lors du chargement du feed');
+      setFetchError(err?.message || 'Erreur lors du chargement du feed');
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -105,6 +108,27 @@ export default function Feed() {
                 </div>
               </div>
             ))}
+          </div>
+        ) : fetchError ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Impossible de charger le feed
+            </h3>
+            <p className="text-gray-500">
+              {fetchError}
+            </p>
+            <button
+              onClick={() => {
+                setLoading(true);
+                loadFeed();
+              }}
+              className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+            >
+              Réessayer
+            </button>
           </div>
         ) : posts.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
