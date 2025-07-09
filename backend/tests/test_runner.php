@@ -23,6 +23,16 @@ foreach ($testFiles as $file) {
     }
 }
 
+if (file_exists(__DIR__ . '/test_profile.php')) {
+    require_once __DIR__ . '/test_profile.php';
+    // Appel automatique si JWT fourni en argument
+    if (isset($argv[1]) && isset($argv[2])) {
+        test_profile_endpoint($argv[1], $argv[2]);
+    } else {
+        echo "Usage: php test_runner.php <userId> <jwt>\n";
+    }
+}
+
 $total = $success + $fail;
 echo "\nRésumé : $success/$total tests OK, $fail échec(s).\n";
 if ($fail > 0) exit(1);
