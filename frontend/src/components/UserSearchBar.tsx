@@ -94,45 +94,56 @@ export default function UserSearchBar() {
       {/* Dropdown résultats en portal */}
       {showDropdown &&
         results.length > 0 &&
-        typeof window !== 'undefined' &&
-        ReactDOM.createPortal(
-          <div
-            ref={dropdownRef}
-            className="bg-white border border-gray-200 rounded-xl shadow-lg z-[1000] max-h-72 overflow-y-auto w-full"
-            style={{
-              position: 'absolute',
-              left: dropdownPos.left,
-              top: dropdownPos.top,
-              width: dropdownPos.width,
-            }}
-          >
-            {results.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                onClick={() => {
-                  setShowDropdown(false);
-                  setQuery('');
-                  navigate(`/profile/${user.id}`);
-                }}
-              >
-                <Avatar
-                  prenom={user.prenom}
-                  nom={user.nom}
-                  photo={user.photo_profil}
-                  size={32}
-                  className="mr-3"
-                />
-                <div>
-                  <div className="font-medium text-gray-900">
-                    {user.prenom} {user.nom}
+        (() => {
+          const isMobile = window.innerWidth < 768;
+          const dropdown = (
+            <div
+              ref={dropdownRef}
+              className="bg-white border border-gray-200 rounded-xl shadow-lg z-[1000] max-h-72 overflow-y-auto w-full"
+              style={{
+                position: isMobile ? 'relative' : 'absolute',
+                left: isMobile ? undefined : dropdownPos.left,
+                top: isMobile ? undefined : dropdownPos.top,
+                width: isMobile ? '100%' : dropdownPos.width,
+                background: 'white',
+                pointerEvents: 'auto',
+              }}
+            >
+              {results.map((user) => (
+                <div
+                  key={user.id}
+                  className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                  onMouseDown={() => {
+                    setShowDropdown(false);
+                    setQuery('');
+                    navigate(`/profile/${user.id}`);
+                  }}
+                >
+                  <Avatar
+                    prenom={user.prenom}
+                    nom={user.nom}
+                    photo={user.photo_profil}
+                    size={32}
+                    className="mr-3"
+                  />
+                  <div>
+                    <div className="font-medium text-gray-900">
+                      {user.prenom} {user.nom}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>,
-          document.body
-        )}
+              ))}
+            </div>
+          );
+          if (isMobile) {
+            return dropdown;
+          } else if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+            return ReactDOM.createPortal(dropdown, document.body);
+          } else {
+            return null;
+          }
+        })()
+      }
     </div>
   );
 }
