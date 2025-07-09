@@ -7,12 +7,9 @@ if (import.meta.env.PROD && !import.meta.env.VITE_API_BASE_URL) {
   // Affiche une erreur dans la console et dans l'UI (toast via window)
   if (typeof window !== 'undefined') {
     window.addEventListener('DOMContentLoaded', () => {
-      alert(
-        "Erreur critique : la variable VITE_API_BASE_URL n'est pas définie en production. Les appels API échoueront."
-      );
+      console.error('VITE_API_BASE_URL manquante en production.');
     });
   }
-  console.error('VITE_API_BASE_URL manquante en production.');
 }
 
 export interface Post {
