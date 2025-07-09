@@ -48,7 +48,7 @@ const toastConfig = {
   },
 };
 
-export default function ModernToastContainer({
+export default function ModernToast({
   toasts,
   onRemove,
   position = 'bottom-right',
