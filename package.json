@@ -8,5 +8,8 @@
   },
   "devDependencies": {
     "@types/node": "^24.0.10"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0"
   }
 }
