@@ -5,11 +5,33 @@
 function log_error(string $message, array $context = []): void {
     $entry = [
         'timestamp' => date('c'),
+        'level' => 'error',
         'message'   => $message,
         'context'   => $context
     ];
-    // Écrit directement sur la sortie d'erreur standard que Railway peut lire
+    // Écrit dans error_log (Railway, console, etc.)
     error_log(json_encode($entry, JSON_UNESCAPED_UNICODE));
+    // Écrit aussi dans logs/debug.log
+    $logFile = __DIR__ . '/../logs/debug.log';
+    if (ensure_logs_dir_exists()) {
+        @file_put_contents($logFile, json_encode($entry, JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND | LOCK_EX);
+    }
+}
+
+function log_debug(string $message, array $context = []): void {
+    $entry = [
+        'timestamp' => date('c'),
+        'level' => 'debug',
+        'message'   => $message,
+        'context'   => $context
+    ];
+    // Écrit dans error_log (Railway, console, etc.)
+    error_log(json_encode($entry, JSON_UNESCAPED_UNICODE));
+    // Écrit aussi dans logs/debug.log
+    $logFile = __DIR__ . '/../logs/debug.log';
+    if (ensure_logs_dir_exists()) {
+        @file_put_contents($logFile, json_encode($entry, JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND | LOCK_EX);
+    }
 }
 
 /**
