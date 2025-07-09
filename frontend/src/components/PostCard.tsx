@@ -125,7 +125,7 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
         <div className="flex items-center justify-between text-[13px] text-gray-500">
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-1.5">
-              <div className="w-[18px] h-[18px] bg-blue-500 rounded-full flex items-center justify-center">
+              <div className="w-[18px] h-[18px] bg-red-500 rounded-full flex items-center justify-center">
                 <Heart className="w-[10px] h-[10px] text-white fill-current" />
               </div>
               <span className="font-medium">{post.likes_count}</span>
@@ -139,7 +139,8 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
               {post.comments_count} commentaire
               {post.comments_count !== 1 ? 's' : ''}
             </button>
-            <button className="hover:underline">0 partage</button> {/* TODO: Implémenter la fonctionnalité de partage */}
+            <button className="hover:underline">0 partage</button>{' '}
+            {/* TODO: Implémenter la fonctionnalité de partage */}
           </div>
         </div>
       </div>
@@ -148,9 +149,9 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
         <div className="flex items-center">
           <button
             onClick={handleLike}
-            className={`flex items-center justify-center space-x-2 flex-1 h-10 hover:bg-gray-100 rounded-lg transition-colors ${
-              post.user_liked ? 'text-blue-600' : 'text-gray-600'
-            }`}
+            className={`flex items-center justify-center space-x-2 flex-1 h-10 rounded-lg transition-colors
+              ${post.user_liked ? 'text-blue-600' : 'text-gray-600'}
+              hover:bg-red-100 hover:text-red-600`}
           >
             <Heart
               className={`h-[18px] w-[18px] ${
@@ -161,12 +162,12 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
           </button>
           <button
             onClick={() => setShowComments(!showComments)}
-            className="flex items-center justify-center space-x-2 flex-1 h-10 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"
+            className="flex items-center justify-center space-x-2 flex-1 h-10 rounded-lg text-gray-600 transition-colors hover:bg-blue-100 hover:text-blue-600"
           >
             <MessageCircle className="h-[18px] w-[18px]" />
             <span className="font-medium text-[15px]">Commenter</span>
           </button>
-          <button className="flex items-center justify-center space-x-2 flex-1 h-10 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors">
+          <button className="flex items-center justify-center space-x-2 flex-1 h-10 rounded-lg text-gray-600 transition-colors hover:bg-green-100 hover:text-green-600">
             <Share className="h-[18px] w-[18px]" />
             <span className="font-medium text-[15px]">Partager</span>
           </button>
