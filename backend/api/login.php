@@ -106,16 +106,17 @@ try {
 }
 
 // 9. Réponse avec cookie sécurisé
+$dev = ($env === 'development' || $env === 'local' || $env === 'dev');
 $cookieOptions = [
     'expires' => time() + (7 * 24 * 60 * 60),
     'path' => '/',
     'domain' => '',
-    'secure' => true,
+    'secure' => !$dev, // secure=true en prod, false en dev
     'httponly' => true,
-    'samesite' => 'None'
+    'samesite' => $dev ? 'Lax' : 'None'
 ];
 
-setcookie('token', $token, $cookieOptions);
+setcookie('jwt', $token, $cookieOptions);
 
 http_response_code(200);
 echo json_encode([
