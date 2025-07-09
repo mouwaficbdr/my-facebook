@@ -78,9 +78,8 @@ export default function Feed() {
     }
   };
 
-  const handleComment = async (postId: number, content: string) => {
+  const handleComment = async () => {
     // TODO: Implémenter l'ajout de commentaires (API/backend)
-    console.log('Commentaire à ajouter:', { postId, content });
   };
 
   return (
@@ -117,9 +116,7 @@ export default function Feed() {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Impossible de charger le feed
             </h3>
-            <p className="text-gray-500">
-              {fetchError}
-            </p>
+            <p className="text-gray-500">{fetchError}</p>
             <button
               onClick={() => {
                 setLoading(true);
