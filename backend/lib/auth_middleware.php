@@ -1,6 +1,7 @@
 <?php
 // backend/lib/auth_middleware.php
 require_once __DIR__ . '/jwt.php';
+require_once __DIR__ . '/log.php';
 
 function require_auth() {
     $token = null;
@@ -17,10 +18,14 @@ function require_auth() {
         }
     }
     // 2. Sinon, fallback sur le cookie
+    if (!$token && !empty($_COOKIE['jwt'])) {
+        $token = $_COOKIE['jwt'];
+    }
     if (!$token && !empty($_COOKIE['token'])) {
         $token = $_COOKIE['token'];
     }
     if (!$token) {
+        log_error('Aucun JWT trouvé', ['cookies' => $_COOKIE, 'headers' => $_SERVER]);
         http_response_code(401);
         header('Content-Type: application/json');
         echo json_encode(['success' => false, 'message' => 'Authentification requise.']);
@@ -28,6 +33,7 @@ function require_auth() {
     }
     $payload = validate_jwt($token);
     if (!$payload) {
+        log_error('JWT invalide ou expiré', ['token' => $token]);
         http_response_code(401);
         header('Content-Type: application/json');
         echo json_encode(['success' => false, 'message' => 'Token invalide ou expiré.']);
