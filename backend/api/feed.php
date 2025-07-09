@@ -14,6 +14,7 @@ header('Content-Type: application/json');
 require_auth();
 $user = $GLOBALS['auth_user'];
 if (!$user) {
+    log_error('feed.php: $user non défini après require_auth', []);
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Authentification requise.']);
     exit;
@@ -64,7 +65,7 @@ try {
     ";
     
     $stmt = $pdo->prepare($query);
-    $stmt->execute([$user['id'], $user['id'], $limit, $offset]);
+    $stmt->execute([$user['user_id'], $user['user_id'], $limit, $offset]);
     $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Récupération des commentaires pour chaque post
@@ -132,7 +133,11 @@ try {
     ]);
     
 } catch (Throwable $e) {
-    log_error('Feed error', ['error' => $e->getMessage(), 'user_id' => $user['id']]);
+    log_error('Feed error', [
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+        'user_id' => $user['id'] ?? null
+    ]);
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erreur lors du chargement du flux.']);
 }
