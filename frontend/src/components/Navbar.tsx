@@ -2,6 +2,7 @@ import { Search, Home, MessageCircle, Bell, Menu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/facebook-blue-logo-full.png';
 import logoMini from '../assets/facebook-logo-mini.png';
+import { useNavigate } from 'react-router-dom';
 import UserSearchBar from './UserSearchBar';
 import { useState } from 'react';
 import Avatar from './Avatar';
@@ -11,6 +12,7 @@ interface NavbarProps {
 }
 
 export default function Navbar({ onMenuClick }: NavbarProps) {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   return (
@@ -34,7 +36,12 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
               <Search className="h-5 w-5" />
             </button>
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <button
+                className="flex-shrink-0 focus:outline-none"
+                aria-label="Accueil Facebook"
+                onClick={() => navigate('/home')}
+                tabIndex={0}
+              >
                 {/* Logo responsive : mini sur tablette, full ailleurs */}
                 <img
                   src={logo}
@@ -54,7 +61,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
                   className="hidden lg:block h-16 w-auto drop-shadow-md"
                   style={{ filter: 'drop-shadow(0 0 16px #3b82f6aa)' }}
                 />
-              </div>
+              </button>
             </div>
             {/* Search bar desktop/tablette */}
             <div className="hidden md:block relative max-w-xs">
@@ -63,18 +70,25 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           </div>
           {/* Center navigation */}
           {/* TODO: Connecter chaque bouton central à la navigation réelle (Accueil, Amis, Messages, Notifications) */}
-          <div className="hidden md:flex flex-1 items-center justify-center space-x-8 md:space-x-5">
-            <button className="h-12 w-12 md:h-10 md:w-10 p-0 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center">
-              <Home className="h-6 w-6 md:h-[22px] md:w-[22px]" />
+          <div
+            className="hidden md:flex items-center justify-center space-x-12 h-full absolute left-1/2 -translate-x-1/2 top-0"
+            style={{ height: '100%' }}
+          >
+            <button
+              className="h-12 w-12 md:h-10 md:w-10 p-0 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center h-full"
+              onClick={() => navigate('/home')}
+              aria-label="Accueil"
+            >
+              <Home className="h-6 w-6" />
             </button>
-            <button className="h-12 w-12 md:h-10 md:w-10 p-0 hover:bg-gray-100 rounded-lg relative transition-colors flex items-center justify-center">
-              <MessageCircle className="h-6 w-6 md:h-[22px] md:w-[22px] text-gray-600" />
+            <button className="h-12 w-12 md:h-10 md:w-10 p-0 hover:bg-gray-100 rounded-lg relative transition-colors flex items-center justify-center h-full">
+              <MessageCircle className="h-6 w-6 text-gray-600" />
               <span className="absolute -top-1 -right-1 h-[18px] min-w-[18px] text-[11px] bg-red-500 text-white rounded-full flex items-center justify-center font-medium px-1">
                 7
               </span>
             </button>
-            <button className="h-12 w-12 md:h-10 md:w-10 p-0 hover:bg-gray-100 rounded-lg relative transition-colors flex items-center justify-center">
-              <Bell className="h-6 w-6 md:h-[22px] md:w-[22px] text-gray-600" />
+            <button className="h-12 w-12 md:h-10 md:w-10 p-0 hover:bg-gray-100 rounded-lg relative transition-colors flex items-center justify-center h-full">
+              <Bell className="h-6 w-6 text-gray-600" />
               <span className="absolute -top-1 -right-1 h-[18px] min-w-[18px] text-[11px] bg-red-500 text-white rounded-full flex items-center justify-center font-medium px-1">
                 12
               </span>
