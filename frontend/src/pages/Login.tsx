@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { login } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
 import Loading from '../components/Loading';
-import ModernToastContainer from '../components/ModernToast';
+import ModernToast from '../components/ModernToast';
 import type { Toast } from '../components/ModernToast';
 import logo from '../assets/facebook-blue-logo-full.png';
 import { Link } from 'react-router-dom';
@@ -141,7 +141,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen overflow-hidden relative">
-      <ModernToastContainer
+      <ModernToast
         toasts={toasts}
         onRemove={(id) => setToasts((ts) => ts.filter((t) => t.id !== id))}
       />

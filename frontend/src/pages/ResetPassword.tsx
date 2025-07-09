@@ -8,7 +8,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { resetPassword } from '../api/auth';
 import Loading from '../components/Loading';
-import ModernToastContainer from '../components/ModernToast';
+import ModernToast from '../components/ModernToast';
 import type { Toast } from '../components/ModernToast';
 import logo from '../assets/facebook-blue-logo-full.png';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -180,7 +180,7 @@ export default function ResetPassword() {
   if (tokenValid === false) {
     return (
       <div className="min-h-screen overflow-hidden relative">
-        <ModernToastContainer
+        <ModernToast
           toasts={toasts}
           onRemove={(id) => setToasts((ts) => ts.filter((t) => t.id !== id))}
         />
@@ -247,7 +247,7 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen overflow-hidden relative">
-      <ModernToastContainer
+      <ModernToast
         toasts={toasts}
         onRemove={(id) => setToasts((ts) => ts.filter((t) => t.id !== id))}
       />
