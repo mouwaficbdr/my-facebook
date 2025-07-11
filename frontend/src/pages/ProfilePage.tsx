@@ -7,6 +7,8 @@ import FriendActionButton from '../components/FriendActionButton';
 import PostCard from '../components/PostCard';
 import { useToast } from '../hooks/useToast';
 import Navbar from '../components/Navbar';
+// Ajout : importer API_BASE
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 interface UserProfile {
   id: number;
@@ -129,7 +131,7 @@ export default function ProfilePage() {
     if (!pagination.has_next || isFetchingMore) return;
     setIsFetchingMore(true);
     fetch(
-      `/api/users/profile.php?id=${id}&page=${
+      `${API_BASE}/api/users/profile.php?id=${id}&page=${
         pagination.current_page + 1
       }&limit=10`,
       { credentials: 'include' }
@@ -166,7 +168,7 @@ export default function ProfilePage() {
     if (!id) return;
     setLoading(true);
     setFetchError(null);
-    fetch(`/api/users/profile.php?id=${id}&page=1&limit=10`, {
+    fetch(`${API_BASE}/api/users/profile.php?id=${id}&page=1&limit=10`, {
       credentials: 'include',
     })
       .then(async (res) => {
