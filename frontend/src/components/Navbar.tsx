@@ -46,20 +46,17 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
                 <img
                   src={logo}
                   alt="Logo Facebook"
-                  className="h-8 sm:h-12 md:hidden lg:h-16 lg:w-auto w-auto drop-shadow-md"
-                  style={{ filter: 'drop-shadow(0 0 16px #3b82f6aa)' }}
+                  className="h-8 sm:h-12 md:hidden lg:h-16 lg:w-auto w-auto"
                 />
                 <img
                   src={logoMini}
                   alt="Logo Facebook Mini"
-                  className="hidden md:block md:h-10 lg:hidden w-auto drop-shadow-md"
-                  style={{ filter: 'drop-shadow(0 0 16px #3b82f6aa)' }}
+                  className="hidden md:block md:h-10 lg:hidden w-auto"
                 />
                 <img
                   src={logo}
                   alt="Logo Facebook"
-                  className="hidden lg:block h-16 w-auto drop-shadow-md"
-                  style={{ filter: 'drop-shadow(0 0 16px #3b82f6aa)' }}
+                  className="hidden lg:block h-16 w-auto"
                 />
               </button>
             </div>
