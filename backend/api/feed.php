@@ -73,16 +73,19 @@ try {
         // Vérification de l'existence de la clé 'id' avant usage
         if (!isset($post['id'])) continue;
         
-        // Commentaires récents (max 3)
+        // Commentaires récents (max 3) avec likes et réponses
         $commentsQuery = "
             SELECT 
                 c.id,
                 c.contenu,
                 c.created_at,
+                c.parent_id,
                 u.id as user_id,
                 u.nom,
                 u.prenom,
-                u.photo_profil
+                u.photo_profil,
+                (SELECT COUNT(*) FROM comment_likes WHERE comment_id = c.id) as likes_count,
+                (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) as replies_count
             FROM comments c
             INNER JOIN users u ON c.user_id = u.id
             WHERE c.post_id = ? AND c.parent_id IS NULL
