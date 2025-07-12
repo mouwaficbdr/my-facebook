@@ -1,0 +1,6 @@
+{
+  "command": "cd frontend && npm run dev",
+  "serverUrl": "http://localhost:5174/",
+  "authenticateProxy": false,
+  "commitMode": "commits"
+}
