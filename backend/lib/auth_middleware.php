@@ -56,4 +56,27 @@ function require_role($role) {
         echo json_encode(['success' => false, 'message' => 'Droits insuffisants.']);
         exit;
     }
+}
+
+function authenticate_user() {
+    // 1. JWT via cookie
+    if (isset($_COOKIE['jwt'])) {
+        $jwt = $_COOKIE['jwt'];
+    } else {
+        // 2. JWT via Authorization: Bearer ...
+        $auth = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? null;
+        if ($auth && preg_match('/Bearer\s+(.*)$/i', $auth, $matches)) {
+            $jwt = $matches[1];
+        } else {
+            return null;
+        }
+    }
+    $payload = validate_jwt($jwt);
+    if (!$payload) return null;
+    if (!isset($payload['user_id'])) return null;
+    return [
+        'id' => $payload['user_id'],
+        'email' => $payload['email'] ?? null,
+        'role' => $payload['role'] ?? 'user',
+    ];
 } 
