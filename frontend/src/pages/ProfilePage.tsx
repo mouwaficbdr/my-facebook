@@ -1,12 +1,14 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import Avatar from '../components/Avatar';
 import Loading from '../components/Loading';
 import ModernToast from '../components/ModernToast';
-import FriendActionButton from '../components/FriendActionButton';
-import PostCard from '../components/PostCard';
 import { useToast } from '../hooks/useToast';
 import Navbar from '../components/Navbar';
+import Avatar from '../components/Avatar';
+import ActionButton from '../components/ActionButton';
+import PostCard from '../components/PostCard';
+import FriendList from '../components/FriendList';
+import { fetchFriends } from '../api/users';
 // Ajout : importer API_BASE
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -58,52 +60,12 @@ interface Comment {
   photo_profil: string | null;
 }
 
-// Icônes Lucide (inline SVG pour éviter dépendance supplémentaire)
-const UserGroupIcon = () => (
-  <svg
-    className="w-4 h-4 mr-1 text-blue-500"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-7a4 4 0 11-8 0 4 4 0 018 0zm6 13v-2a4 4 0 00-3-3.87M9 20v-2a4 4 0 013-3.87"
-    />
-  </svg>
-);
-const FileTextIcon = () => (
-  <svg
-    className="w-4 h-4 mr-1 text-violet-500"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V6a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"
-    />
-  </svg>
-);
-const UsersIcon = () => (
-  <svg
-    className="w-4 h-4 mr-1 text-gray-500"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-7a4 4 0 11-8 0 4 4 0 018 0zm6 13v-2a4 4 0 00-3-3.87M9 20v-2a4 4 0 013-3.87"
-    />
-  </svg>
-);
+interface Friend {
+  id: number;
+  prenom: string;
+  nom: string;
+  photo_profil?: string | null;
+}
 
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>();
@@ -125,6 +87,7 @@ export default function ProfilePage() {
   const toast = useToast();
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [showFriendsList, setShowFriendsList] = useState(false);
 
   // Infinite scroll: charger plus de posts quand on atteint le bas
   const fetchMorePosts = useCallback(() => {
@@ -188,6 +151,75 @@ export default function ProfilePage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [friendsLoading, setFriendsLoading] = useState(false);
+  const [friendsError, setFriendsError] = useState<string | null>(null);
+
+  // Fonction pour formater les dates en français
+  const formatDateFr = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
+
+  // Fonctions pour gérer les actions sur les posts
+  const handleDeletePost = (postId: number) => {
+    fetch(`${API_BASE}/api/posts/delete.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ post_id: postId }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        setPosts((prev) => prev.filter((post) => post.id !== postId));
+        toast.success('Post supprimé avec succès');
+      })
+      .catch((err) => {
+        toast.error(err.message || 'Erreur lors de la suppression');
+      });
+  };
+
+  const handleSavePost = (postId: number, isSaved: boolean) => {
+    fetch(`${API_BASE}/api/posts/save.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ post_id: postId }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+
+        // Afficher le message approprié selon l'état
+        if (isSaved) {
+          toast.success('Post enregistré');
+        } else {
+          toast.success('Post retiré des enregistrements');
+        }
+      })
+      .catch((err) => {
+        toast.error(err.message || 'Erreur lors de la sauvegarde');
+      });
+  };
+
+  useEffect(() => {
+    if (!profile) return;
+    setFriendsLoading(true);
+    setFriendsError(null);
+    fetchFriends(profile.id)
+      .then(setFriends)
+      .catch((err) =>
+        setFriendsError(err.message || 'Erreur lors du chargement des amis.')
+      )
+      .finally(() => setFriendsLoading(false));
+  }, [profile]);
+
   if (loading) return <Loading />;
   if (fetchError)
     return (
@@ -203,155 +235,227 @@ export default function ProfilePage() {
     );
   if (!profile) return null;
 
-  // Responsive layout: header full width, content grid on desktop
   return (
     <div className="min-h-screen w-full bg-slate-100">
       <Navbar onMenuClick={() => {}} />
-      <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 md:px-8 pt-0 flex flex-col gap-8">
-        {/* Header immersif */}
-        <section
-          className="w-full bg-blue-50/90 backdrop-blur-md rounded-3xl shadow-xl border border-blue-100 flex flex-col md:flex-row items-center md:items-stretch gap-12 p-8 md:p-16 min-h-[340px] md:min-h-[420px] animate-fade-in -mt-12 md:-mt-16 z-10 relative"
-          style={{ paddingTop: '6.5rem' }}
-        >
-          {/* Avatar large + actions */}
-          <div className="flex-shrink-0 flex flex-col items-center md:items-start justify-center h-full">
-            <Avatar
-              prenom={profile.prenom}
-              nom={profile.nom}
-              photo={profile.photo_profil}
-              size={148}
-              className="mb-6 shadow-2xl border-4 border-white"
-            />
-            {/* Actions rapides */}
-            <div className="flex flex-row gap-2 w-full justify-center md:justify-start">
-              <FriendActionButton
-                userId={profile.id}
-                status={friendStatus}
-                onStatusChange={setFriendStatus}
-              />
-              {/* Bouton message (UI, à relier au chat si besoin) */}
-              <button className="bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold px-4 py-2 rounded-lg shadow-sm border border-blue-100 transition cursor-pointer">
-                Message
-              </button>
+      <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 md:px-8 pt-0 flex flex-col gap-8">
+        {/* Header avec photo de profil et infos */}
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="relative bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 h-64">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-blue-700/20"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
+              <div className="flex flex-col md:flex-row items-start md:items-end gap-6 md:gap-8">
+                <Avatar
+                  prenom={profile.prenom}
+                  nom={profile.nom}
+                  photo={profile.photo_profil}
+                  size={140}
+                  className="border-4 border-white shadow-2xl"
+                />
+                <div className="flex-1 text-white space-y-4">
+                  <div>
+                    <h1 className="text-4xl md:text-5xl font-bold mb-3">
+                      {profile.prenom} {profile.nom}
+                    </h1>
+                    {(profile.ville ||
+                      profile.pays ||
+                      profile.date_naissance) && (
+                      <div className="flex flex-wrap gap-3 items-center mb-3">
+                        {profile.ville || profile.pays ? (
+                          <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-sm font-medium">
+                            📍 {profile.ville}
+                            {profile.ville && profile.pays ? ', ' : ''}
+                            {profile.pays}
+                          </span>
+                        ) : null}
+                        {profile.date_naissance && (
+                          <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-sm font-medium">
+                            📅 {formatDateFr(profile.date_naissance)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {profile.bio ? (
+                      <p className="text-white/95 text-lg md:text-xl leading-relaxed max-w-2xl">
+                        {profile.bio}
+                      </p>
+                    ) : (
+                      <p className="text-white/70 text-lg md:text-xl leading-relaxed max-w-2xl italic">
+                        Aucune bio renseignée
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <ActionButton
+                    userId={profile.id}
+                    status={friendStatus}
+                    onStatusChange={setFriendStatus}
+                  />
+                  {friendStatus === 'friends' && (
+                    <button
+                      onClick={() => {}}
+                      className="bg-white/20 hover:bg-white/30 text-white font-semibold px-6 py-3 rounded-lg backdrop-blur-sm border border-white/30 transition-all duration-300 hover:scale-105"
+                    >
+                      Message
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-          {/* Infos principales */}
-          <div className="flex-1 flex flex-col justify-center h-full gap-6">
-            <div className="flex flex-col items-center md:items-start gap-2 w-full">
-              <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 text-center md:text-left w-full">
-                {profile.prenom} {profile.nom}
-              </h2>
-              {/* Section bio, toujours présente (placeholder si absente) */}
-              <div className="w-full flex items-center justify-center md:justify-start min-h-[48px]">
-                {profile.bio ? (
-                  <p className="text-gray-700 text-xl text-center md:text-left max-w-2xl w-full">
-                    {profile.bio}
-                  </p>
-                ) : (
-                  <span className="italic text-gray-400 text-lg">
-                    Aucune bio renseignée.
-                  </span>
+
+          {/* Navigation avec onglets */}
+          <div className="border-b border-gray-100 px-8 py-0">
+            <div className="flex justify-between items-center">
+              <div className="flex gap-8">
+                <button className="px-6 py-4 font-semibold text-blue-600 border-b-2 border-blue-600">
+                  Publications
+                </button>
+                <button className="px-6 py-4 font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50">
+                  Amis
+                </button>
+                <button className="px-6 py-4 font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50">
+                  Photos
+                </button>
+              </div>
+              <div className="flex gap-8 py-4">
+                <div className="text-center">
+                  <div className="text-xl font-bold text-blue-600">
+                    {friends.length}
+                  </div>
+                  <div className="text-sm text-gray-500">Amis</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl font-bold text-violet-600">
+                    {postsCount}
+                  </div>
+                  <div className="text-sm text-gray-500">Publications</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl font-bold text-emerald-600">
+                    {mutualFriendsCount}
+                  </div>
+                  <div className="text-sm text-gray-500">En commun</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Layout 2 colonnes */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Présentation */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                Présentation
+              </h3>
+              <div className="space-y-3">
+                {profile.date_naissance && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-gray-500">🎂</span>
+                    <span>Né.e le {formatDateFr(profile.date_naissance)}</span>
+                  </div>
+                )}
+                {(profile.ville || profile.pays) && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-gray-500">📍</span>
+                    <span>
+                      Vit à {profile.ville}
+                      {profile.ville && profile.pays ? ', ' : ''}
+                      {profile.pays}
+                    </span>
+                  </div>
+                )}
+                {profile.bio && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-gray-500">💬</span>
+                    <span>{profile.bio}</span>
+                  </div>
                 )}
               </div>
             </div>
-            {/* Stats */}
-            <div className="flex flex-wrap gap-3 my-2 justify-center md:justify-start">
-              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold shadow-sm flex items-center">
-                <UserGroupIcon />
-                {profile.friends_count} ami
-                {profile.friends_count !== 1 ? 's' : ''}
-              </span>
-              <span className="bg-violet-100 text-violet-700 px-3 py-1 rounded-full text-sm font-semibold shadow-sm flex items-center">
-                <FileTextIcon />
-                {postsCount} post{postsCount !== 1 ? 's' : ''}
-              </span>
-              <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-semibold shadow-sm flex items-center">
-                <UsersIcon />
-                {mutualFriendsCount} ami{mutualFriendsCount !== 1 ? 's' : ''} en
-                commun
-              </span>
-            </div>
-            {/* Infos secondaires */}
-            <div className="flex flex-wrap gap-4 mt-2 text-gray-500 text-sm">
-              {profile.ville && (
-                <span className="flex items-center gap-1">
-                  <svg
-                    className="w-4 h-4 text-blue-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  {profile.ville}
-                  {profile.pays ? ', ' + profile.pays : ''}
-                </span>
-              )}
-              {profile.date_naissance && (
-                <span className="flex items-center gap-1">
-                  <svg
-                    className="w-4 h-4 text-pink-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 8v4l3 3"
-                    />
-                    <circle cx="12" cy="12" r="10" />
-                  </svg>
-                  {new Date(profile.date_naissance).toLocaleDateString()}
-                </span>
-              )}
-            </div>
-          </div>
-        </section>
 
-        {/* Section posts publics */}
-        <section className="w-full">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">
-            Publications
-          </h3>
-          {posts.length === 0 ? (
-            <div className="text-gray-400 text-center py-8">
-              Aucun post à afficher.
-            </div>
-          ) : (
-            // Préparer la grid artistique (masonry) à activer plus tard
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Appliquer un fond original à chaque card */}
-              {posts.map((post: Post) => (
-                <div
-                  key={post.id}
-                  className="bg-blue-50/90 backdrop-blur-md rounded-2xl shadow-md border border-blue-100 p-0"
-                >
-                  <PostCard
-                    post={post}
-                    onLike={() => {}}
-                    onComment={() => {}}
-                  />
+            {/* Amis */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Amis</h3>
+              {friends.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">
+                  Aucun ami pour le moment
+                </p>
+              ) : (
+                <div className="grid grid-cols-3 gap-3">
+                  {friends.slice(0, 6).map((friend) => (
+                    <div key={friend.id} className="text-center">
+                      <Avatar
+                        prenom={friend.prenom}
+                        nom={friend.nom}
+                        photo={friend.photo_profil}
+                        size={48}
+                        className="mx-auto mb-2"
+                      />
+                      <p className="text-xs text-gray-600 truncate">
+                        {friend.prenom} {friend.nom}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
-          {/* Infinite scroll loader */}
-          <div ref={loaderRef} className="flex justify-center py-6">
-            {isFetchingMore && <Loading />}
           </div>
-        </section>
+
+          {/* Contenu principal - Posts en liste verticale */}
+          <div className="lg:col-span-2">
+            <div className="space-y-4">
+              {posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  onLike={() => {}}
+                  onComment={() => {}}
+                  onDelete={handleDeletePost}
+                  onSave={handleSavePost}
+                />
+              ))}
+              {posts.length === 0 && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+                  <p className="text-gray-500">Aucun post à afficher.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Section amis (modale) */}
+        {showFriendsList && (
+          <div className="relative">
+            <button
+              className="absolute right-4 top-4 z-10 bg-white/80 hover:bg-blue-100 text-blue-700 font-semibold px-3 py-1 rounded-full shadow border border-blue-200 transition"
+              onClick={() => setShowFriendsList(false)}
+            >
+              Fermer
+            </button>
+            {friendsLoading ? (
+              <div className="text-gray-400 text-center py-8">
+                Chargement des amis...
+              </div>
+            ) : friendsError ? (
+              <div className="text-red-500 text-center py-8">
+                {friendsError}
+              </div>
+            ) : (
+              <FriendList
+                friends={friends}
+                total={friends.length}
+                onSeeAll={() => {}}
+              />
+            )}
+          </div>
+        )}
+
         <ModernToast toasts={toast.toasts} onRemove={toast.removeToast} />
       </div>
     </div>
