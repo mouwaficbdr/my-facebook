@@ -11,6 +11,9 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
+import { fetchComments, addComment, type Comment as ApiComment, type CommentsPagination } from '../api/comments';
+import CommentItem from './CommentItem';
+import ShareModal from './ShareModal';
 
 interface Comment {
   id: number;
@@ -44,8 +47,8 @@ interface Post {
 
 interface PostCardProps {
   post: Post;
-  onLike: (postId: number, action: 'like' | 'unlike', type?: string) => void;
-  onComment: (postId: number, content: string) => void;
+  onLike: (postId: number, action: 'like' | 'unlike', type?: string) => Promise<{user_liked: boolean, user_like_type?: string, reactions: Record<string, number>}>;
+  onComment: (postId: number, content: string, commentsCount?: number) => void;
   onDelete?: (postId: number) => void;
   onSave?: (postId: number, isSaved: boolean) => void;
 }
@@ -59,15 +62,30 @@ export default function PostCard({
 }: PostCardProps) {
   const { user } = useAuth();
   const { success, error } = useToast();
-  const [showComments, setShowComments] = useState(false);
+  const [showInlineComment, setShowInlineComment] = useState(false);
+  const [showCommentsPanel, setShowCommentsPanel] = useState(false);
+  const [comments, setComments] = useState<ApiComment[]>([]);
+  const [commentsPagination, setCommentsPagination] = useState<CommentsPagination | null>(null);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [loadingMoreComments, setLoadingMoreComments] = useState(false);
+  const [commentsError, setCommentsError] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const commentsLimit = 10;
   const [showMenu, setShowMenu] = useState(false);
   const [isSaved, setIsSaved] = useState(post.user_saved || false);
   const [isLiked, setIsLiked] = useState(post.user_liked || false);
-  const [likeAnimation, setLikeAnimation] = useState(false);
   const [likesCount, setLikesCount] = useState(post.likes_count);
+  const [showShareModal, setShowShareModal] = useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
+  const commentsContainerRef = React.useRef<HTMLDivElement>(null);
+  const [likeLoading, setLikeLoading] = useState(false);
+
+  // Synchroniser l'état local avec les props post.user_liked et post.likes_count
+  React.useEffect(() => {
+    setIsLiked(post.user_liked || false);
+    setLikesCount(post.likes_count);
+  }, [post.user_liked, post.likes_count]);
 
   // Fermer le menu au clic extérieur
   React.useEffect(() => {
@@ -86,39 +104,112 @@ export default function PostCard({
     };
   }, [showMenu]);
 
-  const handleLike = () => {
-    // Déclencher l'animation
-    setLikeAnimation(true);
+  // Fermer le panneau de commentaires au clic extérieur
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (commentsContainerRef.current && !commentsContainerRef.current.contains(event.target as Node)) {
+        setShowCommentsPanel(false);
+        setShowInlineComment(false);
+      }
+    }
+    if (showCommentsPanel || showInlineComment) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCommentsPanel, showInlineComment]);
 
-    // Mettre à jour l'état local immédiatement pour une réponse instantanée
-    const newLikedState = !isLiked;
-    setIsLiked(newLikedState);
-
-    // Mettre à jour le compteur local
-    setLikesCount((prev) => (newLikedState ? prev + 1 : prev - 1));
-
-    // Appeler le callback parent
-    const action = isLiked ? 'unlike' : 'like';
-    onLike(post.id, action);
-
-    // Arrêter l'animation après 300ms
-    setTimeout(() => {
-      setLikeAnimation(false);
-    }, 300);
+  // Charger les commentaires (panel)
+  const loadComments = async (reset = false) => {
+    if (loadingComments || loadingMoreComments) return;
+    setCommentsError(null);
+    if (reset) setLoadingComments(true);
+    else setLoadingMoreComments(true);
+    try {
+      const offset = reset ? 0 : (commentsPagination?.offset || 0) + (commentsPagination?.limit || commentsLimit);
+      const data = await fetchComments(post.id, offset, commentsLimit, user?.id);
+      setComments((prev) => reset ? data.comments : [...prev, ...data.comments]);
+      setCommentsPagination(data.pagination);
+    } catch (err: unknown) {
+      setCommentsError(err instanceof Error ? err.message : 'Erreur lors du chargement des commentaires');
+    } finally {
+      setLoadingComments(false);
+      setLoadingMoreComments(false);
+    }
   };
 
-  const handleComment = async (e: React.FormEvent) => {
+  // Ouvrir le panneau de commentaires
+  const handleOpenCommentsPanel = () => {
+    setShowCommentsPanel(true);
+    setShowInlineComment(false);
+    if (comments.length === 0) {
+      loadComments(true);
+    }
+  };
+
+  // Clic sur "Commenter" (champ inline)
+  const handleShowInlineComment = () => {
+    setShowInlineComment(true);
+    setShowCommentsPanel(false);
+  };
+
+  // Ajout de commentaire (panel ou inline)
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentText.trim()) return;
     setIsSubmitting(true);
     try {
-      await onComment(post.id, commentText);
+      const response = await addComment(post.id, commentText);
       setCommentText('');
       success('Commentaire ajouté !');
-    } catch (err: any) {
-      error(err?.message || "Erreur lors de l'ajout du commentaire");
+      
+      // Mettre à jour le compteur de commentaires du post
+      if (response.comments_count !== undefined) {
+        // Mettre à jour le post parent via un callback
+        onComment?.(post.id, commentText, response.comments_count);
+      }
+      
+      if (showCommentsPanel) {
+        setComments((prev) => [response.comment, ...prev]);
+        setCommentsPagination((prev) => prev ? { ...prev, total: prev.total + 1 } : prev);
+      }
+    } catch (err: unknown) {
+      error(err instanceof Error ? err.message : "Erreur lors de l'ajout du commentaire");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Infinite scroll (panel)
+  const commentsScrollRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (!showCommentsPanel) return;
+    const handleScroll = () => {
+      const el = commentsScrollRef.current;
+      if (!el || loadingMoreComments || !commentsPagination?.has_next) return;
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 80) {
+        loadComments(false);
+      }
+    };
+    const el = commentsScrollRef.current;
+    if (el) el.addEventListener('scroll', handleScroll);
+    return () => { if (el) el.removeEventListener('scroll', handleScroll); };
+  }, [showCommentsPanel, commentsPagination, loadingMoreComments]);
+
+  const handleLike = async () => {
+    if (likeLoading) return;
+    setLikeLoading(true);
+    try {
+      // Appeler le callback parent et attendre la réponse
+      // Le parent mettra à jour les props, qui seront synchronisées via useEffect
+      await onLike(post.id, isLiked ? 'unlike' : 'like');
+    } catch (err) {
+      error(err instanceof Error ? err.message : 'Erreur lors du like');
+    } finally {
+      setLikeLoading(false);
     }
   };
 
@@ -137,8 +228,8 @@ export default function PostCard({
       if (!data.success) throw new Error(data.message);
       success(data.message || 'Post supprimé.');
       onDelete?.(post.id);
-    } catch (err: any) {
-      error(err.message || 'Erreur lors de la suppression.');
+    } catch (err: unknown) {
+      error(err instanceof Error ? err.message : 'Erreur lors de la suppression.');
     }
   };
   // Handler sauvegarde
@@ -158,8 +249,8 @@ export default function PostCard({
 
       // Appeler le callback parent (qui gère les toasts)
       onSave?.(post.id, !isSaved);
-    } catch (err: any) {
-      error(err.message || "Erreur lors de l'enregistrement.");
+    } catch (err: unknown) {
+      error(err instanceof Error ? err.message : "Erreur lors de l'enregistrement.");
     }
   };
 
@@ -268,13 +359,11 @@ export default function PostCard({
           <div className="flex items-center space-x-3">
             <button
               className="hover:underline"
-              onClick={() => setShowComments(!showComments)}
+              onClick={handleOpenCommentsPanel}
             >
-              {post.comments_count} commentaire
-              {post.comments_count !== 1 ? 's' : ''}
+              {post.comments_count} commentaire{post.comments_count !== 1 ? 's' : ''}
             </button>
-            <button className="hover:underline">0 partage</button>{' '}
-            {/* TODO: Implémenter la fonctionnalité de partage */}
+            {/* Bouton de partage retiré du compteur, laissé uniquement dans la barre d'actions */}
           </div>
         </div>
       </div>
@@ -283,75 +372,92 @@ export default function PostCard({
         <div className="flex items-center">
           <button
             onClick={handleLike}
+            disabled={likeLoading}
             className={`flex items-center justify-center space-x-2 flex-1 h-10 rounded-lg transition-all duration-200
               ${isLiked ? 'text-red-500' : 'text-gray-600'}
-              hover:bg-red-50 hover:text-red-500`}
+              hover:bg-red-50 hover:text-red-500
+              ${likeLoading ? 'opacity-60 cursor-not-allowed' : ''}`}
           >
             <Heart
               className={`h-[18px] w-[18px] transition-all duration-200 ${
                 isLiked ? 'fill-current text-red-500' : ''
-              } ${likeAnimation ? 'scale-125' : ''}`}
+              }`}
             />
             <span className="font-medium text-[15px]">
               {isLiked ? "J'aime" : "J'aime"}
             </span>
           </button>
           <button
-            onClick={() => setShowComments(!showComments)}
+            onClick={handleShowInlineComment}
             className="flex items-center justify-center space-x-2 flex-1 h-10 rounded-lg text-gray-600 transition-colors hover:bg-blue-100 hover:text-blue-600"
           >
             <MessageCircle className="h-[18px] w-[18px]" />
             <span className="font-medium text-[15px]">Commenter</span>
           </button>
-          <button className="flex items-center justify-center space-x-2 flex-1 h-10 rounded-lg text-gray-600 transition-colors hover:bg-green-100 hover:text-green-600">
+          <button 
+            onClick={() => setShowShareModal(true)}
+            className="flex items-center justify-center space-x-2 flex-1 h-10 rounded-lg text-gray-600 transition-colors hover:bg-green-100 hover:text-green-600"
+          >
             <Share className="h-[18px] w-[18px]" />
             <span className="font-medium text-[15px]">Partager</span>
           </button>
         </div>
       </div>
-      {/* Comments Section */}
-      {showComments && (
-        <div className="p-4 space-y-3 border-t border-gray-100">
-          {/* Existing Comments */}
-          {post.comments.map((comment) => (
-            <div key={comment.id} className="flex space-x-3">
-              <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-                {comment.photo_profil ? (
-                  <img
-                    src={comment.photo_profil}
-                    alt={`${comment.prenom} ${comment.nom}`}
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                ) : (
-                  `${comment.prenom.charAt(0)}${comment.nom.charAt(0)}`
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="bg-gray-100 rounded-2xl px-3 py-2">
-                  <p className="text-sm font-semibold text-gray-900">
-                    {comment.prenom} {comment.nom}
-                  </p>
-                  <p className="text-sm text-gray-800">{comment.contenu}</p>
-                </div>
-                <div className="flex items-center space-x-4 mt-1 px-3">
-                  <button className="text-xs text-gray-500 hover:underline">
-                    J'aime
-                  </button>
-                  <button className="text-xs text-gray-500 hover:underline">
-                    Répondre
-                  </button>
-                  <span className="text-xs text-gray-500">
-                    {comment.created_at_formatted}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-          {/* Add Comment */}
-          <form onSubmit={handleComment} className="flex space-x-3 mt-2">
+      {/* Champ de commentaire inline */}
+      {showInlineComment && !showCommentsPanel && (
+        <div ref={commentsContainerRef}>
+          <form onSubmit={handleAddComment} className="flex space-x-3 mt-2 px-4 pb-2">
+          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
+            {user?.prenom?.[0]}{user?.nom?.[0]}
+          </div>
+          <div className="flex-1 flex items-center space-x-2">
+            <input
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Écrivez un commentaire..."
+              className="flex-1 min-h-0 py-2 px-3 text-sm bg-gray-100 border-0 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500"
+              disabled={isSubmitting}
+            />
+            <button
+              type="submit"
+              disabled={!commentText.trim() || isSubmitting}
+              className="h-8 w-8 p-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+                      </div>
+          </form>
+        </div>
+        )}
+      {/* Panneau extensible commentaires */}
+      {showCommentsPanel && (
+        <div ref={commentsContainerRef} className="border-t border-gray-100 bg-white">
+          <div ref={commentsScrollRef} className="max-h-80 overflow-y-auto p-4 space-y-3">
+          {loadingComments ? (
+            <div className="text-center text-gray-400 py-4">Chargement...</div>
+          ) : commentsError ? (
+            <div className="text-center text-red-500 py-4">{commentsError}</div>
+          ) : comments.length === 0 ? (
+            <div className="text-center text-gray-400 py-4">Aucun commentaire.</div>
+          ) : (
+            comments.map((comment) => (
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                onCommentUpdate={() => {
+                  // Recharger les commentaires pour mettre à jour les compteurs
+                  loadComments(true);
+                }}
+              />
+            ))
+          )}
+          {/* Infinite scroll loader */}
+          {loadingMoreComments && <div className="text-center text-gray-400 py-2">Chargement...</div>}
+          {/* Champ d'ajout de commentaire dans le panneau */}
+          <form onSubmit={handleAddComment} className="flex space-x-3 mt-2">
             <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-              {user?.prenom?.[0]}
-              {user?.nom?.[0]}
+              {user?.prenom?.[0]}{user?.nom?.[0]}
             </div>
             <div className="flex-1 flex items-center space-x-2">
               <input
@@ -372,7 +478,15 @@ export default function PostCard({
             </div>
           </form>
         </div>
+        </div>
       )}
+      
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        post={post}
+      />
     </div>
   );
 }
