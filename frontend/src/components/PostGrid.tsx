@@ -48,7 +48,7 @@ export default function PostGrid({
             >
               <PostCard
                 post={post}
-                onLike={() => {}}
+                onLike={async () => ({ user_liked: false, user_like_type: undefined, reactions: {} })}
                 onComment={() => {}}
                 onDelete={onDeletePost}
                 onSave={onSavePost}
