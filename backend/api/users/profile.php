@@ -77,39 +77,70 @@ try {
     $page = max(1, intval($_GET['page'] ?? 1));
     $limit = min(20, max(5, intval($_GET['limit'] ?? 10)));
     $offset = ($page - 1) * $limit;
-    $postsQuery = "SELECT p.id, p.contenu, p.image_url, p.type, p.is_public, p.created_at, p.updated_at, u.nom, u.prenom, u.photo_profil FROM posts p JOIN users u ON u.id = p.user_id WHERE p.user_id = ? AND p.is_public = 1 ORDER BY p.created_at DESC LIMIT ? OFFSET ?";
+    $postsQuery = "
+        SELECT 
+            p.id, 
+            p.contenu, 
+            p.image_url, 
+            p.type, 
+            p.is_public, 
+            p.created_at, 
+            p.updated_at, 
+            u.nom, 
+            u.prenom, 
+            u.photo_profil,
+            u.id as user_id,
+            u.ville,
+            u.pays,
+            COUNT(DISTINCT l.id) as likes_count,
+            COUNT(DISTINCT c.id) as comments_count,
+            EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = ?) as user_liked,
+            (SELECT type FROM likes WHERE post_id = p.id AND user_id = ? LIMIT 1) as user_like_type
+        FROM posts p 
+        JOIN users u ON u.id = p.user_id 
+        LEFT JOIN likes l ON p.id = l.post_id
+        LEFT JOIN comments c ON p.id = c.post_id AND c.parent_id IS NULL
+        WHERE p.user_id = ? AND p.is_public = 1 
+        GROUP BY p.id
+        ORDER BY p.created_at DESC 
+        LIMIT ? OFFSET ?
+    ";
     $postsStmt = $pdo->prepare($postsQuery);
-    $postsStmt->execute([$userId, $limit, $offset]);
+    $postsStmt->execute([$currentUser['user_id'], $currentUser['user_id'], $userId, $limit, $offset]);
     $posts = $postsStmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($posts as &$post) {
         $post['id'] = intval($post['id']);
+        $post['user_id'] = intval($post['user_id']);
         $post['is_public'] = boolval($post['is_public']);
+        $post['likes_count'] = intval($post['likes_count']);
+        $post['comments_count'] = intval($post['comments_count']);
+        $post['user_liked'] = boolval($post['user_liked']);
         $post['created_at_formatted'] = formatRelativeTime($post['created_at']);
         $post['updated_at_formatted'] = formatRelativeTime($post['updated_at']);
     }
-    // Ajout des compteurs likes_count et comments_count à chaque post
-    $postIds = array_column($posts, 'id');
-    $likesCount = [];
-    $commentsCount = [];
-    if (count($postIds) > 0) {
-        $inQuery = implode(',', array_fill(0, count($postIds), '?'));
-        // Likes
-        $likeStmt = $pdo->prepare("SELECT post_id, COUNT(*) as likes_count FROM likes WHERE post_id IN ($inQuery) GROUP BY post_id");
-        $likeStmt->execute($postIds);
-        foreach ($likeStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $likesCount[$row['post_id']] = (int)$row['likes_count'];
-        }
-        // Comments
-        $commentStmt = $pdo->prepare("SELECT post_id, COUNT(*) as comments_count FROM comments WHERE post_id IN ($inQuery) GROUP BY post_id");
-        $commentStmt->execute($postIds);
-        foreach ($commentStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $commentsCount[$row['post_id']] = (int)$row['comments_count'];
-        }
-    }
-    foreach ($posts as &$post) {
-        $post['likes_count'] = $likesCount[$post['id']] ?? 0;
-        $post['comments_count'] = $commentsCount[$post['id']] ?? 0;
-    }
+    // Suppression de l'ancien code de calcul des compteurs qui n'est plus nécessaire
+    // $postIds = array_column($posts, 'id');
+    // $likesCount = [];
+    // $commentsCount = [];
+    // if (count($postIds) > 0) {
+    //     $inQuery = implode(',', array_fill(0, count($postIds), '?'));
+    //     // Likes
+    //     $likeStmt = $pdo->prepare("SELECT post_id, COUNT(*) as likes_count FROM likes WHERE post_id IN ($inQuery) GROUP BY post_id");
+    //     $likeStmt->execute($postIds);
+    //     foreach ($likeStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    //         $likesCount[$row['post_id']] = (int)$row['likes_count'];
+    //     }
+    //     // Comments
+    //     $commentStmt = $pdo->prepare("SELECT post_id, COUNT(*) as comments_count FROM comments WHERE post_id IN ($inQuery) GROUP BY post_id");
+    //     $commentStmt->execute($postIds);
+    //     foreach ($commentStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    //         $commentsCount[$row['post_id']] = (int)$row['comments_count'];
+    //     }
+    // }
+    // foreach ($posts as &$post) {
+    //     $post['likes_count'] = $likesCount[$post['id']] ?? 0;
+    //     $post['comments_count'] = $commentsCount[$post['id']] ?? 0;
+    // }
     unset($post);
 
     // 5. Pagination
