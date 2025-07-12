@@ -65,21 +65,29 @@ export default function Feed() {
                 ...post,
                 user_liked: result.user_liked,
                 user_like_type: result.user_like_type,
-                likes_count: Object.values(result.reactions).reduce(
-                  (a, b) => a + b,
-                  0
-                ),
+                likes_count: result.reactions.total ?? 0,
               }
             : post
         )
       );
+      return result;
     } catch (err: any) {
       error(err?.message || 'Erreur lors de la gestion du like');
+      throw err;
     }
   };
 
-  const handleComment = async () => {
-    // TODO: Implémenter l'ajout de commentaires (API/backend)
+  const handleComment = async (postId: number, _content: string, commentsCount?: number) => {
+    // Mettre à jour le compteur de commentaires si fourni
+    if (commentsCount !== undefined) {
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId
+            ? { ...post, comments_count: commentsCount }
+            : post
+        )
+      );
+    }
   };
 
   const handleDeletePost = (postId: number) => {
