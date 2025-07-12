@@ -18,7 +18,7 @@ if (!$user) {
 }
 $input = json_decode(file_get_contents('php://input'), true);
 $friendId = isset($input['friend_id']) ? intval($input['friend_id']) : 0;
-if ($friendId <= 0 || $friendId == $user['id']) {
+if ($friendId <= 0 || $friendId == $user['user_id']) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'ID cible invalide.']);
     exit;
@@ -27,7 +27,7 @@ try {
     $pdo = getPDO();
     // Supprimer la relation (accepted ou pending dans les deux sens)
     $stmt = $pdo->prepare("DELETE FROM friendships WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) AND (status = 'accepted' OR status = 'pending')");
-    $stmt->execute([$user['id'], $friendId, $friendId, $user['id']]);
+    $stmt->execute([$user['user_id'], $friendId, $friendId, $user['user_id']]);
     echo json_encode(['success' => true, 'message' => 'Relation supprimée.', 'friend_status' => 'not_friends']);
     exit;
 } catch (Throwable $e) {
