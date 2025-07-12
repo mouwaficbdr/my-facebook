@@ -11,14 +11,14 @@ export async function fetchUsers(query: string) {
   return data.users;
 }
 
-export async function fetchFriends(userId: number) {
+export async function fetchFriends(userId: number, page: number = 1, limit: number = 20) {
   const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
-  const res = await fetch(`${API_BASE}/api/friends/list.php?id=${userId}`, {
+  const res = await fetch(`${API_BASE}/api/friends/list.php?id=${userId}&page=${page}&limit=${limit}`, {
     credentials: 'include',
   });
   const data = await res.json();
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Erreur lors de la récupération des amis');
   }
-  return data.friends;
+  return { friends: data.friends, pagination: data.pagination };
 }
