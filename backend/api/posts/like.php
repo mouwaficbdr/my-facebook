@@ -139,11 +139,13 @@ try {
         'sad' => intval($stats['sads']),
         'angry' => intval($stats['angrys'])
     ];
-    
-    // Suppression des valeurs nulles
-    $reactions = array_filter($reactions, function($value) {
+    // On ne filtre que les types, mais on garde toujours 'total'
+    $reactions_types = $reactions;
+    unset($reactions_types['total']);
+    $reactions_types = array_filter($reactions_types, function($value) {
         return $value > 0;
     });
+    $reactions = ['total' => intval($stats['total_likes'])] + $reactions_types;
     
     http_response_code(200);
     echo json_encode([
