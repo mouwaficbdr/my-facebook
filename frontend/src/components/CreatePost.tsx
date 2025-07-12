@@ -3,6 +3,8 @@ import { Image, Smile, MapPin, Calendar, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
 interface CreatePostProps {
   onPostCreated: (post: any) => void;
 }
@@ -23,7 +25,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/posts/create.php', {
+      const response = await fetch(`${API_BASE}/api/posts/create.php`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
