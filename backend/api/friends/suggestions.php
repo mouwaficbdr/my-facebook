@@ -17,7 +17,8 @@ handle_cors();
 header('Content-Type: application/json');
 
 // Authentification JWT
-$user = authenticate_user();
+require_auth();
+$user = $GLOBALS['auth_user'];
 if (!$user) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Authentification requise.']);
@@ -65,18 +66,18 @@ try {
     
     $stmt = $pdo->prepare($query);
     $stmt->execute([
-        $user['id'], // friendship_status check
-        $user['id'], // mutual friends check 1
-        $user['id'], // mutual friends check 1 exclude
-        $user['id'], // mutual friends check 2
-        $user['id'], // mutual friends check 2 exclude
-        $user['id'], // mutual friends check 3
-        $user['id'], // mutual friends check 3 exclude
-        $user['id'], // mutual friends check 4
-        $user['id'], // mutual friends check 4 exclude
-        $user['id'], // exclude current user
-        $user['id'], // exclude existing friendships 1
-        $user['id'], // exclude existing friendships 2
+        $user['user_id'], // friendship_status check
+        $user['user_id'], // mutual friends check 1
+        $user['user_id'], // mutual friends check 1 exclude
+        $user['user_id'], // mutual friends check 2
+        $user['user_id'], // mutual friends check 2 exclude
+        $user['user_id'], // mutual friends check 3
+        $user['user_id'], // mutual friends check 3 exclude
+        $user['user_id'], // mutual friends check 4
+        $user['user_id'], // mutual friends check 4 exclude
+        $user['user_id'], // exclude current user
+        $user['user_id'], // exclude existing friendships 1
+        $user['user_id'], // exclude existing friendships 2
         $limit
     ]);
     
@@ -106,7 +107,7 @@ try {
 } catch (Throwable $e) {
     log_error('Friends suggestions error', [
         'error' => $e->getMessage(), 
-        'user_id' => $user['id']
+        'user_id' => $user['user_id']
     ]);
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erreur lors du chargement des suggestions.']);
