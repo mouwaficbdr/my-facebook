@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useToast } from '../hooks/useToast';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
 type FriendStatus =
   | 'self'
   | 'not_friends'
@@ -29,16 +31,16 @@ export default function FriendActionButton({
     let url = '';
     switch (action) {
       case 'request':
-        url = '/api/friends/request.php';
+        url = `${API_BASE}/api/friends/request.php`;
         break;
       case 'accept':
-        url = '/api/friends/accept.php';
+        url = `${API_BASE}/api/friends/accept.php`;
         break;
       case 'refuse':
-        url = '/api/friends/refuse.php';
+        url = `${API_BASE}/api/friends/refuse.php`;
         break;
       case 'remove':
-        url = '/api/friends/remove.php';
+        url = `${API_BASE}/api/friends/remove.php`;
         break;
     }
     try {

@@ -3,6 +3,8 @@ import { X, Search, Send, Users } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
 import { useAuth } from '../context/AuthContext';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
 interface Friend {
   id: number;
   prenom: string;
@@ -47,7 +49,7 @@ export default function ShareModal({ isOpen, onClose, post }: ShareModalProps) {
     if (!searchQuery.trim()) {
       setFilteredFriends(friends);
     } else {
-      const filtered = friends.filter(friend =>
+      const filtered = friends.filter((friend) =>
         `${friend.prenom} ${friend.nom}`
           .toLowerCase()
           .includes(searchQuery.toLowerCase())
@@ -61,14 +63,17 @@ export default function ShareModal({ isOpen, onClose, post }: ShareModalProps) {
       error('Utilisateur non connecté');
       return;
     }
-    
+
     setLoading(true);
     try {
-      const response = await fetch(`/api/friends/list.php?id=${user.id}`, {
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${API_BASE}/api/friends/list.php?id=${user.id}`,
+        {
+          credentials: 'include',
+        }
+      );
       const data = await response.json();
-      
+
       if (data.success) {
         setFriends(data.friends || []);
         setFilteredFriends(data.friends || []);
@@ -76,7 +81,7 @@ export default function ShareModal({ isOpen, onClose, post }: ShareModalProps) {
         throw new Error(data.message || 'Erreur lors du chargement des amis');
       }
     } catch (err) {
-      error('Impossible de charger la liste d\'amis');
+      error("Impossible de charger la liste d'amis");
       console.error('Erreur chargement amis:', err);
     } finally {
       setLoading(false);
@@ -87,18 +92,18 @@ export default function ShareModal({ isOpen, onClose, post }: ShareModalProps) {
     setSharing(friendId);
     try {
       // Appel API réel pour partager le post
-      const response = await fetch('/api/posts/share.php', {
+      const response = await fetch(`${API_BASE}/api/posts/share.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           post_id: post.id,
-          friend_id: friendId
-        })
+          friend_id: friendId,
+        }),
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         success(`Post partagé avec ${friendName} !`);
         onClose();
@@ -117,11 +122,11 @@ export default function ShareModal({ isOpen, onClose, post }: ShareModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Overlay */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-      
+
       {/* Modal */}
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[80vh] flex flex-col animate-fade-in-up">
         {/* Header */}
@@ -223,7 +228,9 @@ export default function ShareModal({ isOpen, onClose, post }: ShareModalProps) {
                     </div>
                   </div>
                   <button
-                    onClick={() => handleShare(friend.id, `${friend.prenom} ${friend.nom}`)}
+                    onClick={() =>
+                      handleShare(friend.id, `${friend.prenom} ${friend.nom}`)
+                    }
                     disabled={sharing === friend.id}
                     className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all ${
                       sharing === friend.id
@@ -258,4 +265,4 @@ export default function ShareModal({ isOpen, onClose, post }: ShareModalProps) {
       </div>
     </div>
   );
-} 
+}
