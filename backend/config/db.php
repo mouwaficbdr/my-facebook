@@ -45,4 +45,8 @@ function getPDO(): PDO {
     return new PDO($dsn, $user, $pass, $options);
 }
 
+function get_db_connection(): PDO {
+    return getPDO();
+}
+
 
