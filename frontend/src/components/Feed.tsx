@@ -82,6 +82,18 @@ export default function Feed() {
     // TODO: Implémenter l'ajout de commentaires (API/backend)
   };
 
+  const handleDeletePost = (postId: number) => {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+    success('Post supprimé.');
+  };
+  const handleSavePost = (_postId: number, isSaved: boolean) => {
+    if (isSaved) {
+      success('Post enregistré');
+    } else {
+      success('Post retiré des enregistrements');
+    }
+  };
+
   return (
     <div className="flex-1 max-w-full md:max-w-2xl xl:max-w-3xl mx-auto h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent px-0 sm:px-2">
       <div className="p-4">
@@ -147,6 +159,8 @@ export default function Feed() {
                 post={post}
                 onLike={handleLike}
                 onComment={handleComment}
+                onDelete={handleDeletePost}
+                onSave={handleSavePost}
               />
             ))}
             {hasMore && (
