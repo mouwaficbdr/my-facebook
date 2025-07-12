@@ -5,6 +5,9 @@ import {
   Share,
   MoreHorizontal,
   Send,
+  Bookmark,
+  BookmarkX,
+  Trash2,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
@@ -35,6 +38,7 @@ interface Post {
   comments_count: number;
   user_liked: boolean;
   user_like_type?: string;
+  user_saved?: boolean;
   comments: Comment[];
 }
 
@@ -42,18 +46,65 @@ interface PostCardProps {
   post: Post;
   onLike: (postId: number, action: 'like' | 'unlike', type?: string) => void;
   onComment: (postId: number, content: string) => void;
+  onDelete?: (postId: number) => void;
+  onSave?: (postId: number, isSaved: boolean) => void;
 }
 
-export default function PostCard({ post, onLike, onComment }: PostCardProps) {
+export default function PostCard({
+  post,
+  onLike,
+  onComment,
+  onDelete,
+  onSave,
+}: PostCardProps) {
   const { user } = useAuth();
   const { success, error } = useToast();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [isSaved, setIsSaved] = useState(post.user_saved || false);
+  const [isLiked, setIsLiked] = useState(post.user_liked || false);
+  const [likeAnimation, setLikeAnimation] = useState(false);
+  const [likesCount, setLikesCount] = useState(post.likes_count);
+  const menuRef = React.useRef<HTMLDivElement>(null);
+
+  // Fermer le menu au clic extérieur
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    }
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
 
   const handleLike = () => {
-    const action = post.user_liked ? 'unlike' : 'like';
+    // Déclencher l'animation
+    setLikeAnimation(true);
+
+    // Mettre à jour l'état local immédiatement pour une réponse instantanée
+    const newLikedState = !isLiked;
+    setIsLiked(newLikedState);
+
+    // Mettre à jour le compteur local
+    setLikesCount((prev) => (newLikedState ? prev + 1 : prev - 1));
+
+    // Appeler le callback parent
+    const action = isLiked ? 'unlike' : 'like';
     onLike(post.id, action);
+
+    // Arrêter l'animation après 300ms
+    setTimeout(() => {
+      setLikeAnimation(false);
+    }, 300);
   };
 
   const handleComment = async (e: React.FormEvent) => {
@@ -68,6 +119,47 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
       error(err?.message || "Erreur lors de l'ajout du commentaire");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Handler suppression
+  const handleDelete = async () => {
+    if (!window.confirm('Supprimer ce post ? Cette action est définitive.'))
+      return;
+    try {
+      const res = await fetch('/api/posts/delete.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ post_id: post.id }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      success(data.message || 'Post supprimé.');
+      onDelete?.(post.id);
+    } catch (err: any) {
+      error(err.message || 'Erreur lors de la suppression.');
+    }
+  };
+  // Handler sauvegarde
+  const handleSave = async () => {
+    try {
+      const res = await fetch('/api/posts/save.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ post_id: post.id }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+
+      // Mettre à jour l'état local
+      setIsSaved(!isSaved);
+
+      // Appeler le callback parent (qui gère les toasts)
+      onSave?.(post.id, !isSaved);
+    } catch (err: any) {
+      error(err.message || "Erreur lors de l'enregistrement.");
     }
   };
 
@@ -97,16 +189,58 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
                   {post.created_at_formatted}
                 </p>
               </div>
-              <button className="h-8 w-8 p-0 ml-2 flex-shrink-0 rounded-full hover:bg-gray-100 flex items-center justify-center">
-                <MoreHorizontal className="h-4 w-4 text-gray-500" />
-              </button>
+              <div className="relative ml-2 flex-shrink-0">
+                <button
+                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 flex items-center justify-center"
+                  onClick={() => setShowMenu((v) => !v)}
+                  aria-label="Options du post"
+                >
+                  <MoreHorizontal className="h-4 w-4 text-gray-500" />
+                </button>
+                {showMenu && (
+                  <div
+                    ref={menuRef}
+                    className="absolute right-0 top-10 z-30 min-w-[180px] bg-white rounded-xl shadow-lg border border-gray-100 py-2 flex flex-col animate-fade-in"
+                  >
+                    {user?.id === post.user_id && (
+                      <button
+                        className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors text-sm font-medium w-full text-left"
+                        onClick={() => {
+                          setShowMenu(false);
+                          handleDelete();
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" /> Supprimer le post
+                      </button>
+                    )}
+                    <button
+                      className={`flex items-center gap-2 px-4 py-2 transition-colors text-sm font-medium w-full text-left ${
+                        isSaved
+                          ? 'text-orange-600 hover:bg-orange-50'
+                          : 'text-blue-700 hover:bg-blue-50'
+                      }`}
+                      onClick={() => {
+                        setShowMenu(false);
+                        handleSave();
+                      }}
+                    >
+                      {isSaved ? (
+                        <BookmarkX className="w-4 h-4" />
+                      ) : (
+                        <Bookmark className="w-4 h-4" />
+                      )}
+                      {isSaved ? 'Retirer' : 'Enregistrer'}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
       {/* Post Content */}
       <div className="px-4 pb-3">
-        <p className="text-gray-900 text-[15px] leading-relaxed whitespace-pre-wrap">
+        <p className="text-gray-900 text-[16px] leading-relaxed whitespace-pre-wrap">
           {post.contenu}
         </p>
       </div>
@@ -121,14 +255,14 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
         </div>
       )}
       {/* Engagement Stats */}
-      <div className="px-4 py-3">
+      <div className="px-4 py-3 border-t border-gray-100">
         <div className="flex items-center justify-between text-[13px] text-gray-500">
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-1.5">
               <div className="w-[18px] h-[18px] bg-red-500 rounded-full flex items-center justify-center">
                 <Heart className="w-[10px] h-[10px] text-white fill-current" />
               </div>
-              <span className="font-medium">{post.likes_count}</span>
+              <span className="font-medium">{likesCount}</span>
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -145,20 +279,22 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
         </div>
       </div>
       {/* Action Buttons */}
-      <div className="px-4 py-1">
+      <div className="px-4 py-1 border-t border-gray-100">
         <div className="flex items-center">
           <button
             onClick={handleLike}
-            className={`flex items-center justify-center space-x-2 flex-1 h-10 rounded-lg transition-colors
-              ${post.user_liked ? 'text-blue-600' : 'text-gray-600'}
-              hover:bg-red-100 hover:text-red-600`}
+            className={`flex items-center justify-center space-x-2 flex-1 h-10 rounded-lg transition-all duration-200
+              ${isLiked ? 'text-red-500' : 'text-gray-600'}
+              hover:bg-red-50 hover:text-red-500`}
           >
             <Heart
-              className={`h-[18px] w-[18px] ${
-                post.user_liked ? 'fill-current' : ''
-              }`}
+              className={`h-[18px] w-[18px] transition-all duration-200 ${
+                isLiked ? 'fill-current text-red-500' : ''
+              } ${likeAnimation ? 'scale-125' : ''}`}
             />
-            <span className="font-medium text-[15px]">J'aime</span>
+            <span className="font-medium text-[15px]">
+              {isLiked ? "J'aime" : "J'aime"}
+            </span>
           </button>
           <button
             onClick={() => setShowComments(!showComments)}
