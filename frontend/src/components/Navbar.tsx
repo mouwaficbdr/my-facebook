@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import UserSearchBar from './UserSearchBar';
 import { useState } from 'react';
 import Avatar from './Avatar';
+import { getMediaUrl } from '../utils/cdn';
 
 interface NavbarProps {
   onMenuClick: () => void;
@@ -15,6 +16,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
+
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-full px-2 sm:px-4 md:px-6 mx-auto">
@@ -101,9 +103,10 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
             <div className="flex items-center space-x-4 md:space-x-3 w-full">
               {/* TODO: Connecter l'avatar utilisateur au menu profil/utilisateur */}
               <Avatar
+                userId={user?.id}
                 prenom={user?.prenom || ''}
                 nom={user?.nom || ''}
-                photo={user?.photo_profil}
+                photo={getMediaUrl(user?.photo_profil)}
                 size={40}
                 className="h-9 w-9 sm:h-12 sm:w-12 md:h-10 md:w-10 ring-2 ring-blue-500 ring-offset-2"
               />
