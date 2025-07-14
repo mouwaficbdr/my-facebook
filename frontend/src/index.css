@@ -371,3 +371,29 @@ button,
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Scrollbar globale façon Facebook */
+::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #e4e6eb;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #cfd2d6;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #e4e6eb transparent;
+}
+
+body {
+  overscroll-behavior-y: none;
+}
