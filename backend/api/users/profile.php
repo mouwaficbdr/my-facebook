@@ -35,7 +35,7 @@ try {
     $pdo = getPDO();
 
     // 1. Infos publiques utilisateur
-    $userQuery = "SELECT id, nom, prenom, bio, photo_profil, ville, pays, date_naissance FROM users WHERE id = ? AND is_active = 1 AND email_confirmed = 1 LIMIT 1";
+    $userQuery = "SELECT id, nom, prenom, bio, photo_profil, cover_url, ville, pays, date_naissance FROM users WHERE id = ? AND is_active = 1 AND email_confirmed = 1 LIMIT 1";
     $userStmt = $pdo->prepare($userQuery);
     $userStmt->execute([$userId]);
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);
