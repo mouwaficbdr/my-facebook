@@ -19,6 +19,8 @@ import {
 } from '../api/comments';
 import CommentItem from './CommentItem';
 import ShareModal from './ShareModal';
+import Avatar from './Avatar';
+import { useNavigate } from 'react-router-dom';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -96,6 +98,7 @@ export default function PostCard({
   const menuRef = React.useRef<HTMLDivElement>(null);
   const commentsContainerRef = React.useRef<HTMLDivElement>(null);
   const [likeLoading, setLikeLoading] = useState(false);
+  const navigate = useNavigate();
 
   // Synchroniser l'état local avec les props post.user_liked et post.likes_count
   React.useEffect(() => {
@@ -304,21 +307,38 @@ export default function PostCard({
       {/* Post Header */}
       <div className="p-4 pb-3">
         <div className="flex items-start space-x-3">
-          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
-            {post.photo_profil ? (
-              <img
-                src={post.photo_profil}
-                alt={`${post.prenom} ${post.nom}`}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            ) : (
-              `${post.prenom.charAt(0)}${post.nom.charAt(0)}`
-            )}
+          <div
+            className="cursor-pointer group"
+            onClick={() => {
+              if (user?.id === post.user_id) {
+                navigate('/me');
+              } else {
+                navigate(`/profile/${post.user_id}`);
+              }
+            }}
+          >
+            <Avatar
+              userId={post.user_id}
+              prenom={post.prenom}
+              nom={post.nom}
+              photo={post.photo_profil}
+              size={40}
+              className="w-10 h-10 group-hover:ring-2 group-hover:ring-blue-500 transition"
+            />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between">
               <div className="min-w-0 flex-1">
-                <p className="text-[15px] font-semibold text-gray-900 truncate">
+                <p
+                  className="text-[15px] font-semibold text-gray-900 truncate cursor-pointer group hover:underline"
+                  onClick={() => {
+                    if (user?.id === post.user_id) {
+                      navigate('/me');
+                    } else {
+                      navigate(`/profile/${post.user_id}`);
+                    }
+                  }}
+                >
                   {post.prenom} {post.nom}
                 </p>
                 <p className="text-[13px] text-gray-500 mt-0.5">
@@ -456,10 +476,14 @@ export default function PostCard({
             onSubmit={handleAddComment}
             className="flex space-x-3 mt-2 px-4 pb-2"
           >
-            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-              {user?.prenom?.[0]}
-              {user?.nom?.[0]}
-            </div>
+            <Avatar
+              userId={user?.id}
+              prenom={user?.prenom || ''}
+              nom={user?.nom || ''}
+              photo={user?.photo_profil}
+              size={32}
+              className="h-8 w-8"
+            />
             <div className="flex-1 flex items-center space-x-2">
               <input
                 type="text"
@@ -522,10 +546,14 @@ export default function PostCard({
             )}
             {/* Champ d'ajout de commentaire dans le panneau */}
             <form onSubmit={handleAddComment} className="flex space-x-3 mt-2">
-              <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-                {user?.prenom?.[0]}
-                {user?.nom?.[0]}
-              </div>
+              <Avatar
+                userId={user?.id}
+                prenom={user?.prenom || ''}
+                nom={user?.nom || ''}
+                photo={user?.photo_profil}
+                size={32}
+                className="h-8 w-8"
+              />
               <div className="flex-1 flex items-center space-x-2">
                 <input
                   type="text"
