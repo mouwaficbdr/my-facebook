@@ -11,22 +11,19 @@ export default function Home() {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <button
-        onClick={logout}
-        className="fixed top-4 right-4 z-50 px-4 py-2 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 transition-colors"
-      >
-        Déconnexion
-      </button>
       <Navbar onMenuClick={() => setSidebarOpen(true)} />
       <div className="flex flex-1 overflow-hidden">
-        <LeftSidebar
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-        />
-        <main className="flex-1 lg:ml-0 overflow-hidden">
+        <div className="h-full w-0 lg:w-80 flex-shrink-0 overflow-y-auto hidden lg:block">
+          <LeftSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        </div>
+        <main className="flex-1 h-full overflow-y-auto">
           <div className="flex h-full">
-            <Feed />
-            <RightSidebar />
+            <div className="flex-1 h-full overflow-y-auto">
+              <Feed />
+            </div>
+            <div className="h-full w-0 xl:w-80 flex-shrink-0 overflow-y-auto hidden xl:block">
+              <RightSidebar />
+            </div>
           </div>
         </main>
       </div>
