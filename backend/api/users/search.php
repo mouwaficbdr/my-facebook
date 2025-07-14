@@ -20,7 +20,7 @@ if ($q === '' || strlen($q) < 2) {
 try {
     $pdo = getPDO();
     // Recherche sur nom, prénom, email (LIKE sécurisé)
-    $sql = "SELECT id, nom, prenom, photo_profil FROM users WHERE email_confirmed = 1 AND (nom LIKE :q1 OR prenom LIKE :q2 OR email LIKE :q3) LIMIT 10";
+    $sql = "SELECT id, nom, prenom, photo_profil FROM users WHERE email_confirmed = 1 AND is_active = 1 AND (nom LIKE :q1 OR prenom LIKE :q2 OR email LIKE :q3) LIMIT 10";
     $like = '%' . $q . '%';
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':q1', $like, PDO::PARAM_STR);
