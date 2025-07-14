@@ -48,6 +48,9 @@ backend/*.pem
 backend/__debug__-*.log
 backend/test-*.tmp
 
+# Exclure les fichiers uploadés utilisateur
+backend/uploads/
+
 # Node modules à la racine (si jamais)
 node_modules/
 dist/
