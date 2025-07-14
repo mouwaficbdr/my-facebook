@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext';
 import { User, Users, Users2, Play, Bookmark, ChevronDown } from 'lucide-react';
 import Avatar from './Avatar';
+import { useNavigate } from 'react-router-dom';
 
 const iconComponents = {
   User,
@@ -25,6 +26,7 @@ interface LeftSidebarProps {
 export default function LeftSidebar({ isOpen, onClose }: LeftSidebarProps) {
   const { user } = useAuth();
   const { logout } = useAuth();
+  const navigate = useNavigate();
   return (
     <>
       {/* Mobile overlay */}
@@ -45,9 +47,12 @@ export default function LeftSidebar({ isOpen, onClose }: LeftSidebarProps) {
         <div className="flex flex-col h-full pt-4 pb-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
           <div className="px-4 space-y-3">
             {/* User Profile Section */}
-            {/* TODO: Connecter le clic sur le profil à la page profil réelle */}
-            <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors mx-3">
+            <div
+              className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors mx-3"
+              onClick={() => navigate('/me')}
+            >
               <Avatar
+                userId={user?.id}
                 prenom={user?.prenom || ''}
                 nom={user?.nom || ''}
                 photo={user?.photo_profil}

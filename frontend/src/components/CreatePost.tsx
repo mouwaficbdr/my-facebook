@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Image, Smile, MapPin, Calendar, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
+import Avatar from './Avatar';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -83,10 +84,14 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
     <div className="bg-white rounded-2xl shadow-sm mb-6 border-0">
       <form onSubmit={handleSubmit} className="p-4">
         <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
-            {user?.prenom?.[0]}
-            {user?.nom?.[0]}
-          </div>
+          <Avatar
+            userId={user?.id}
+            prenom={user?.prenom || ''}
+            nom={user?.nom || ''}
+            photo={user?.photo_profil}
+            size={40}
+            className="h-10 w-10"
+          />
           <div className="flex-1">
             <textarea
               ref={textareaRef}

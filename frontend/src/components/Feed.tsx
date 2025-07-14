@@ -77,14 +77,16 @@ export default function Feed() {
     }
   };
 
-  const handleComment = async (postId: number, _content: string, commentsCount?: number) => {
+  const handleComment = async (
+    postId: number,
+    _content: string,
+    commentsCount?: number
+  ) => {
     // Mettre à jour le compteur de commentaires si fourni
     if (commentsCount !== undefined) {
       setPosts((prev) =>
         prev.map((post) =>
-          post.id === postId
-            ? { ...post, comments_count: commentsCount }
-            : post
+          post.id === postId ? { ...post, comments_count: commentsCount } : post
         )
       );
     }
@@ -103,7 +105,7 @@ export default function Feed() {
   };
 
   return (
-    <div className="flex-1 max-w-full md:max-w-2xl xl:max-w-3xl mx-auto h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent px-0 sm:px-2">
+    <div className="flex-1 max-w-full md:max-w-2xl xl:max-w-3xl mx-auto px-0 sm:px-2">
       <div className="p-4">
         <Stories />
         <CreatePost onPostCreated={handlePostCreated} />
