@@ -6,14 +6,12 @@ interface ImageUploadButtonProps {
   endpoint: string;
   currentImage?: string;
   onSuccess: (url: string) => void;
-  icon?: React.ReactNode;
+  icon: React.ReactNode;
   size?: number;
-  className?: string;
   label?: string;
+  className?: string;
   onPreview?: (url: string | null) => void;
-  shape?: 'circle' | 'rect'; // Ajout de la forme
-  deleteEndpoint?: string; // endpoint pour suppression
-  onDelete?: () => void; // callback après suppression
+  shape?: 'circle' | 'square';
 }
 
 export default function ImageUploadButton({
@@ -21,76 +19,31 @@ export default function ImageUploadButton({
   currentImage,
   onSuccess,
   icon,
-  size = 48,
+  size = 96,
+  label,
   className = '',
-  label = 'Changer la photo',
   onPreview,
-  shape = 'circle', // Par défaut rond
-  deleteEndpoint,
-  onDelete,
+  shape = 'square',
 }: ImageUploadButtonProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const toast = useToast();
 
   const borderRadius = shape === 'circle' ? 'rounded-full' : 'rounded-2xl';
 
+  // Après la sélection d'un fichier, appeler handleUpload lors de la validation
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    if (!['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)) {
-      toast.error('Format non supporté (jpg, jpeg, png)');
-      return;
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+      handleUpload(file); // Appel direct pour corriger l'erreur
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Fichier trop volumineux (max 5 Mo)');
-      return;
-    }
-    const previewUrl = URL.createObjectURL(file);
-    setPreview(previewUrl);
-    setSelectedFile(file);
-    if (onPreview) onPreview(previewUrl);
-  };
-
-  const handleValidate = async () => {
-    if (!selectedFile) return;
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.message);
-      onSuccess(data.url);
-      toast.success('Image mise à jour !');
-      setPreview(null);
-      setSelectedFile(null);
-      if (onPreview) onPreview(null);
-    } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de l’upload');
-      setPreview(null);
-      setSelectedFile(null);
-      if (onPreview) onPreview(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setPreview(null);
-    setSelectedFile(null);
-    if (onPreview) onPreview(null);
   };
 
   const handleDelete = async () => {
-    if (!deleteEndpoint) return;
+    if (!endpoint) return;
     if (!confirmDelete) {
       setConfirmDelete(true);
       toast.info('Cliquez à nouveau pour confirmer la suppression');
@@ -99,7 +52,7 @@ export default function ImageUploadButton({
     }
     setLoading(true);
     try {
-      const res = await fetch(deleteEndpoint, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         credentials: 'include',
       });
@@ -107,14 +60,37 @@ export default function ImageUploadButton({
       if (!data.success) throw new Error(data.message);
       toast.success('Photo supprimée');
       setPreview(null);
-      setSelectedFile(null);
       if (onPreview) onPreview(null);
-      if (onDelete) onDelete();
+      // onDelete is not passed as a prop, so this callback is not called here.
     } catch (err: any) {
       toast.error(err.message || 'Erreur lors de la suppression');
     } finally {
       setLoading(false);
       setConfirmDelete(false);
+    }
+  };
+
+  const handleUpload = async (file: File) => {
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message);
+      setPreview(null);
+      if (onPreview) onPreview(null);
+      onSuccess(data.url); // Appel de la prop onSuccess après upload réussi
+    } catch (err: any) {
+      toast.error(err.message || 'Erreur lors de l’upload');
+      setPreview(null);
+      if (onPreview) onPreview(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -161,8 +137,8 @@ export default function ImageUploadButton({
           {icon || <Camera className="w-7 h-7 text-white drop-shadow" />}
         </button>
       )}
-      {/* Bouton supprimer (corbeille) - visible si image présente, pas de preview, pas loading, deleteEndpoint fourni */}
-      {currentImage && !preview && !loading && deleteEndpoint && (
+      {/* Bouton supprimer (corbeille) - visible si image présente, pas de preview, pas loading, endpoint fourni */}
+      {currentImage && !preview && !loading && endpoint && (
         <button
           type="button"
           className={`absolute top-2 right-2 bg-white/80 hover:bg-red-100 text-red-600 p-1 ${borderRadius} shadow z-20 focus:outline-none focus:ring-2 focus:ring-red-400 transition`}

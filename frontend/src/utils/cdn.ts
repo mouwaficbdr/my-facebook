@@ -1,5 +1,4 @@
 // Utilitaire pour générer l’URL absolue d’un média stocké côté backend
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 export function getMediaUrl(path?: string | null): string {
   if (!path) return '/default-avatar.png';

@@ -5,7 +5,6 @@ import {
   Users,
   FileText,
   Camera,
-  Image as ImageIcon,
   BookOpen,
   Award,
   Pencil,
@@ -16,7 +15,6 @@ import {
   Globe,
 } from 'lucide-react';
 import Loading from '../components/Loading';
-import ModernToast from '../components/ModernToast';
 import { useToast } from '../hooks/useToast';
 import Navbar from '../components/Navbar';
 import Avatar from '../components/Avatar';
@@ -152,7 +150,6 @@ export default function MyProfilePage() {
 
   // State pour le chargement des images
   const [profileImageLoading, setProfileImageLoading] = useState(false);
-  const [coverImageLoading, setCoverImageLoading] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -283,7 +280,20 @@ export default function MyProfilePage() {
   const handleSave = async (field: keyof typeof editMode) => {
     try {
       const payload: any = {};
-      payload[field] = editValues[field];
+      const allowedFields = [
+        'bio',
+        'prenom',
+        'nom',
+        'photo_profil',
+        'ville',
+        'pays',
+        'date_naissance',
+      ];
+      allowedFields.forEach((field) => {
+        if (field in editValues) {
+          (payload as any)[field] = (editValues as any)[field];
+        }
+      });
       const res = await fetch(`${API_BASE}/api/users/me_update.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -292,9 +302,14 @@ export default function MyProfilePage() {
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
-      setProfile((prev) =>
-        prev ? { ...prev, [field]: editValues[field] } : prev
-      );
+      setProfile((prev) => {
+        if (!prev) return prev;
+        const updated: any = { ...prev };
+        if (allowedFields.includes(field)) {
+          updated[field] = (editValues as any)[field];
+        }
+        return updated;
+      });
       setEditMode({ ...editMode, [field]: false });
       toast.success('Modifié !');
     } catch (err: any) {
@@ -375,7 +390,7 @@ export default function MyProfilePage() {
   // Ajoute les handlers pour valider/annuler la cover preview
   const handleValidateCover = async () => {
     if (!coverPreview) return;
-    setCoverImageLoading(true);
+    setProfileImageLoading(true);
     try {
       const blob = await fetch(coverPreview).then((r) => r.blob());
       const file = new File([blob], 'cover.jpg', { type: blob.type });
@@ -396,7 +411,7 @@ export default function MyProfilePage() {
       toast.error(err.message || 'Erreur lors de l’upload');
       setCoverPreview(null);
     } finally {
-      setCoverImageLoading(false);
+      setProfileImageLoading(false);
     }
   };
   const handleCancelCover = () => {
@@ -425,7 +440,7 @@ export default function MyProfilePage() {
   // Handler suppression cover
   const handleDeleteCover = () => setConfirmDelete('cover');
   const confirmDeleteCover = async () => {
-    setCoverImageLoading(true);
+    setProfileImageLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/upload/cover_delete.php`, {
         method: 'POST',
@@ -438,7 +453,7 @@ export default function MyProfilePage() {
     } catch (err: any) {
       toast.error(err.message || 'Erreur lors de la suppression');
     } finally {
-      setCoverImageLoading(false);
+      setProfileImageLoading(false);
     }
   };
 
@@ -490,12 +505,13 @@ export default function MyProfilePage() {
   }, [profileMenuOpen]);
 
   if (loading) return <Loading />;
-  if (fetchError) return <ModernToast type="error" message={fetchError} />;
+  if (fetchError)
+    return <div className="text-red-500 p-4 text-center">{fetchError}</div>;
   if (!profile) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      <Navbar onMenuClick={() => {}} />
       {/* Header Cover avec design pleine largeur */}
       <div className="relative">
         {/* Cover Image ou fallback dégradé avec preview */}
@@ -886,7 +902,16 @@ export default function MyProfilePage() {
                         style={{ animationDelay: `${idx * 60}ms` }}
                       >
                         <div className="transform hover:scale-[1.02] transition-transform duration-300">
-                          <PostCard post={post} />
+                          <PostCard
+                            post={post}
+                            onLike={async () =>
+                              Promise.resolve({
+                                user_liked: false,
+                                reactions: {},
+                              })
+                            }
+                            onComment={() => {}}
+                          />
                         </div>
                       </div>
                     ))}
