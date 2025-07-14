@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import { User, Users, Users2, Play, Bookmark, ChevronDown } from 'lucide-react';
+import { User, Users, Users2, Play, Bookmark } from 'lucide-react';
 import Avatar from './Avatar';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,7 +12,6 @@ const iconComponents = {
 };
 
 const sidebarItems = [
-  { icon: 'User', label: 'Profil' },
   { icon: 'Users2', label: 'Amis' },
   { icon: 'Bookmark', label: 'Enregistrés' },
   { icon: 'Play', label: 'Vidéos' },
@@ -21,9 +20,14 @@ const sidebarItems = [
 interface LeftSidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  onSectionChange?: (section: 'feed' | 'friends') => void;
 }
 
-export default function LeftSidebar({ isOpen, onClose }: LeftSidebarProps) {
+export default function LeftSidebar({
+  isOpen,
+  onClose,
+  onSectionChange,
+}: LeftSidebarProps) {
   const { user } = useAuth();
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -48,7 +52,7 @@ export default function LeftSidebar({ isOpen, onClose }: LeftSidebarProps) {
           <div className="px-4 space-y-3">
             {/* User Profile Section */}
             <div
-              className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors mx-3"
+              className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors px-3"
               onClick={() => navigate('/me')}
             >
               <Avatar
@@ -72,7 +76,6 @@ export default function LeftSidebar({ isOpen, onClose }: LeftSidebarProps) {
                   iconComponents[item.icon as keyof typeof iconComponents];
                 // Palette d'icônes colorées
                 const iconColors = [
-                  'text-blue-600', // Profil
                   'text-green-500', // Amis
                   'text-yellow-500', // Enregistrés
                   'text-purple-500', // Vidéos
@@ -82,6 +85,12 @@ export default function LeftSidebar({ isOpen, onClose }: LeftSidebarProps) {
                   <button
                     key={index}
                     className="w-full flex items-center justify-start h-12 text-left relative hover:bg-gray-100 rounded-lg px-3"
+                    onClick={() => {
+                      if (item.label === 'Amis' && onSectionChange)
+                        onSectionChange('friends');
+                      else if (item.label === 'Publications' && onSectionChange)
+                        onSectionChange('feed');
+                    }}
                   >
                     <div className="w-9 h-9 mr-3 flex items-center justify-center flex-shrink-0">
                       {IconComponent && (
@@ -97,16 +106,6 @@ export default function LeftSidebar({ isOpen, onClose }: LeftSidebarProps) {
                 );
               })}
             </div>
-            {/* See More Button */}
-            {/* TODO: Implémenter la fonctionnalité "Voir plus" */}
-            <button className="w-full flex items-center justify-start h-12 text-left hover:bg-gray-100 rounded-lg px-3">
-              <div className="w-9 h-9 mr-3 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                <ChevronDown className="h-5 w-5 text-gray-600" />
-              </div>
-              <span className="text-[15px] font-medium text-gray-700">
-                Voir plus
-              </span>
-            </button>
             {/* Separator */}
             <div className="border-t border-gray-200 my-4"></div>
             {/* Amis en ligne Section */}
