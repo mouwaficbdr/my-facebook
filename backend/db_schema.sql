@@ -226,6 +226,7 @@ CREATE TABLE `users` (
   `reset_password_token` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `reset_token_expiry` datetime DEFAULT NULL,
   `photo_profil` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cover_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `bio` text COLLATE utf8mb4_unicode_ci,
   `ville` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `pays` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -245,6 +246,9 @@ CREATE TABLE `saved_posts` (
   CONSTRAINT `saved_posts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `saved_posts_ibfk_2` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE users
+  ADD COLUMN cover_url VARCHAR(255) NULL AFTER photo_profil;
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
