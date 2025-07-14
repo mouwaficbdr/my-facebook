@@ -83,9 +83,13 @@ CREATE TABLE `friendships` (
   UNIQUE KEY `unique_friendship` (`user_id`,`friend_id`),
   KEY `idx_user_status` (`user_id`,`status`),
   KEY `idx_friend_status` (`friend_id`,`status`),
+  KEY `idx_created_at` (`created_at`), -- Ajout index pour tri/optimisation
   CONSTRAINT `friendships_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `friendships_ibfk_2` FOREIGN KEY (`friend_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Convention :
+-- user_id = demandeur, friend_id = destinataire de la demande d'ami
+-- Pour lister les amis d'un user, prendre toutes les lignes où (user_id = X ou friend_id = X) et status = 'accepted'
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
