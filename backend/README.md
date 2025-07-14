@@ -67,4 +67,36 @@ RATE_LIMIT_WINDOW=600
 
 ---
 
+## 📸 Endpoints gestion images de profil & cover
+
+### POST `/api/upload/profile.php`
+
+- **Description** : Upload ou remplacement de la photo de profil de l’utilisateur connecté.
+- **Body** : `multipart/form-data` (clé `file`)
+- **Sécurité** : Authentification JWT obligatoire
+- **Retour** : `{ success: true, url: 'uploads/profile/...' }`
+- **Comportement** : Supprime l’ancienne image si présente avant d’enregistrer la nouvelle.
+
+### POST `/api/upload/profile_delete.php`
+
+- **Description** : Supprime la photo de profil de l’utilisateur connecté (BDD + fichier physique).
+- **Sécurité** : Authentification JWT obligatoire
+- **Retour** : `{ success: true, message: 'Photo de profil supprimée.' }`
+
+### POST `/api/upload/cover.php`
+
+- **Description** : Upload ou remplacement de la cover de l’utilisateur connecté.
+- **Body** : `multipart/form-data` (clé `file`)
+- **Sécurité** : Authentification JWT obligatoire
+- **Retour** : `{ success: true, url: 'uploads/cover/...' }`
+- **Comportement** : Supprime l’ancienne image si présente avant d’enregistrer la nouvelle.
+
+### POST `/api/upload/cover_delete.php`
+
+- **Description** : Supprime la cover de l’utilisateur connecté (BDD + fichier physique).
+- **Sécurité** : Authentification JWT obligatoire
+- **Retour** : `{ success: true, message: 'Cover supprimée.' }`
+
+---
+
 Pour toute évolution, suivre la structure et les conventions ci-dessus pour garantir la robustesse et la maintenabilité du projet.
