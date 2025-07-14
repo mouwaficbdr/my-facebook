@@ -5,7 +5,6 @@ import {
   Users,
   FileText,
   Camera,
-  Image as ImageIcon,
   BookOpen,
   Award,
   Pencil,
@@ -16,7 +15,6 @@ import {
   Globe,
 } from 'lucide-react';
 import Loading from '../components/Loading';
-import ModernToast from '../components/ModernToast';
 import { useToast } from '../hooks/useToast';
 import Navbar from '../components/Navbar';
 import Avatar from '../components/Avatar';
@@ -154,10 +152,9 @@ export default function MyProfilePage() {
 
   // State pour le chargement des images
   const [profileImageLoading, setProfileImageLoading] = useState(false);
-  const [coverImageLoading, setCoverImageLoading] = useState(false);
 
   // Ref pour déclencher l'upload de la photo de profil
-  const profileUploadRef = useReactRef<{ openFilePicker: () => void }>();
+  const profileUploadRef = useReactRef<{ openFilePicker: () => void }>(null);
 
   useEffect(() => {
     if (profile) {
@@ -287,8 +284,20 @@ export default function MyProfilePage() {
   };
   const handleSave = async (field: keyof typeof editMode) => {
     try {
-      const payload: any = {};
-      payload[field] = editValues[field];
+      let payload: any = {};
+      if (field === 'name') {
+        payload = { prenom: editValues.prenom, nom: editValues.nom };
+      } else if (
+        field === 'bio' ||
+        field === 'ville' ||
+        field === 'pays' ||
+        field === 'date_naissance'
+      ) {
+        payload[field] = editValues[field];
+      } else {
+        // Champ non géré explicitement, on ne fait rien
+        return;
+      }
       const res = await fetch(`${API_BASE}/api/users/me_update.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -297,9 +306,20 @@ export default function MyProfilePage() {
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
-      setProfile((prev) =>
-        prev ? { ...prev, [field]: editValues[field] } : prev
-      );
+      setProfile((prev) => {
+        if (!prev) return prev;
+        if (field === 'name') {
+          return { ...prev, prenom: editValues.prenom, nom: editValues.nom };
+        } else if (
+          field === 'bio' ||
+          field === 'ville' ||
+          field === 'pays' ||
+          field === 'date_naissance'
+        ) {
+          return { ...prev, [field]: editValues[field] };
+        }
+        return prev;
+      });
       setEditMode({ ...editMode, [field]: false });
       toast.success('Modifié !');
     } catch (err: any) {
@@ -380,7 +400,7 @@ export default function MyProfilePage() {
   // Ajoute les handlers pour valider/annuler la cover preview
   const handleValidateCover = async () => {
     if (!coverPreview) return;
-    setCoverImageLoading(true);
+    setProfileImageLoading(true);
     try {
       const blob = await fetch(coverPreview).then((r) => r.blob());
       const file = new File([blob], 'cover.jpg', { type: blob.type });
@@ -401,7 +421,7 @@ export default function MyProfilePage() {
       toast.error(err.message || 'Erreur lors de l’upload');
       setCoverPreview(null);
     } finally {
-      setCoverImageLoading(false);
+      setProfileImageLoading(false);
     }
   };
   const handleCancelCover = () => {
@@ -430,7 +450,7 @@ export default function MyProfilePage() {
   // Handler suppression cover
   const handleDeleteCover = () => setConfirmDelete('cover');
   const confirmDeleteCover = async () => {
-    setCoverImageLoading(true);
+    setProfileImageLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/upload/cover_delete.php`, {
         method: 'POST',
@@ -443,7 +463,7 @@ export default function MyProfilePage() {
     } catch (err: any) {
       toast.error(err.message || 'Erreur lors de la suppression');
     } finally {
-      setCoverImageLoading(false);
+      setProfileImageLoading(false);
     }
   };
 
@@ -495,12 +515,23 @@ export default function MyProfilePage() {
   }, [profileMenuOpen]);
 
   if (loading) return <Loading />;
-  if (fetchError) return <ModernToast type="error" message={fetchError} />;
+  if (fetchError)
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center max-w-md mx-auto">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl text-red-500">!</span>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Erreur</h3>
+          <p className="text-gray-500">{fetchError}</p>
+        </div>
+      </div>
+    );
   if (!profile) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      <Navbar onMenuClick={() => {}} />
       {/* Header Cover avec design pleine largeur */}
       <div className="relative">
         {/* Cover Image ou fallback dégradé avec preview */}
@@ -901,7 +932,17 @@ export default function MyProfilePage() {
                         style={{ animationDelay: `${idx * 60}ms` }}
                       >
                         <div className="transform hover:scale-[1.02] transition-transform duration-300">
-                          <PostCard post={post} />
+                          <PostCard
+                            post={post}
+                            onLike={() =>
+                              Promise.resolve({
+                                user_liked: false,
+                                user_like_type: undefined,
+                                reactions: {},
+                              })
+                            }
+                            onComment={() => {}}
+                          />
                         </div>
                       </div>
                     ))}

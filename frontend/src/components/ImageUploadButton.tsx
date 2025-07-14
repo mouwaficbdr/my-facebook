@@ -18,9 +18,7 @@ interface ImageUploadButtonProps {
 
 const ImageUploadButton = forwardRef(function ImageUploadButton(
   {
-    endpoint,
     currentImage,
-    onSuccess,
     icon,
     size = 48,
     className = '',
@@ -34,7 +32,6 @@ const ImageUploadButton = forwardRef(function ImageUploadButton(
 ) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const toast = useToast();
@@ -58,42 +55,7 @@ const ImageUploadButton = forwardRef(function ImageUploadButton(
     }
     const previewUrl = URL.createObjectURL(file);
     setPreview(previewUrl);
-    setSelectedFile(file);
     if (onPreview) onPreview(previewUrl);
-  };
-
-  const handleValidate = async () => {
-    if (!selectedFile) return;
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.message);
-      onSuccess(data.url);
-      toast.success('Image mise à jour !');
-      setPreview(null);
-      setSelectedFile(null);
-      if (onPreview) onPreview(null);
-    } catch (err: any) {
-      toast.error(err.message || 'Erreur lors de l’upload');
-      setPreview(null);
-      setSelectedFile(null);
-      if (onPreview) onPreview(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setPreview(null);
-    setSelectedFile(null);
-    if (onPreview) onPreview(null);
   };
 
   const handleDelete = async () => {
@@ -114,7 +76,6 @@ const ImageUploadButton = forwardRef(function ImageUploadButton(
       if (!data.success) throw new Error(data.message);
       toast.success('Photo supprimée');
       setPreview(null);
-      setSelectedFile(null);
       if (onPreview) onPreview(null);
       if (onDelete) onDelete();
     } catch (err: any) {
