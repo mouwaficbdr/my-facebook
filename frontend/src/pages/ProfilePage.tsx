@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import {
   MapPin,
   Calendar,
@@ -11,18 +11,18 @@ import {
   Image as ImageIcon,
   BookOpen,
   Award,
-} from "lucide-react";
-import Loading from "../components/Loading";
-import ModernToast from "../components/ModernToast";
-import { useToast } from "../hooks/useToast";
-import Navbar from "../components/Navbar";
-import Avatar from "../components/Avatar";
-import ActionButton from "../components/ActionButton";
-import PostCard from "../components/PostCard";
-import { fetchFriends } from "../api/users";
+} from 'lucide-react';
+import Loading from '../components/Loading';
+import ModernToast from '../components/ModernToast';
+import { useToast } from '../hooks/useToast';
+import Navbar from '../components/Navbar';
+import Avatar from '../components/Avatar';
+import ActionButton from '../components/ActionButton';
+import PostCard from '../components/PostCard';
+import { fetchFriends } from '../api/users';
 import { toggleLike } from '../api/feed';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 interface UserProfile {
   id: number;
@@ -38,17 +38,17 @@ interface UserProfile {
 }
 
 type FriendStatus =
-  | "self"
-  | "not_friends"
-  | "request_sent"
-  | "request_received"
-  | "friends";
+  | 'self'
+  | 'not_friends'
+  | 'request_sent'
+  | 'request_received'
+  | 'friends';
 
 interface Post {
   id: number;
   contenu: string;
   image_url?: string;
-  type: "text" | "image" | "video";
+  type: 'text' | 'image' | 'video';
   created_at_formatted: string;
   user_id: number;
   nom: string;
@@ -83,7 +83,7 @@ interface Friend {
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [friendStatus, setFriendStatus] = useState<FriendStatus>("not_friends");
+  const [friendStatus, setFriendStatus] = useState<FriendStatus>('not_friends');
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -99,8 +99,8 @@ export default function ProfilePage() {
   const [postsCount, setPostsCount] = useState<number>(0);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [activeTab, setActiveTab] = useState<
-    "posts" | "about" | "friends" | "photos"
-  >("posts");
+    'posts' | 'about' | 'friends' | 'photos'
+  >('posts');
   const toast = useToast();
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
@@ -125,7 +125,7 @@ export default function ProfilePage() {
       `${API_BASE}/api/users/profile.php?id=${id}&page=${
         pagination.current_page + 1
       }&limit=10`,
-      { credentials: "include" },
+      { credentials: 'include' }
     )
       .then(async (res) => {
         const data = await res.json();
@@ -134,8 +134,8 @@ export default function ProfilePage() {
         setPagination(data.data.pagination);
       })
       .catch((err) => {
-        setFetchError(err.message || "Erreur lors du chargement des posts.");
-        toast.error(err.message || "Erreur lors du chargement des posts.");
+        setFetchError(err.message || 'Erreur lors du chargement des posts.');
+        toast.error(err.message || 'Erreur lors du chargement des posts.');
       })
       .finally(() => setIsFetchingMore(false));
   }, [id, pagination, isFetchingMore, toast]);
@@ -149,7 +149,7 @@ export default function ProfilePage() {
           fetchMorePosts();
         }
       },
-      { threshold: 1 },
+      { threshold: 1 }
     );
     observer.observe(loaderRef.current);
     return () => observer.disconnect();
@@ -160,7 +160,7 @@ export default function ProfilePage() {
     setLoading(true);
     setFetchError(null);
     fetch(`${API_BASE}/api/users/profile.php?id=${id}&page=1&limit=10`, {
-      credentials: "include",
+      credentials: 'include',
     })
       .then(async (res) => {
         const data = await res.json();
@@ -172,18 +172,27 @@ export default function ProfilePage() {
         setMutualFriendsCount(data.data.mutual_friends_count || 0);
         setPostsCount(data.data.posts_count || 0);
       })
-      .catch((err) => {
-        setFetchError(err.message || "Erreur lors du chargement du profil.");
-        toast.error(err.message || "Erreur lors du chargement du profil.");
+      .catch((err: unknown) => {
+        setFetchError(
+          getErrorMessage(err) || 'Erreur lors du chargement du profil.'
+        );
+        toast.error(
+          getErrorMessage(err) || 'Erreur lors du chargement du profil.'
+        );
       })
       .finally(() => setLoading(false));
   }, [id]);
 
   // Fonction pour charger plus d'amis au scroll
   const fetchMoreFriends = useCallback(() => {
-    if (!profile || !friendsPagination.has_next || isFetchingMoreFriends) return;
+    if (!profile || !friendsPagination.has_next || isFetchingMoreFriends)
+      return;
     setIsFetchingMoreFriends(true);
-    fetchFriends(profile.id, friendsPagination.current_page + 1, friendsPagination.per_page)
+    fetchFriends(
+      profile.id,
+      friendsPagination.current_page + 1,
+      friendsPagination.per_page
+    )
       .then(({ friends, pagination }) => {
         setFriends((prev) => [...prev, ...friends]);
         setFriendsPagination(pagination);
@@ -204,7 +213,7 @@ export default function ProfilePage() {
           fetchMoreFriends();
         }
       },
-      { threshold: 1 },
+      { threshold: 1 }
     );
     observer.observe(loaderRefFriends.current);
     return () => observer.disconnect();
@@ -228,45 +237,45 @@ export default function ProfilePage() {
         setFriendsPagination(pagination);
       })
       .catch((err) =>
-        toast.error(err.message || 'Erreur lors du chargement des amis.'),
+        toast.error(err.message || 'Erreur lors du chargement des amis.')
       );
   }, [profile, toast]);
 
   // Fonction pour formater les dates en français
   const formatDateFr = (dateStr?: string) => {
-    if (!dateStr) return "";
+    if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+    return date.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
     });
   };
 
   // Fonctions pour gérer les actions sur les posts
   const handleDeletePost = (postId: number) => {
     fetch(`${API_BASE}/api/posts/delete.php`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ post_id: postId }),
     })
       .then(async (res) => {
         const data = await res.json();
         if (!data.success) throw new Error(data.message);
         setPosts((prev) => prev.filter((post) => post.id !== postId));
-        toast.success("Post supprimé avec succès");
+        toast.success('Post supprimé avec succès');
       })
       .catch((err) => {
-        toast.error(err.message || "Erreur lors de la suppression");
+        toast.error(err.message || 'Erreur lors de la suppression');
       });
   };
 
   const handleSavePost = (postId: number, isSaved: boolean) => {
     fetch(`${API_BASE}/api/posts/save.php`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ post_id: postId }),
     })
       .then(async (res) => {
@@ -274,13 +283,13 @@ export default function ProfilePage() {
         if (!data.success) throw new Error(data.message);
 
         if (isSaved) {
-          toast.success("Post enregistré");
+          toast.success('Post enregistré');
         } else {
-          toast.success("Post retiré des enregistrements");
+          toast.success('Post retiré des enregistrements');
         }
       })
       .catch((err) => {
-        toast.error(err.message || "Erreur lors de la sauvegarde");
+        toast.error(err.message || 'Erreur lors de la sauvegarde');
       });
   };
 
@@ -306,7 +315,10 @@ export default function ProfilePage() {
       );
       return result;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur lors de la gestion du like';
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Erreur lors de la gestion du like';
       toast.error(message);
       throw err;
     }
@@ -329,36 +341,36 @@ export default function ProfilePage() {
 
   const tabConfig = [
     {
-      id: "posts",
-      label: "Publications",
+      id: 'posts',
+      label: 'Publications',
       icon: FileText,
       count: postsCount,
-      color: "blue",
+      color: 'blue',
     },
     {
-      id: "about",
-      label: "À propos",
+      id: 'about',
+      label: 'À propos',
       icon: BookOpen,
-      color: "emerald",
+      color: 'emerald',
     },
     {
-      id: "friends",
-      label: "Amis",
+      id: 'friends',
+      label: 'Amis',
       icon: Users,
       count: friends.length,
-      color: "violet",
+      color: 'violet',
     },
     {
-      id: "photos",
-      label: "Photos",
+      id: 'photos',
+      label: 'Photos',
       icon: ImageIcon,
-      color: "amber",
+      color: 'amber',
     },
   ];
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "posts":
+      case 'posts':
         return (
           <div className="w-full">
             {posts.length === 0 ? (
@@ -370,7 +382,7 @@ export default function ProfilePage() {
                   Aucune publication
                 </h3>
                 <p className="text-gray-500">
-                  {friendStatus === "self"
+                  {friendStatus === 'self'
                     ? "Vous n'avez encore publié aucun contenu."
                     : `${profile.prenom} n'a encore rien publié.`}
                 </p>
@@ -389,7 +401,11 @@ export default function ProfilePage() {
                         <PostCard
                           post={post}
                           onLike={handleLikePost}
-                          onComment={(postId: number, _content: string, commentsCount?: number) => {
+                          onComment={(
+                            postId: number,
+                            _content: string,
+                            commentsCount?: number
+                          ) => {
                             // Mettre à jour le compteur de commentaires si fourni
                             if (commentsCount !== undefined) {
                               setPosts((prev) =>
@@ -418,7 +434,7 @@ export default function ProfilePage() {
           </div>
         );
 
-      case "about":
+      case 'about':
         return (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
@@ -445,7 +461,7 @@ export default function ProfilePage() {
                       </p>
                       <p className="text-gray-700 mt-1">
                         {profile.ville}
-                        {profile.ville && profile.pays && ", "}
+                        {profile.ville && profile.pays && ', '}
                         {profile.pays}
                       </p>
                     </div>
@@ -502,7 +518,7 @@ export default function ProfilePage() {
           </div>
         );
 
-      case "friends":
+      case 'friends':
         return (
           <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
@@ -518,7 +534,7 @@ export default function ProfilePage() {
                   Aucun ami
                 </h4>
                 <p className="text-gray-500">
-                  {friendStatus === "self"
+                  {friendStatus === 'self'
                     ? "Vous n'avez pas encore d'amis."
                     : `${profile.prenom} n'a pas encore d'amis.`}
                 </p>
@@ -556,7 +572,7 @@ export default function ProfilePage() {
           </div>
         );
 
-      case "photos":
+      case 'photos':
         return (
           <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
@@ -571,7 +587,7 @@ export default function ProfilePage() {
                 Aucune photo
               </h4>
               <p className="text-gray-500">
-                {friendStatus === "self"
+                {friendStatus === 'self'
                   ? "Vous n'avez encore partagé aucune photo."
                   : `${profile.prenom} n'a encore partagé aucune photo.`}
               </p>
@@ -604,7 +620,9 @@ export default function ProfilePage() {
           <div className="h-80 lg:h-96 bg-gradient-to-br from-[#1877F2] via-[#145DB2] to-[#1877F2] relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
             <div
-              className={'absolute inset-0 bg-[url(\'data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\')] opacity-50'}
+              className={
+                'absolute inset-0 bg-[url(\'data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\')] opacity-50'
+              }
             />
           </div>
         )}
@@ -620,13 +638,14 @@ export default function ProfilePage() {
                   <div className="flex flex-col sm:flex-row sm:items-end gap-6 flex-1">
                     <div className="relative flex-shrink-0">
                       <Avatar
+                        userId={profile.id}
                         prenom={profile.prenom}
                         nom={profile.nom}
                         photo={profile.photo_profil}
                         size={160}
                         className="border-6 border-white shadow-2xl"
                       />
-                      {friendStatus === "self" && (
+                      {friendStatus === 'self' && (
                         <button className="absolute bottom-2 right-2 w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110">
                           <Camera className="w-5 h-5" />
                         </button>
@@ -640,11 +659,13 @@ export default function ProfilePage() {
                       {/* Nombre d'amis sous le nom */}
                       <div className="flex items-center gap-2 mt-1 text-gray-700 font-medium text-base flex-wrap">
                         <span>
-                          {profile.friends_count} ami{profile.friends_count !== 1 ? 's' : ''}
+                          {profile.friends_count} ami
+                          {profile.friends_count !== 1 ? 's' : ''}
                         </span>
                         <span className="mx-1">·</span>
                         <span>
-                          {mutualFriendsCount} ami{mutualFriendsCount !== 1 ? 's' : ''} en commun
+                          {mutualFriendsCount} ami
+                          {mutualFriendsCount !== 1 ? 's' : ''} en commun
                         </span>
                       </div>
                       {/* Bio juste après */}
@@ -667,7 +688,7 @@ export default function ProfilePage() {
                       status={friendStatus}
                       onStatusChange={setFriendStatus}
                     />
-                    {friendStatus === "friends" && (
+                    {friendStatus === 'friends' && (
                       <button className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all duration-300 hover:scale-105">
                         <MessageCircle className="w-5 h-5" />
                         <span className="hidden sm:inline">Message</span>
@@ -688,17 +709,17 @@ export default function ProfilePage() {
                     const isActive = activeTab === tab.id;
                     const colorClasses = {
                       blue: isActive
-                        ? "text-blue-600 border-blue-600"
-                        : "text-gray-600 hover:text-blue-600",
+                        ? 'text-blue-600 border-blue-600'
+                        : 'text-gray-600 hover:text-blue-600',
                       emerald: isActive
-                        ? "text-emerald-600 border-emerald-600"
-                        : "text-gray-600 hover:text-emerald-600",
+                        ? 'text-emerald-600 border-emerald-600'
+                        : 'text-gray-600 hover:text-emerald-600',
                       violet: isActive
-                        ? "text-violet-600 border-violet-600"
-                        : "text-gray-600 hover:text-violet-600",
+                        ? 'text-violet-600 border-violet-600'
+                        : 'text-gray-600 hover:text-violet-600',
                       amber: isActive
-                        ? "text-amber-600 border-amber-600"
-                        : "text-gray-600 hover:text-amber-600",
+                        ? 'text-amber-600 border-amber-600'
+                        : 'text-gray-600 hover:text-amber-600',
                     };
 
                     return (
@@ -709,7 +730,9 @@ export default function ProfilePage() {
                           isActive
                             ? `border-${tab.color}-600 text-${tab.color}-600 bg-${tab.color}-50/50`
                             : `border-transparent text-gray-600 hover:text-${tab.color}-600 hover:bg-gray-50`
-                        } ${colorClasses[tab.color as keyof typeof colorClasses]}`}
+                        } ${
+                          colorClasses[tab.color as keyof typeof colorClasses]
+                        }`}
                       >
                         <Icon className="w-5 h-5" />
                         <span>{tab.label}</span>
@@ -718,7 +741,7 @@ export default function ProfilePage() {
                             className={`px-2 py-1 text-xs font-bold rounded-full ${
                               isActive
                                 ? `bg-${tab.color}-100 text-${tab.color}-700`
-                                : "bg-gray-100 text-gray-600"
+                                : 'bg-gray-100 text-gray-600'
                             }`}
                           >
                             {tab.count}
@@ -742,4 +765,10 @@ export default function ProfilePage() {
       <ModernToast toasts={toast.toasts} onRemove={toast.removeToast} />
     </div>
   );
+}
+
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'string') return err;
+  return 'Erreur inconnue';
 }
