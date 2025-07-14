@@ -58,7 +58,7 @@ try {
         INNER JOIN users u ON p.user_id = u.id
         LEFT JOIN likes l ON p.id = l.post_id
         LEFT JOIN comments c ON p.id = c.post_id AND c.parent_id IS NULL
-        WHERE p.is_public = 1
+        WHERE p.is_public = 1 AND u.is_active = 1 AND u.email_confirmed = 1
         GROUP BY p.id
         ORDER BY p.created_at DESC
         LIMIT ? OFFSET ?
