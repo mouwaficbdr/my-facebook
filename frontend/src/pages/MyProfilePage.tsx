@@ -5,6 +5,7 @@ import {
   Users,
   FileText,
   Camera,
+  Image as ImageIcon,
   BookOpen,
   Award,
   Pencil,
@@ -15,6 +16,7 @@ import {
   Globe,
 } from 'lucide-react';
 import Loading from '../components/Loading';
+import ModernToast from '../components/ModernToast';
 import { useToast } from '../hooks/useToast';
 import Navbar from '../components/Navbar';
 import Avatar from '../components/Avatar';
@@ -23,6 +25,7 @@ import { useAuth } from '../context/AuthContext';
 import ImageUploadButton from '../components/ImageUploadButton';
 import { getMediaUrl } from '../utils/cdn';
 import ConfirmModal from '../components/ConfirmModal';
+import { useRef as useReactRef } from 'react';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -138,6 +141,7 @@ export default function MyProfilePage() {
   // State pour la preview des images
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [coverImgError, setCoverImgError] = useState(false);
 
   // State pour la confirmation de suppression
   const [confirmDelete, setConfirmDelete] = useState<
@@ -150,6 +154,10 @@ export default function MyProfilePage() {
 
   // State pour le chargement des images
   const [profileImageLoading, setProfileImageLoading] = useState(false);
+  const [coverImageLoading, setCoverImageLoading] = useState(false);
+
+  // Ref pour déclencher l'upload de la photo de profil
+  const profileUploadRef = useReactRef<{ openFilePicker: () => void }>();
 
   useEffect(() => {
     if (profile) {
@@ -280,20 +288,7 @@ export default function MyProfilePage() {
   const handleSave = async (field: keyof typeof editMode) => {
     try {
       const payload: any = {};
-      const allowedFields = [
-        'bio',
-        'prenom',
-        'nom',
-        'photo_profil',
-        'ville',
-        'pays',
-        'date_naissance',
-      ];
-      allowedFields.forEach((field) => {
-        if (field in editValues) {
-          (payload as any)[field] = (editValues as any)[field];
-        }
-      });
+      payload[field] = editValues[field];
       const res = await fetch(`${API_BASE}/api/users/me_update.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -302,14 +297,9 @@ export default function MyProfilePage() {
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.message);
-      setProfile((prev) => {
-        if (!prev) return prev;
-        const updated: any = { ...prev };
-        if (allowedFields.includes(field)) {
-          updated[field] = (editValues as any)[field];
-        }
-        return updated;
-      });
+      setProfile((prev) =>
+        prev ? { ...prev, [field]: editValues[field] } : prev
+      );
       setEditMode({ ...editMode, [field]: false });
       toast.success('Modifié !');
     } catch (err: any) {
@@ -390,7 +380,7 @@ export default function MyProfilePage() {
   // Ajoute les handlers pour valider/annuler la cover preview
   const handleValidateCover = async () => {
     if (!coverPreview) return;
-    setProfileImageLoading(true);
+    setCoverImageLoading(true);
     try {
       const blob = await fetch(coverPreview).then((r) => r.blob());
       const file = new File([blob], 'cover.jpg', { type: blob.type });
@@ -411,7 +401,7 @@ export default function MyProfilePage() {
       toast.error(err.message || 'Erreur lors de l’upload');
       setCoverPreview(null);
     } finally {
-      setProfileImageLoading(false);
+      setCoverImageLoading(false);
     }
   };
   const handleCancelCover = () => {
@@ -440,7 +430,7 @@ export default function MyProfilePage() {
   // Handler suppression cover
   const handleDeleteCover = () => setConfirmDelete('cover');
   const confirmDeleteCover = async () => {
-    setProfileImageLoading(true);
+    setCoverImageLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/upload/cover_delete.php`, {
         method: 'POST',
@@ -453,7 +443,7 @@ export default function MyProfilePage() {
     } catch (err: any) {
       toast.error(err.message || 'Erreur lors de la suppression');
     } finally {
-      setProfileImageLoading(false);
+      setCoverImageLoading(false);
     }
   };
 
@@ -505,13 +495,12 @@ export default function MyProfilePage() {
   }, [profileMenuOpen]);
 
   if (loading) return <Loading />;
-  if (fetchError)
-    return <div className="text-red-500 p-4 text-center">{fetchError}</div>;
+  if (fetchError) return <ModernToast type="error" message={fetchError} />;
   if (!profile) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar onMenuClick={() => {}} />
+      <Navbar />
       {/* Header Cover avec design pleine largeur */}
       <div className="relative">
         {/* Cover Image ou fallback dégradé avec preview */}
@@ -554,11 +543,17 @@ export default function MyProfilePage() {
           </div>
         ) : profile?.cover_url ? (
           <div className="h-80 lg:h-96 relative overflow-hidden">
-            <img
-              src={getMediaUrl(profile.cover_url)}
-              alt="Photo de couverture"
-              className="w-full h-full object-cover"
-            />
+            {!coverImgError && (
+              <img
+                src={getMediaUrl(profile.cover_url)}
+                alt="Photo de couverture"
+                className="w-full h-full object-cover"
+                onError={() => setCoverImgError(true)}
+              />
+            )}
+            {coverImgError && (
+              <div className="h-full w-full bg-gradient-to-br from-[#1877F2] via-[#145DB2] to-[#1877F2] absolute inset-0" />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
             <div className="absolute top-2 right-2 z-30">
               <button
@@ -575,7 +570,10 @@ export default function MyProfilePage() {
               <ImageUploadButton
                 endpoint={`${API_BASE}/api/upload/cover.php`}
                 currentImage={''}
-                onSuccess={() => fetchProfile()}
+                onSuccess={() => {
+                  setCoverImgError(false);
+                  fetchProfile();
+                }}
                 icon={<Camera className="w-6 h-6 text-white" />}
                 size={48}
                 label="Changer la couverture"
@@ -649,6 +647,7 @@ export default function MyProfilePage() {
                     ) : profile.photo_profil ? (
                       <div className="relative group">
                         <ImageUploadButton
+                          ref={profileUploadRef}
                           endpoint={`${API_BASE}/api/upload/profile.php`}
                           currentImage={getMediaUrl(profile.photo_profil)}
                           onSuccess={() => {
@@ -679,7 +678,7 @@ export default function MyProfilePage() {
                               <button
                                 onClick={() => {
                                   setProfileMenuOpen(false);
-                                  setProfilePreview('');
+                                  profileUploadRef.current?.openFilePicker();
                                 }}
                                 className="w-full text-left px-3 py-1.5 hover:bg-gray-50 text-gray-800 rounded-t-lg text-sm"
                               >
@@ -902,16 +901,7 @@ export default function MyProfilePage() {
                         style={{ animationDelay: `${idx * 60}ms` }}
                       >
                         <div className="transform hover:scale-[1.02] transition-transform duration-300">
-                          <PostCard
-                            post={post}
-                            onLike={async () =>
-                              Promise.resolve({
-                                user_liked: false,
-                                reactions: {},
-                              })
-                            }
-                            onComment={() => {}}
-                          />
+                          <PostCard post={post} />
                         </div>
                       </div>
                     ))}
