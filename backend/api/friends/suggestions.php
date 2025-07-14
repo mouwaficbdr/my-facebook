@@ -32,7 +32,7 @@ try {
     $limit = min(10, max(5, intval($_GET['limit'] ?? 5)));
     
     // Récupération des suggestions d'amis
-    // Algorithme : utilisateurs avec qui on a des amis en commun + utilisateurs actifs récents
+    // Algorithme : utilisateurs avec qui on a des amis en commun, tri multicritères
     $query = "
         SELECT DISTINCT
             u.id,
@@ -42,59 +42,56 @@ try {
             u.ville,
             u.pays,
             u.bio,
-            COUNT(DISTINCT f1.user_id) as mutual_friends,
-            MAX(p.created_at) as last_activity,
-            EXISTS(SELECT 1 FROM friendships WHERE user_id = ? AND friend_id = u.id) as friendship_status
+            u.date_inscription,
+            -- Nombre d'amis en commun (MySQL compatible)
+            (
+                SELECT COUNT(*) FROM (
+                    SELECT CASE WHEN f1.user_id = :me1 THEN f1.friend_id ELSE f1.user_id END AS friend_id
+                    FROM friendships f1
+                    WHERE (f1.user_id = :me2 OR f1.friend_id = :me3) AND f1.status = 'accepted'
+                ) AS my_friends
+                INNER JOIN (
+                    SELECT CASE WHEN f2.user_id = u.id THEN f2.friend_id ELSE f2.user_id END AS friend_id
+                    FROM friendships f2
+                    WHERE (f2.user_id = u.id OR f2.friend_id = u.id) AND f2.status = 'accepted'
+                ) AS user_friends
+                ON my_friends.friend_id = user_friends.friend_id
+            ) AS mutual_friends,
+            -- Nombre total d'amis
+            (
+                SELECT COUNT(*) FROM friendships f3
+                WHERE (f3.user_id = u.id OR f3.friend_id = u.id) AND f3.status = 'accepted'
+            ) AS total_friends
         FROM users u
-        LEFT JOIN friendships f1 ON (f1.user_id = u.id OR f1.friend_id = u.id)
-        LEFT JOIN friendships f2 ON (
-            (f2.user_id = ? AND f2.friend_id = f1.user_id AND f1.user_id != ?) OR
-            (f2.user_id = ? AND f2.friend_id = f1.friend_id AND f1.friend_id != ?) OR
-            (f2.friend_id = ? AND f2.user_id = f1.user_id AND f1.user_id != ?) OR
-            (f2.friend_id = ? AND f2.user_id = f1.friend_id AND f1.friend_id != ?)
-        )
-        LEFT JOIN posts p ON u.id = p.user_id
-        WHERE u.id != ?
-        AND u.is_active = 1
-        AND u.email_confirmed = 1
-        AND NOT EXISTS(SELECT 1 FROM friendships WHERE user_id = ? AND friend_id = u.id)
-        AND NOT EXISTS(SELECT 1 FROM friendships WHERE user_id = u.id AND friend_id = ?)
-        GROUP BY u.id
-        ORDER BY mutual_friends DESC, last_activity DESC
-        LIMIT ?
+        WHERE u.id != :me4
+          AND u.is_active = 1
+          AND u.email_confirmed = 1
+          AND NOT EXISTS(
+            SELECT 1 FROM friendships f4
+            WHERE ((f4.user_id = :me5 AND f4.friend_id = u.id)
+                OR (f4.friend_id = :me6 AND f4.user_id = u.id))
+              AND f4.status IN ('pending','accepted','blocked')
+          )
+        ORDER BY mutual_friends DESC, total_friends DESC, u.date_inscription ASC, u.nom ASC
+        LIMIT :limit
     ";
-    
     $stmt = $pdo->prepare($query);
-    $stmt->execute([
-        $user['user_id'], // friendship_status check
-        $user['user_id'], // mutual friends check 1
-        $user['user_id'], // mutual friends check 1 exclude
-        $user['user_id'], // mutual friends check 2
-        $user['user_id'], // mutual friends check 2 exclude
-        $user['user_id'], // mutual friends check 3
-        $user['user_id'], // mutual friends check 3 exclude
-        $user['user_id'], // mutual friends check 4
-        $user['user_id'], // mutual friends check 4 exclude
-        $user['user_id'], // exclude current user
-        $user['user_id'], // exclude existing friendships 1
-        $user['user_id'], // exclude existing friendships 2
-        $limit
-    ]);
-    
+    $stmt->bindValue('me1', $user['user_id'], PDO::PARAM_INT);
+    $stmt->bindValue('me2', $user['user_id'], PDO::PARAM_INT);
+    $stmt->bindValue('me3', $user['user_id'], PDO::PARAM_INT);
+    $stmt->bindValue('me4', $user['user_id'], PDO::PARAM_INT);
+    $stmt->bindValue('me5', $user['user_id'], PDO::PARAM_INT);
+    $stmt->bindValue('me6', $user['user_id'], PDO::PARAM_INT);
+    $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
     $suggestions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
     // Formatage des données
     foreach ($suggestions as &$suggestion) {
         $suggestion['id'] = intval($suggestion['id']);
         $suggestion['mutual_friends'] = intval($suggestion['mutual_friends']);
-        $suggestion['last_activity_formatted'] = $suggestion['last_activity'] 
-            ? formatRelativeTime($suggestion['last_activity']) 
-            : 'Jamais actif';
-        
-        // Suppression des champs sensibles
-        unset($suggestion['last_activity']);
+        $suggestion['total_friends'] = intval($suggestion['total_friends']);
+        $suggestion['date_inscription'] = $suggestion['date_inscription'];
     }
-    
     http_response_code(200);
     echo json_encode([
         'success' => true,
