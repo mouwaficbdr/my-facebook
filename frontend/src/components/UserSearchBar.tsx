@@ -5,8 +5,10 @@ import { Search } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
 import ReactDOM from 'react-dom';
 import Avatar from './Avatar';
+import { useAuth } from '../context/AuthContext';
 
 export default function UserSearchBar() {
+  const { user } = useAuth();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -109,26 +111,31 @@ export default function UserSearchBar() {
                 pointerEvents: 'auto',
               }}
             >
-              {results.map((user) => (
+              {results.map((result) => (
                 <div
-                  key={user.id}
+                  key={result.id}
                   className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
                   onMouseDown={() => {
                     setShowDropdown(false);
                     setQuery('');
-                    navigate(`/profile/${user.id}`);
+                    if (user && user.id === result.id) {
+                      navigate('/me');
+                    } else {
+                      navigate(`/profile/${result.id}`);
+                    }
                   }}
                 >
                   <Avatar
-                    prenom={user.prenom}
-                    nom={user.nom}
-                    photo={user.photo_profil}
+                    userId={result.id}
+                    prenom={result.prenom}
+                    nom={result.nom}
+                    photo={result.photo_profil}
                     size={32}
                     className="mr-3"
                   />
                   <div>
                     <div className="font-medium text-gray-900">
-                      {user.prenom} {user.nom}
+                      {result.prenom} {result.nom}
                     </div>
                   </div>
                 </div>
@@ -137,13 +144,15 @@ export default function UserSearchBar() {
           );
           if (isMobile) {
             return dropdown;
-          } else if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+          } else if (
+            typeof window !== 'undefined' &&
+            typeof document !== 'undefined'
+          ) {
             return ReactDOM.createPortal(dropdown, document.body);
           } else {
             return null;
           }
-        })()
-      }
+        })()}
     </div>
   );
 }
