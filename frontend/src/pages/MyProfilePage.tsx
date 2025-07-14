@@ -13,6 +13,7 @@ import {
   X,
   Trash,
   Globe,
+  Image as ImageIcon, // Ajout pour l'onglet photos
 } from 'lucide-react';
 import Loading from '../components/Loading';
 import { useToast } from '../hooks/useToast';
@@ -868,6 +869,12 @@ export default function MyProfilePage() {
                       icon: Users,
                       color: 'violet',
                     },
+                    {
+                      id: 'photos',
+                      label: 'Photos',
+                      icon: ImageIcon,
+                      color: 'amber',
+                    },
                   ].map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -881,6 +888,9 @@ export default function MyProfilePage() {
                       violet: isActive
                         ? 'text-violet-600 border-violet-600'
                         : 'text-gray-600 hover:text-violet-600',
+                      amber: isActive
+                        ? 'text-amber-600 border-amber-600'
+                        : 'text-gray-600 hover:text-amber-600',
                     };
                     return (
                       <button
@@ -1247,6 +1257,25 @@ export default function MyProfilePage() {
                   {isFetchingMoreFriends && <Loading />}
                 </div>
               )}
+            </div>
+          )}
+          {activeTab === 'photos' && (
+            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <ImageIcon className="w-6 h-6 text-amber-500" />
+                Photos
+              </h3>
+              <div className="text-center py-12">
+                <div className="w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <ImageIcon className="w-12 h-12 text-amber-500" />
+                </div>
+                <h4 className="text-xl font-semibold text-gray-900 mb-2">
+                  Aucune photo
+                </h4>
+                <p className="text-gray-500">
+                  Vous n'avez encore partagé aucune photo.
+                </p>
+              </div>
             </div>
           )}
         </div>
