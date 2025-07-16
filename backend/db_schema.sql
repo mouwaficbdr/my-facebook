@@ -163,6 +163,20 @@ CREATE TABLE `notifications` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+-- 2024-07-06 : Ajout de la table notifications pour la gestion des notifications temps réel (premium)
+-- Permet de stocker les notifications utilisateurs (like, commentaire, demande d'ami, etc.)
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    type VARCHAR(32) NOT NULL,
+    data JSON DEFAULT NULL,
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 --
 -- Table structure for table `posts`
 --
@@ -253,6 +267,13 @@ CREATE TABLE `saved_posts` (
 
 ALTER TABLE users
   ADD COLUMN cover_url VARCHAR(255) NULL AFTER photo_profil;
+
+-- 2024-07-05 : Ajout endpoint sécurisé de changement de mot de passe (api/users/change_password.php)
+-- Permet à l'utilisateur connecté de modifier son mot de passe via POST {old_password, new_password, confirm_password}
+-- Sécurité : vérification de l'ancien mot de passe, validation force du nouveau, update hashé, réponse JSON standardisée
+-- 2024-07-06 : Ajout endpoints API notifications (api/notifications.php, api/notifications/read.php)
+-- GET notifications.php : liste paginée des notifications utilisateur
+-- POST notifications/read.php : marquer une ou plusieurs notifications comme lues
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
