@@ -1,6 +1,6 @@
 // api/comments.ts - Fonctions API pour les commentaires de posts
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+import { API_BASE } from './base';
 
 export interface Comment {
   id: number;
@@ -34,13 +34,18 @@ export interface CommentsListResponse {
 }
 
 // Récupérer les commentaires d’un post (paginé)
-export async function fetchComments(postId: number, offset = 0, limit = 10, userId?: number): Promise<CommentsListResponse> {
+export async function fetchComments(
+  postId: number,
+  offset = 0,
+  limit = 10,
+  userId?: number
+): Promise<CommentsListResponse> {
   const params = new URLSearchParams({
     post_id: postId.toString(),
     offset: offset.toString(),
     limit: limit.toString(),
   });
-  
+
   if (userId) {
     params.append('user_id', userId.toString());
   }
@@ -56,7 +61,10 @@ export async function fetchComments(postId: number, offset = 0, limit = 10, user
 }
 
 // Ajouter un commentaire à un post
-export async function addComment(postId: number, contenu: string): Promise<{comment: Comment, post_id: number, comments_count: number}> {
+export async function addComment(
+  postId: number,
+  contenu: string
+): Promise<{ comment: Comment; post_id: number; comments_count: number }> {
   const res = await fetch(`${API_BASE}/api/posts/comments/create.php`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -65,13 +73,17 @@ export async function addComment(postId: number, contenu: string): Promise<{comm
   });
   const data = await res.json();
   if (!data.success) {
-    throw new Error(data.error || 'Erreur lors de l\'ajout du commentaire');
+    throw new Error(data.error || "Erreur lors de l'ajout du commentaire");
   }
   return data.data;
 }
 
 // Liker/unliker un commentaire
-export async function likeComment(commentId: number, action: 'like' | 'unlike', type: string = 'like'): Promise<{
+export async function likeComment(
+  commentId: number,
+  action: 'like' | 'unlike',
+  type: string = 'like'
+): Promise<{
   comment_id: number;
   action: string;
   user_liked: boolean;
@@ -92,7 +104,10 @@ export async function likeComment(commentId: number, action: 'like' | 'unlike', 
 }
 
 // Ajouter une réponse à un commentaire
-export async function addReply(parentCommentId: number, contenu: string): Promise<{
+export async function addReply(
+  parentCommentId: number,
+  contenu: string
+): Promise<{
   reply: Reply;
   parent_comment_id: number;
   post_id: number;
@@ -107,13 +122,17 @@ export async function addReply(parentCommentId: number, contenu: string): Promis
   });
   const data = await res.json();
   if (!data.success) {
-    throw new Error(data.error || 'Erreur lors de l\'ajout de la réponse');
+    throw new Error(data.error || "Erreur lors de l'ajout de la réponse");
   }
   return data.data;
 }
 
 // Récupérer les réponses d'un commentaire
-export async function fetchReplies(commentId: number, offset = 0, limit = 10): Promise<{
+export async function fetchReplies(
+  commentId: number,
+  offset = 0,
+  limit = 10
+): Promise<{
   replies: Reply[];
   pagination: CommentsPagination;
 }> {
@@ -150,7 +169,9 @@ export async function deleteComment(commentId: number): Promise<{
   });
   const data = await res.json();
   if (!data.success) {
-    throw new Error(data.error || 'Erreur lors de la suppression du commentaire');
+    throw new Error(
+      data.error || 'Erreur lors de la suppression du commentaire'
+    );
   }
   return data.data;
-} 
+}

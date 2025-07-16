@@ -1,6 +1,6 @@
 // api/feed.ts - Fonctions API pour le feed et les posts
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+import { API_BASE } from './base';
 
 // Vérification explicite en production
 if (import.meta.env.PROD && !import.meta.env.VITE_API_BASE_URL) {
@@ -143,4 +143,21 @@ export const addComment = async (): // postId: number,
 Promise<Comment> => {
   // TODO: Implémenter l'endpoint de commentaires
   throw new Error('Fonctionnalité de commentaires à implémenter');
+};
+
+// Upload d'image pour un post
+export const uploadPostImage = async (file: File): Promise<string> => {
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await fetch(`${API_BASE}/api/upload/post.php`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+  const data = await response.json();
+  if (!data.success) {
+    throw new Error(data.message || "Erreur lors de l'upload de l'image");
+  }
+  return data.url;
 };

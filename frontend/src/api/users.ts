@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+import { API_BASE } from './base';
 
 export async function fetchUsers(query: string) {
   if (!query || query.length < 2) return [];
@@ -27,4 +27,30 @@ export async function fetchFriends(
     throw new Error(data.message || 'Erreur lors de la récupération des amis');
   }
   return { friends: data.friends, pagination: data.pagination };
+}
+
+export async function changePassword(
+  oldPassword: string,
+  newPassword: string,
+  confirmPassword: string
+) {
+  const res = await fetch(`${API_BASE}/api/change-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      old_password: oldPassword,
+      new_password: newPassword,
+      confirm_password: confirmPassword,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(
+      data.message || 'Erreur lors du changement de mot de passe'
+    );
+  }
+  return data;
 }
