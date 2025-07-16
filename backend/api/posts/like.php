@@ -1,4 +1,7 @@
 <?php
+if (file_exists(__DIR__ . '/../../logs/debug.log')) {
+    file_put_contents(__DIR__ . '/../../logs/debug.log', '[' . date('Y-m-d H:i:s') . "] DEBUG: like.php appelé\n", FILE_APPEND);
+}
 // Désactiver l'affichage des erreurs PHP en production (préserver la sortie JSON)
 if (getenv('APP_ENV') === 'production' || getenv('APP_ENV') === 'prod') {
     error_reporting(0);
@@ -61,7 +64,7 @@ try {
     $pdo = getPDO();
     
     // Vérification que le post existe
-    $postQuery = "SELECT id FROM posts WHERE id = ? AND is_public = 1";
+    $postQuery = "SELECT id, user_id, contenu FROM posts WHERE id = ? AND is_public = 1";
     $postStmt = $pdo->prepare($postQuery);
     $postStmt->execute([$input['post_id']]);
     $post = $postStmt->fetch();
@@ -159,6 +162,50 @@ try {
             'reactions' => $reactions
         ]
     ]);
+    
+    // Log du DSN de connexion PDO avant la notification
+    // Log des variables clés avant la condition de notification
+    // Après avoir traité le like/unlike, générer une notification si besoin
+    if ($action === 'added' && $user['id'] !== $post['user_id']) {
+        try {
+            // Récupérer toutes les infos utilisateur pour enrichir la notification
+            $user_id = $user['id'];
+            $stmt = $pdo->prepare('SELECT id, prenom, nom, photo_profil FROM users WHERE id = ? LIMIT 1');
+            $stmt->execute([$user_id]);
+            $user_full = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($user_full) {
+                $user = array_merge($user, $user_full);
+            }
+
+            // Fallback safe pour tronquer la description
+            if (function_exists('mb_strimwidth')) {
+                $description = mb_strimwidth($post['contenu'] ?? '', 0, 60, '...');
+            } else {
+                $description = isset($post['contenu']) ? (strlen($post['contenu']) > 60 ? substr($post['contenu'], 0, 57) . '...' : $post['contenu']) : '';
+            }
+            $notifData = [
+                'user_id' => $user['id'],
+                'prenom' => $user['prenom'],
+                'nom' => $user['nom'],
+                'avatar' => $user['photo_profil'] ?? null,
+                'post_id' => $post['id'],
+                'title' => $user['prenom'] . ' a aimé votre post',
+                'description' => $description,
+            ];
+            $notifTitle = $notifData['title'];
+            $notifMessage = $notifData['description'];
+            $notifStmt = $pdo->prepare('INSERT INTO notifications (user_id, from_user_id, type, title, message, data) VALUES (?, ?, ?, ?, ?, ?)');
+            $notifStmt->execute([
+                $post['user_id'],
+                $user['id'],
+                'like',
+                $notifTitle,
+                $notifMessage,
+                json_encode($notifData, JSON_UNESCAPED_UNICODE)
+            ]);
+        } catch (Throwable $e) {
+        }
+    }
     
 } catch (Throwable $e) {
     log_error('Like error', [

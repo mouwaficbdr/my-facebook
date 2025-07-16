@@ -4,6 +4,26 @@ require_once __DIR__ . '/jwt.php';
 require_once __DIR__ . '/log.php';
 
 function require_auth() {
+    // Auth spéciale pour tests automatisés : header X-User-Id
+    if (isset($_SERVER['HTTP_X_USER_ID']) && getenv('APP_ENV') === 'test') {
+        $userId = intval($_SERVER['HTTP_X_USER_ID']);
+        if ($userId > 0) {
+            // Charger l'utilisateur depuis la base
+            $pdo = getPDO();
+            $stmt = $pdo->prepare('SELECT id, email, role FROM users WHERE id = ? LIMIT 1');
+            $stmt->execute([$userId]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                $GLOBALS['auth_user'] = [
+                    'user_id' => $row['id'],
+                    'email' => $row['email'],
+                    'role' => $row['role'] ?? 'user',
+                    'id' => $row['id']
+                ];
+                return;
+            }
+        }
+    }
     $token = null;
     // 1. Vérifier le header Authorization
     if (isset($_SERVER['HTTP_AUTHORIZATION'])) {

@@ -19,7 +19,10 @@ if (strpos($path, '/api/') === 0) {
         'logout' => 'api/logout.php',
         'confirm-email' => 'api/confirm_email.php',
         'forgot-password' => 'api/forgot_password.php',
-        'reset-password' => 'api/reset_password.php'
+        'reset-password' => 'api/reset_password.php',
+        'change-password' => 'api/users/change_password.php',
+        'notifications' => 'api/notifications.php',
+        'notifications-read' => 'api/notifications/read.php'
     ];
     
     if (isset($endpoints[$api_path])) {

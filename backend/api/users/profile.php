@@ -46,9 +46,9 @@ try {
     }
 
     // 2. Nombre d'amis
-    $friendsQuery = "SELECT COUNT(*) as total FROM friendships WHERE (user_id = ? OR friend_id = ?) AND status = 'accepted'";
+    $friendsQuery = "SELECT COUNT(*) as total FROM users u JOIN friendships f ON ((f.user_id = ? AND f.friend_id = u.id) OR (f.friend_id = ? AND f.user_id = u.id)) WHERE f.status = 'accepted' AND u.is_active = 1 AND u.email_confirmed = 1 AND u.id != ?";
     $friendsStmt = $pdo->prepare($friendsQuery);
-    $friendsStmt->execute([$userId, $userId]);
+    $friendsStmt->execute([$userId, $userId, $userId]);
     $user['friends_count'] = intval($friendsStmt->fetchColumn());
 
     // 3. Statut d'amitié

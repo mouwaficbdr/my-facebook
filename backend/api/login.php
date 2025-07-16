@@ -55,7 +55,7 @@ if ($errors) {
 // 4. Recherche utilisateur (case-insensitive)
 try {
     $pdo = getPDO();
-    $stmt = $pdo->prepare('SELECT id, nom, prenom, email, password_hash, email_confirmed, role, genre, date_naissance FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id, nom, prenom, email, password_hash, email_confirmed, role, genre, date_naissance, photo_profil FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1');
     $stmt->execute([$input['email']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (Throwable $e) {
@@ -129,6 +129,7 @@ echo json_encode([
         'email' => $user['email'],
         'genre' => $user['genre'],
         'date_naissance' => $user['date_naissance'],
-        'role' => $user['role']
+        'role' => $user['role'],
+        'photo_profil' => $user['photo_profil'] ?? null
     ]
 ]); 

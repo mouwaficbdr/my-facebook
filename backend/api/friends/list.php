@@ -1,4 +1,6 @@
 <?php
+// Redirige les logs error_log vers un fichier dédié pour debug
+ini_set('error_log', __DIR__ . '/../../logs/friends_api_debug.log');
 // api/friends/list.php - Liste des amis d'un utilisateur
 if (getenv('APP_ENV') === 'production' || getenv('APP_ENV') === 'prod') {
     error_reporting(0);
@@ -8,11 +10,13 @@ require_once __DIR__ . '/../../lib/cors.php';
 handle_cors();
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../lib/auth_middleware.php';
+require_once __DIR__ . '/../../lib/log.php';
 header('Content-Type: application/json');
 require_auth();
 $currentUser = $GLOBALS['auth_user'];
 
 $userId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+log_debug('friends/list.php debug', ['userId' => $userId]);
 if ($userId <= 0) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'ID utilisateur invalide.']);
@@ -38,13 +42,13 @@ try {
         SELECT COUNT(*)
         FROM users u
         JOIN friendships f ON (
-            (f.user_id = :uid AND f.friend_id = u.id)
-            OR (f.friend_id = :uid AND f.user_id = u.id)
+            (f.user_id = ? AND f.friend_id = u.id)
+            OR (f.friend_id = ? AND f.user_id = u.id)
         )
-        WHERE f.status = 'accepted' AND u.is_active = 1 AND u.email_confirmed = 1
+        WHERE f.status = 'accepted' AND u.is_active = 1 AND u.email_confirmed = 1 AND u.id != ?
     ";
     $countStmt = $pdo->prepare($countQuery);
-    $countStmt->execute(['uid' => $userId]);
+    $countStmt->execute([$userId, $userId, $userId]);
     $total = intval($countStmt->fetchColumn());
     $total_pages = $limit > 0 ? (int)ceil($total / $limit) : 1;
     // Récupérer les amis paginés
@@ -52,19 +56,17 @@ try {
         SELECT u.id, u.nom, u.prenom, u.photo_profil
         FROM users u
         JOIN friendships f ON (
-            (f.user_id = :uid AND f.friend_id = u.id)
-            OR (f.friend_id = :uid AND f.user_id = u.id)
+            (f.user_id = ? AND f.friend_id = u.id)
+            OR (f.friend_id = ? AND f.user_id = u.id)
         )
-        WHERE f.status = 'accepted' AND u.is_active = 1 AND u.email_confirmed = 1
+        WHERE f.status = 'accepted' AND u.is_active = 1 AND u.email_confirmed = 1 AND u.id != ?
         ORDER BY u.prenom, u.nom
-        LIMIT :limit OFFSET :offset
+        LIMIT ? OFFSET ?
     ";
     $stmt = $pdo->prepare($query);
-    $stmt->bindValue('uid', $userId, PDO::PARAM_INT);
-    $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
-    $stmt->bindValue('offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
+    $stmt->execute([$userId, $userId, $userId, $limit, $offset]);
     $friends = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    log_debug('friends/list.php result', ['userId' => $userId, 'friends_count' => count($friends), 'friends' => $friends]);
     foreach ($friends as &$friend) {
         $friend['id'] = intval($friend['id']);
     }

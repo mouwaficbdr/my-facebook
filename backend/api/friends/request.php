@@ -9,6 +9,24 @@ handle_cors();
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../lib/auth_middleware.php';
 header('Content-Type: application/json');
+// Auth spéciale pour tests automatisés : header X-User-Id
+if (getenv('APP_ENV') === 'test' && isset($_SERVER['HTTP_X_USER_ID'])) {
+    $userId = intval($_SERVER['HTTP_X_USER_ID']);
+    if ($userId > 0) {
+        $pdo = getPDO();
+        $stmt = $pdo->prepare('SELECT id, email, role FROM users WHERE id = ? LIMIT 1');
+        $stmt->execute([$userId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            $GLOBALS['auth_user'] = [
+                'user_id' => $row['id'],
+                'email' => $row['email'],
+                'role' => $row['role'] ?? 'user',
+                'id' => $row['id']
+            ];
+        }
+    }
+}
 require_auth();
 $user = $GLOBALS['auth_user'];
 if (!$user) {
@@ -44,6 +62,35 @@ try {
     $delete->execute([$user['user_id'], $friendId, $friendId, $user['user_id']]);
     $stmt = $pdo->prepare("INSERT INTO friendships (user_id, friend_id, status, created_at) VALUES (?, ?, 'pending', NOW())");
     $stmt->execute([$user['user_id'], $friendId]);
+
+    // Générer une notification pour le destinataire
+    $stmtUser = $pdo->prepare('SELECT id, prenom, nom, photo_profil FROM users WHERE id = ? LIMIT 1');
+    $stmtUser->execute([$user['user_id']]);
+    $user_full = $stmtUser->fetch(PDO::FETCH_ASSOC);
+    if ($user_full) {
+        $user = array_merge($user, $user_full);
+    }
+    $notifData = [
+        'user_id' => $user['id'],
+        'prenom' => $user['prenom'],
+        'nom' => $user['nom'],
+        'avatar' => $user['photo_profil'] ?? null,
+        'demandeur_id' => $user['id'],
+        'title' => $user['prenom'] . ' vous a envoyé une demande d\'ami',
+        'description' => '',
+    ];
+    $notifTitle = $notifData['title'];
+    $notifMessage = $notifData['description'];
+    $notifStmt = $pdo->prepare('INSERT INTO notifications (user_id, from_user_id, type, title, message, data) VALUES (?, ?, ?, ?, ?, ?)');
+    $notifStmt->execute([
+        $friendId, // destinataire
+        $user['id'],
+        'friend_request',
+        $notifTitle,
+        $notifMessage,
+        json_encode($notifData, JSON_UNESCAPED_UNICODE)
+    ]);
+
     echo json_encode(['success' => true, 'message' => 'Demande envoyée.', 'friend_status' => 'request_sent']);
     exit;
 } catch (Throwable $e) {

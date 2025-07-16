@@ -37,9 +37,10 @@ if ($post_id <= 0 || $contenu === '') {
 try {
     $pdo = get_db_connection();
     // Vérifier que le post existe
-    $stmtPost = $pdo->prepare('SELECT id FROM posts WHERE id = :post_id');
+    $stmtPost = $pdo->prepare('SELECT id, user_id FROM posts WHERE id = :post_id');
     $stmtPost->execute(['post_id' => $post_id]);
-    if (!$stmtPost->fetch()) {
+    $post = $stmtPost->fetch(PDO::FETCH_ASSOC);
+    if (!$post) {
         echo json_encode(['success' => false, 'error' => 'Post introuvable']);
         exit;
     }
@@ -67,6 +68,56 @@ try {
     $stmtCount->execute(['post_id' => $post_id]);
     $comments_count = (int)$stmtCount->fetchColumn();
     
+    // Log des variables clés avant la condition de notification
+    if (function_exists('log_error')) log_error('DEBUG: Variables avant notif COMMENT', [
+        'user_id' => $user['id'] ?? null,
+        'post_user_id' => $post['user_id'] ?? null
+    ]);
+    // Après avoir inséré le commentaire, générer une notification si besoin
+    if ($user['id'] !== $post['user_id']) {
+        if (function_exists('log_error')) log_error('DEBUG: Passage dans le bloc notification COMMENT', ['post_user_id' => $post['user_id'], 'from_user_id' => $user['id']]);
+        try {
+            // Récupérer toutes les infos utilisateur pour enrichir la notification
+            $user_id = $user['id'];
+            $stmt = $pdo->prepare('SELECT id, prenom, nom, photo_profil FROM users WHERE id = ? LIMIT 1');
+            $stmt->execute([$user_id]);
+            $user_full = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($user_full) {
+                $user = array_merge($user, $user_full);
+            }
+            // Fallback safe pour tronquer la description du commentaire
+            if (function_exists('mb_strimwidth')) {
+                $description = mb_strimwidth($contenu, 0, 60, '...');
+            } else {
+                $description = strlen($contenu) > 60 ? substr($contenu, 0, 57) . '...' : $contenu;
+            }
+            $notifData = [
+                'user_id' => $user['id'],
+                'prenom' => $user['prenom'],
+                'nom' => $user['nom'],
+                'avatar' => $user['photo_profil'] ?? null,
+                'post_id' => $post['id'],
+                'comment_id' => $comment_id,
+                'title' => $user['prenom'] . ' a commenté votre post',
+                'description' => $description,
+            ];
+            $notifTitle = $notifData['title'];
+            $notifMessage = $notifData['description'];
+            $notifStmt = $pdo->prepare('INSERT INTO notifications (user_id, from_user_id, type, title, message, data) VALUES (?, ?, ?, ?, ?, ?)');
+            $notifStmt->execute([
+                $post['user_id'],
+                $user['id'],
+                'comment',
+                $notifTitle,
+                $notifMessage,
+                json_encode($notifData, JSON_UNESCAPED_UNICODE)
+            ]);
+            if (function_exists('log_error')) log_error('Notif comment OK', ['post_user_id' => $post['user_id'], 'from_user_id' => $user['id']]);
+        } catch (Throwable $e) {
+            if (function_exists('log_error')) log_error('Erreur notif comment', ['err' => $e->getMessage()]);
+        }
+    }
+
     echo json_encode([
         'success' => true,
         'data' => [
