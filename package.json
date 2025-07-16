@@ -1,8 +1,17 @@
 {
-  "name": "my-facebook-root",
-  "private": true,
+  "name": "my-facebook",
+  "version": "1.0.0",
   "scripts": {
     "build": "cd frontend && npm install && npm run build",
-    "dev": "cd frontend && npm run dev"
+    "dev": "cd frontend && npm run dev",
+    "vercel-build": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.10"
+  },
+  "dependencies": {
+    "@emoji-mart/data": "^1.2.1",
+    "@heroicons/react": "^2.2.0",
+    "emoji-mart": "^5.6.0"
   }
 }
