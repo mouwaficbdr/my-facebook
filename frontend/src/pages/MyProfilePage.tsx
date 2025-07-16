@@ -25,6 +25,7 @@ import ImageUploadButton from '../components/ImageUploadButton';
 import { getMediaUrl } from '../utils/cdn';
 import ConfirmModal from '../components/ConfirmModal';
 import { useRef as useReactRef } from 'react';
+import { Link } from 'react-router-dom';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -77,6 +78,49 @@ interface Friend {
   photo_profil?: string | null;
 }
 
+// Lightbox pour zoom photo (copié de ProfilePage)
+function PhotoLightbox({
+  images,
+  index,
+  onClose,
+}: {
+  images: string[];
+  index: number;
+  onClose: () => void;
+}) {
+  const [current, setCurrent] = useState(index);
+  if (!images.length) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+      <button
+        className="absolute top-4 right-4 text-white text-3xl"
+        onClick={onClose}
+      >
+        &times;
+      </button>
+      <button
+        className="absolute left-4 top-1/2 -translate-y-1/2 text-white text-4xl px-2"
+        onClick={() => setCurrent((c) => (c > 0 ? c - 1 : c))}
+        disabled={current === 0}
+      >
+        &#8592;
+      </button>
+      <img
+        src={images[current]}
+        alt="Photo"
+        className="max-h-[80vh] max-w-[90vw] rounded-2xl shadow-2xl"
+      />
+      <button
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl px-2"
+        onClick={() => setCurrent((c) => (c < images.length - 1 ? c + 1 : c))}
+        disabled={current === images.length - 1}
+      >
+        &#8594;
+      </button>
+    </div>
+  );
+}
+
 export default function MyProfilePage() {
   const { user, updateUser } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -98,7 +142,6 @@ export default function MyProfilePage() {
   const toast = useToast();
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
-
   // Ajout du state pour la pagination des amis
   const [friendsPagination, setFriendsPagination] = useState({
     current_page: 1,
@@ -110,16 +153,8 @@ export default function MyProfilePage() {
   });
   const loaderRefFriends = useRef<HTMLDivElement | null>(null);
   const [isFetchingMoreFriends, setIsFetchingMoreFriends] = useState(false);
-
   // État pour l'édition
-  const [editMode, setEditMode] = useState<{
-    bio: boolean;
-    name: boolean;
-    photo: boolean;
-    ville: boolean;
-    pays: boolean;
-    date_naissance: boolean;
-  }>({
+  const [editMode, setEditMode] = useState({
     bio: false,
     name: false,
     photo: false,
@@ -127,35 +162,32 @@ export default function MyProfilePage() {
     pays: false,
     date_naissance: false,
   });
-  const [editValues, setEditValues] = useState<{
-    bio: string;
-    prenom: string;
-    nom: string;
-    photo_profil?: string;
-    ville?: string;
-    pays?: string;
-    date_naissance?: string;
-  }>({ bio: '', prenom: '', nom: '', photo_profil: '' });
-
+  const [editValues, setEditValues] = useState({
+    bio: '',
+    prenom: '',
+    nom: '',
+    photo_profil: '',
+    ville: '',
+    pays: '',
+    date_naissance: '',
+  });
   // State pour la preview des images
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [coverImgError, setCoverImgError] = useState(false);
-
   // State pour la confirmation de suppression
   const [confirmDelete, setConfirmDelete] = useState<
     'profile' | 'cover' | null
   >(null);
-
   // State pour le menu de l'avatar
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
-
   // State pour le chargement des images
   const [profileImageLoading, setProfileImageLoading] = useState(false);
-
   // Ref pour déclencher l'upload de la photo de profil
   const profileUploadRef = useReactRef<{ openFilePicker: () => void }>(null);
+  // State pour la lightbox des photos
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -1232,9 +1264,10 @@ export default function MyProfilePage() {
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {friends.map((friend) => (
-                    <div
+                    <Link
                       key={friend.id}
-                      className="text-center group cursor-pointer"
+                      to={`/profile/${friend.id}`}
+                      className="text-center group cursor-pointer block"
                     >
                       <div className="relative mb-3">
                         <Avatar
@@ -1248,7 +1281,7 @@ export default function MyProfilePage() {
                       <p className="font-medium text-gray-900 text-sm group-hover:text-blue-600 transition-colors">
                         {friend.prenom} {friend.nom}
                       </p>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -1259,25 +1292,63 @@ export default function MyProfilePage() {
               )}
             </div>
           )}
-          {activeTab === 'photos' && (
-            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                <ImageIcon className="w-6 h-6 text-amber-500" />
-                Photos
-              </h3>
-              <div className="text-center py-12">
-                <div className="w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <ImageIcon className="w-12 h-12 text-amber-500" />
+          {activeTab === 'photos' &&
+            (() => {
+              const images = posts
+                .filter((p) => p.type === 'image' && p.image_url)
+                .map((p) => p.image_url!);
+              if (images.length === 0) {
+                return (
+                  <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                      <ImageIcon className="w-6 h-6 text-amber-500" />
+                      Photos
+                    </h3>
+                    <div className="text-center py-12">
+                      <div className="w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <ImageIcon className="w-12 h-12 text-amber-500" />
+                      </div>
+                      <h4 className="text-xl font-semibold text-gray-900 mb-2">
+                        Aucune photo
+                      </h4>
+                      <p className="text-gray-500">
+                        Vous n'avez encore partagé aucune photo.
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                    <ImageIcon className="w-6 h-6 text-amber-500" />
+                    Photos ({images.length})
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {images.map((url, idx) => (
+                      <button
+                        key={url + idx}
+                        className="aspect-square bg-gray-100 rounded-xl overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        onClick={() => setLightboxIdx(idx)}
+                      >
+                        <img
+                          src={url}
+                          alt="Photo"
+                          className="object-cover w-full h-full transition-transform duration-200 hover:scale-105"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  {lightboxIdx !== null && (
+                    <PhotoLightbox
+                      images={images}
+                      index={lightboxIdx}
+                      onClose={() => setLightboxIdx(null)}
+                    />
+                  )}
                 </div>
-                <h4 className="text-xl font-semibold text-gray-900 mb-2">
-                  Aucune photo
-                </h4>
-                <p className="text-gray-500">
-                  Vous n'avez encore partagé aucune photo.
-                </p>
-              </div>
-            </div>
-          )}
+              );
+            })()}
         </div>
       </div>
       {/* Modale de confirmation suppression */}

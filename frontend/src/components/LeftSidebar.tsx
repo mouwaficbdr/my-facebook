@@ -1,5 +1,13 @@
 import { useAuth } from '../context/AuthContext';
-import { User, Users, Users2, Play, Bookmark } from 'lucide-react';
+import {
+  User,
+  Users,
+  Users2,
+  Play,
+  Bookmark,
+  BookOpen,
+  Calendar,
+} from 'lucide-react';
 import Avatar from './Avatar';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,18 +17,32 @@ const iconComponents = {
   Users2,
   Play,
   Bookmark,
+  BookOpen,
+  Calendar,
 };
 
 const sidebarItems = [
   { icon: 'Users2', label: 'Amis' },
   { icon: 'Bookmark', label: 'Enregistrés' },
-  { icon: 'Play', label: 'Vidéos' },
+  { icon: 'Play', label: 'Reels' },
+  { icon: 'Users', label: 'Groupes' },
+  { icon: 'BookOpen', label: 'Pages' },
+  { icon: 'Calendar', label: 'Évènements' },
 ];
 
 interface LeftSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  onSectionChange?: (section: 'feed' | 'friends') => void;
+  onSectionChange?: (
+    section:
+      | 'feed'
+      | 'friends'
+      | 'saved'
+      | 'reels'
+      | 'groupes'
+      | 'pages'
+      | 'evenements'
+  ) => void;
 }
 
 export default function LeftSidebar({
@@ -29,7 +51,6 @@ export default function LeftSidebar({
   onSectionChange,
 }: LeftSidebarProps) {
   const { user } = useAuth();
-  const { logout } = useAuth();
   const navigate = useNavigate();
   return (
     <>
@@ -78,7 +99,10 @@ export default function LeftSidebar({
                 const iconColors = [
                   'text-green-500', // Amis
                   'text-yellow-500', // Enregistrés
-                  'text-purple-500', // Vidéos
+                  'text-purple-500', // Reels
+                  'text-blue-500', // Groupes
+                  'text-pink-500', // Pages
+                  'text-red-500', // Évènements
                 ];
                 return (
                   // TODO: Connecter "{item.label}" à la fonctionnalité réelle (navigation/API)
@@ -88,6 +112,16 @@ export default function LeftSidebar({
                     onClick={() => {
                       if (item.label === 'Amis' && onSectionChange)
                         onSectionChange('friends');
+                      else if (item.label === 'Enregistrés' && onSectionChange)
+                        onSectionChange('saved');
+                      else if (item.label === 'Reels' && onSectionChange)
+                        onSectionChange('reels');
+                      else if (item.label === 'Groupes' && onSectionChange)
+                        onSectionChange('groupes');
+                      else if (item.label === 'Pages' && onSectionChange)
+                        onSectionChange('pages');
+                      else if (item.label === 'Évènements' && onSectionChange)
+                        onSectionChange('evenements');
                       else if (item.label === 'Publications' && onSectionChange)
                         onSectionChange('feed');
                     }}
@@ -109,75 +143,6 @@ export default function LeftSidebar({
             {/* Separator */}
             <div className="border-t border-gray-200 my-4"></div>
             {/* Amis en ligne Section */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide px-2">
-                Amis en ligne
-              </h3>
-              {/* TODO: Remplacer par la vraie liste d'amis en ligne via l'API */}
-              <div className="space-y-1">
-                {[
-                  {
-                    nom: 'Emma',
-                    photo: 'https://randomuser.me/api/portraits/women/44.jpg',
-                  },
-                  {
-                    nom: 'Lucas',
-                    photo: 'https://randomuser.me/api/portraits/men/32.jpg',
-                  },
-                  {
-                    nom: 'Marie',
-                    photo: 'https://randomuser.me/api/portraits/women/65.jpg',
-                  },
-                  {
-                    nom: 'Thomas',
-                    photo: 'https://randomuser.me/api/portraits/men/41.jpg',
-                  },
-                  {
-                    nom: 'Sophie',
-                    photo: 'https://randomuser.me/api/portraits/women/12.jpg',
-                  },
-                  {
-                    nom: 'Alex',
-                    photo: 'https://randomuser.me/api/portraits/men/22.jpg',
-                  },
-                  {
-                    nom: 'Nina',
-                    photo: 'https://randomuser.me/api/portraits/women/33.jpg',
-                  },
-                  {
-                    nom: 'Paul',
-                    photo: 'https://randomuser.me/api/portraits/men/55.jpg',
-                  },
-                ].map((ami, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
-                  >
-                    <div className="relative">
-                      <Avatar
-                        prenom={ami.nom}
-                        nom={ami.nom}
-                        photo={ami.photo}
-                        size={36}
-                      />
-                      <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-500 ring-2 ring-white"></span>
-                    </div>
-                    <span className="text-[15px] font-medium text-gray-700 truncate">
-                      {ami.nom}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          {/* Bouton temporaire de déconnexion en bas */}
-          <div className="p-4 border-t border-gray-100 mt-auto">
-            <button
-              onClick={logout}
-              className="w-full px-4 py-2 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 transition-colors"
-            >
-              Déconnexion
-            </button>
           </div>
         </div>
       </div>

@@ -21,6 +21,7 @@ import CommentItem from './CommentItem';
 import ShareModal from './ShareModal';
 import Avatar from './Avatar';
 import { useNavigate } from 'react-router-dom';
+import ConfirmModal from './ConfirmModal';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -99,6 +100,7 @@ export default function PostCard({
   const commentsContainerRef = React.useRef<HTMLDivElement>(null);
   const [likeLoading, setLikeLoading] = useState(false);
   const navigate = useNavigate();
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // Synchroniser l'état local avec les props post.user_liked et post.likes_count
   React.useEffect(() => {
@@ -259,8 +261,6 @@ export default function PostCard({
 
   // Handler suppression
   const handleDelete = async () => {
-    if (!window.confirm('Supprimer ce post ? Cette action est définitive.'))
-      return;
     try {
       const res = await fetch(`${API_BASE}/api/posts/delete.php`, {
         method: 'POST',
@@ -363,10 +363,10 @@ export default function PostCard({
                         className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors text-sm font-medium w-full text-left"
                         onClick={() => {
                           setShowMenu(false);
-                          handleDelete();
+                          setShowConfirm(true);
                         }}
                       >
-                        <Trash2 className="w-4 h-4" /> Supprimer le post
+                        <Trash2 className="w-4 h-4" /> Supprimer
                       </button>
                     )}
                     <button
@@ -581,6 +581,17 @@ export default function PostCard({
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         post={post}
+      />
+      {/* ConfirmModal pour suppression */}
+      <ConfirmModal
+        isOpen={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleDelete}
+        title="Supprimer le post ?"
+        message="Cette action est définitive. Voulez-vous vraiment supprimer ce post ?"
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        type="danger"
       />
     </div>
   );

@@ -1,11 +1,10 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
   MapPin,
   Calendar,
   Users,
   FileText,
-  Camera,
   MessageCircle,
   MoreHorizontal,
   Image as ImageIcon,
@@ -13,7 +12,6 @@ import {
   Award,
 } from 'lucide-react';
 import Loading from '../components/Loading';
-import ModernToast from '../components/ModernToast';
 import { useToast } from '../hooks/useToast';
 import Navbar from '../components/Navbar';
 import Avatar from '../components/Avatar';
@@ -78,6 +76,119 @@ interface Friend {
   prenom: string;
   nom: string;
   photo_profil?: string | null;
+}
+
+// Ajouter la fonction utilitaire pour les erreurs
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'string') return err;
+  return 'Erreur inconnue';
+}
+
+// Lightbox pour zoom photo
+function PhotoLightbox({
+  images,
+  index,
+  onClose,
+}: {
+  images: string[];
+  index: number;
+  onClose: () => void;
+}) {
+  const [current, setCurrent] = useState(index);
+  if (!images.length) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+      <button
+        className="absolute top-4 right-4 text-white text-3xl"
+        onClick={onClose}
+      >
+        &times;
+      </button>
+      <button
+        className="absolute left-4 top-1/2 -translate-y-1/2 text-white text-4xl px-2"
+        onClick={() => setCurrent((c) => (c > 0 ? c - 1 : c))}
+        disabled={current === 0}
+      >
+        &#8592;
+      </button>
+      <img
+        src={images[current]}
+        alt="Photo"
+        className="max-h-[80vh] max-w-[90vw] rounded-2xl shadow-2xl"
+      />
+      <button
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl px-2"
+        onClick={() => setCurrent((c) => (c < images.length - 1 ? c + 1 : c))}
+        disabled={current === images.length - 1}
+      >
+        &#8594;
+      </button>
+    </div>
+  );
+}
+
+function ProfilePhotosTab({
+  images,
+  lightboxIdx,
+  setLightboxIdx,
+  friendStatus,
+  profile,
+}: {
+  images: string[];
+  lightboxIdx: number | null;
+  setLightboxIdx: (idx: number | null) => void;
+  friendStatus: FriendStatus;
+  profile: UserProfile;
+}) {
+  return (
+    <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
+      <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+        <ImageIcon className="w-6 h-6 text-amber-500" />
+        Photos ({images.length})
+      </h3>
+      {images.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <ImageIcon className="w-12 h-12 text-amber-500" />
+          </div>
+          <h4 className="text-xl font-semibold text-gray-900 mb-2">
+            Aucune photo
+          </h4>
+          <p className="text-gray-500">
+            {friendStatus === 'self'
+              ? "Vous n'avez encore partagé aucune photo."
+              : `${profile.prenom} n'a encore partagé aucune photo.`}
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {images.map((url, idx) => (
+              <button
+                key={url + idx}
+                className="aspect-square bg-gray-100 rounded-xl overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onClick={() => setLightboxIdx(idx)}
+              >
+                <img
+                  src={url}
+                  alt="Photo"
+                  className="object-cover w-full h-full transition-transform duration-200 hover:scale-105"
+                />
+              </button>
+            ))}
+          </div>
+          {lightboxIdx !== null && (
+            <PhotoLightbox
+              images={images}
+              index={lightboxIdx}
+              onClose={() => setLightboxIdx(null)}
+            />
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
 export default function ProfilePage() {
@@ -164,6 +275,7 @@ export default function ProfilePage() {
     })
       .then(async (res) => {
         const data = await res.json();
+        console.log('[PROFILE API]', data); // DEBUG
         if (!data.success) throw new Error(data.message);
         setProfile(data.data.user);
         setFriendStatus(data.data.friend_status);
@@ -194,6 +306,7 @@ export default function ProfilePage() {
       friendsPagination.per_page
     )
       .then(({ friends, pagination }) => {
+        console.log('[FRIENDS API]', friends, pagination); // DEBUG
         setFriends((prev) => [...prev, ...friends]);
         setFriendsPagination(pagination);
       })
@@ -233,6 +346,7 @@ export default function ProfilePage() {
     });
     fetchFriends(profile.id, 1, 20)
       .then(({ friends, pagination }) => {
+        console.log('[FRIENDS API]', friends, pagination); // DEBUG
         setFriends(friends);
         setFriendsPagination(pagination);
       })
@@ -324,6 +438,8 @@ export default function ProfilePage() {
     }
   };
 
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+
   if (loading) return <Loading />;
   if (fetchError)
     return (
@@ -357,7 +473,7 @@ export default function ProfilePage() {
       id: 'friends',
       label: 'Amis',
       icon: Users,
-      count: friends.length,
+      count: profile?.friends_count ?? friends.length,
       color: 'violet',
     },
     {
@@ -366,7 +482,7 @@ export default function ProfilePage() {
       icon: ImageIcon,
       color: 'amber',
     },
-  ];
+  ] as const;
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -523,7 +639,7 @@ export default function ProfilePage() {
           <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
               <Users className="w-6 h-6 text-violet-500" />
-              Amis ({friends.length})
+              Amis ({profile?.friends_count ?? friends.length})
             </h3>
             {friends.length === 0 ? (
               <div className="text-center py-12">
@@ -543,9 +659,10 @@ export default function ProfilePage() {
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                   {friends.map((friend) => (
-                    <div
+                    <Link
                       key={friend.id}
-                      className="text-center group cursor-pointer"
+                      to={`/profile/${friend.id}`}
+                      className="text-center group cursor-pointer block"
                     >
                       <div className="relative mb-3">
                         <Avatar
@@ -559,7 +676,7 @@ export default function ProfilePage() {
                       <p className="font-medium text-gray-900 text-sm group-hover:text-blue-600 transition-colors">
                         {friend.prenom} {friend.nom}
                       </p>
-                    </div>
+                    </Link>
                   ))}
                 </div>
                 {friendsPagination.has_next && (
@@ -572,28 +689,20 @@ export default function ProfilePage() {
           </div>
         );
 
-      case 'photos':
+      case 'photos': {
+        const images = posts
+          .filter((p) => p.type === 'image' && p.image_url)
+          .map((p) => p.image_url!);
         return (
-          <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-              <ImageIcon className="w-6 h-6 text-amber-500" />
-              Photos
-            </h3>
-            <div className="text-center py-12">
-              <div className="w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <ImageIcon className="w-12 h-12 text-amber-500" />
-              </div>
-              <h4 className="text-xl font-semibold text-gray-900 mb-2">
-                Aucune photo
-              </h4>
-              <p className="text-gray-500">
-                {friendStatus === 'self'
-                  ? "Vous n'avez encore partagé aucune photo."
-                  : `${profile.prenom} n'a encore partagé aucune photo.`}
-              </p>
-            </div>
-          </div>
+          <ProfilePhotosTab
+            images={images}
+            lightboxIdx={lightboxIdx}
+            setLightboxIdx={setLightboxIdx}
+            friendStatus={friendStatus}
+            profile={profile}
+          />
         );
+      }
 
       default:
         return null;
@@ -621,12 +730,11 @@ export default function ProfilePage() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
             <div
               className={
-                'absolute inset-0 bg-[url(\'data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\')] opacity-50'
+                'absolute inset-0 bg-[url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")] opacity-50'
               }
             />
           </div>
         )}
-
         {/* Profile Header Container */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative -mt-24 pb-8">
@@ -635,52 +743,43 @@ export default function ProfilePage() {
               <div className="px-8 pt-8 pb-0">
                 <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 sm:gap-8">
                   {/* Avatar et info principale */}
-                  <div className="flex flex-col sm:flex-row sm:items-end gap-6 flex-1">
-                    <div className="relative flex-shrink-0">
-                      <Avatar
-                        userId={profile.id}
-                        prenom={profile.prenom}
-                        nom={profile.nom}
-                        photo={profile.photo_profil}
-                        size={160}
-                        className="border-6 border-white shadow-2xl"
-                      />
-                      {friendStatus === 'self' && (
-                        <button className="absolute bottom-2 right-2 w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110">
-                          <Camera className="w-5 h-5" />
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="space-y-2 flex-1 min-w-0">
-                      <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-0 break-words">
-                        {profile.prenom} {profile.nom}
-                      </h1>
-                      {/* Nombre d'amis sous le nom */}
-                      <div className="flex items-center gap-2 mt-1 text-gray-700 font-medium text-base flex-wrap">
-                        <span>
-                          {profile.friends_count} ami
-                          {profile.friends_count !== 1 ? 's' : ''}
-                        </span>
-                        <span className="mx-1">·</span>
-                        <span>
-                          {mutualFriendsCount} ami
-                          {mutualFriendsCount !== 1 ? 's' : ''} en commun
-                        </span>
-                      </div>
-                      {/* Bio juste après */}
-                      {profile.bio && profile.bio.trim() !== '' ? (
-                        <p className="text-lg text-gray-700 leading-relaxed max-w-full sm:max-w-2xl mt-2 break-words">
-                          {profile.bio}
-                        </p>
-                      ) : (
-                        <span className="italic text-gray-400 text-lg mt-2 block">
-                          Aucune bio renseignée.
-                        </span>
-                      )}
-                    </div>
+                  <div className="relative flex-shrink-0">
+                    <Avatar
+                      userId={profile.id}
+                      prenom={profile.prenom}
+                      nom={profile.nom}
+                      photo={profile.photo_profil}
+                      size={160}
+                      className="border-6 border-white shadow-2xl"
+                    />
                   </div>
-
+                  <div className="space-y-2 flex-1 min-w-0">
+                    <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-0 break-words flex items-center gap-2">
+                      {profile.prenom} {profile.nom}
+                    </h1>
+                    {/* Nombre d'amis sous le nom */}
+                    <div className="flex items-center gap-2 mt-1 text-gray-700 font-medium text-base flex-wrap">
+                      <span>
+                        {profile.friends_count} ami
+                        {profile.friends_count !== 1 ? 's' : ''}
+                      </span>
+                      <span className="mx-1">·</span>
+                      <span>
+                        {mutualFriendsCount} ami
+                        {mutualFriendsCount !== 1 ? 's' : ''} en commun
+                      </span>
+                    </div>
+                    {/* Bio juste après */}
+                    {profile.bio && profile.bio.trim() !== '' ? (
+                      <p className="text-lg text-gray-700 leading-relaxed max-w-full sm:max-w-2xl mt-2 break-words">
+                        {profile.bio}
+                      </p>
+                    ) : (
+                      <span className="italic text-gray-400 text-lg mt-2 block">
+                        Aucune bio renseignée.
+                      </span>
+                    )}
+                  </div>
                   {/* Actions */}
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <ActionButton
@@ -700,7 +799,6 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
-
               {/* Navigation Tabs */}
               <div className="border-t border-gray-100 mt-8">
                 <div className="flex overflow-x-auto scrollbar-hide">
@@ -709,41 +807,34 @@ export default function ProfilePage() {
                     const isActive = activeTab === tab.id;
                     const colorClasses = {
                       blue: isActive
-                        ? 'text-blue-600 border-blue-600'
+                        ? 'text-blue-600 border-blue-600 bg-blue-50'
                         : 'text-gray-600 hover:text-blue-600',
                       emerald: isActive
-                        ? 'text-emerald-600 border-emerald-600'
+                        ? 'text-emerald-600 border-emerald-600 bg-emerald-50'
                         : 'text-gray-600 hover:text-emerald-600',
                       violet: isActive
-                        ? 'text-violet-600 border-violet-600'
+                        ? 'text-violet-600 border-violet-600 bg-violet-50'
                         : 'text-gray-600 hover:text-violet-600',
                       amber: isActive
-                        ? 'text-amber-600 border-amber-600'
+                        ? 'text-amber-600 border-amber-600 bg-amber-50'
                         : 'text-gray-600 hover:text-amber-600',
                     };
-
                     return (
                       <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
-                        className={`flex items-center gap-3 px-8 py-4 font-semibold transition-all duration-300 border-b-3 whitespace-nowrap ${
-                          isActive
-                            ? `border-${tab.color}-600 text-${tab.color}-600 bg-${tab.color}-50/50`
-                            : `border-transparent text-gray-600 hover:text-${tab.color}-600 hover:bg-gray-50`
-                        } ${
-                          colorClasses[tab.color as keyof typeof colorClasses]
+                        onClick={() =>
+                          setActiveTab(
+                            tab.id as 'posts' | 'about' | 'friends' | 'photos'
+                          )
+                        }
+                        className={`flex items-center gap-3 px-8 py-4 font-semibold transition-all duration-300 border-b-4 whitespace-nowrap border-transparent ${
+                          colorClasses[tab.color]
                         }`}
                       >
                         <Icon className="w-5 h-5" />
                         <span>{tab.label}</span>
-                        {tab.count !== undefined && (
-                          <span
-                            className={`px-2 py-1 text-xs font-bold rounded-full ${
-                              isActive
-                                ? `bg-${tab.color}-100 text-${tab.color}-700`
-                                : 'bg-gray-100 text-gray-600'
-                            }`}
-                          >
+                        {'count' in tab && tab.count !== undefined && (
+                          <span className="ml-2 text-xs font-bold">
                             {tab.count}
                           </span>
                         )}
@@ -756,19 +847,10 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="mt-8">{renderTabContent()}</div>
+      {/* Contenu des tabs */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        {renderTabContent()}
       </div>
-
-      <ModernToast toasts={toast.toasts} onRemove={toast.removeToast} />
     </div>
   );
-}
-
-function getErrorMessage(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (typeof err === 'string') return err;
-  return 'Erreur inconnue';
 }

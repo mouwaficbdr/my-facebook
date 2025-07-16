@@ -4,9 +4,16 @@ import logo from '../assets/facebook-blue-logo-full.png';
 import logoMini from '../assets/facebook-logo-mini.png';
 import { useNavigate } from 'react-router-dom';
 import UserSearchBar from './UserSearchBar';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Avatar from './Avatar';
 import { getMediaUrl } from '../utils/cdn';
+import ChangePasswordModal from './ChangePasswordModal';
+import NotificationPanel from './NotificationPanel';
+import { useToast } from '../hooks/useToast';
+import {
+  fetchNotifications,
+  markNotificationsAsRead,
+} from '../api/notifications';
 
 interface NavbarProps {
   onMenuClick: () => void;
@@ -14,8 +21,90 @@ interface NavbarProps {
 
 export default function Navbar({ onMenuClick }: NavbarProps) {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [changePwdOpen, setChangePwdOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifLoading, setNotifLoading] = useState(false);
+  const [notifBadge, setNotifBadge] = useState(0);
+  const notifPollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const notifPanelRef = useRef<HTMLDivElement>(null);
+  const { success, error } = useToast();
+
+  // Chargement notifications + polling
+  const loadNotifications = async () => {
+    setNotifLoading(true);
+    try {
+      const data = await fetchNotifications(1, 20, true); // n'affiche que les non lues
+      setNotifications(data.notifications);
+      setNotifBadge(data.notifications.length);
+    } catch (e: any) {
+      error(e.message || 'Erreur notifications');
+    } finally {
+      setNotifLoading(false);
+    }
+  };
+  useEffect(() => {
+    loadNotifications();
+    notifPollingRef.current = setInterval(loadNotifications, 20000);
+    return () => {
+      if (notifPollingRef.current) clearInterval(notifPollingRef.current);
+    };
+  }, []);
+
+  // Marquer comme lu
+  const handleMarkAsRead = async (id: number) => {
+    try {
+      await markNotificationsAsRead([id]);
+      setNotifications((prev: any[]) =>
+        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+      );
+      setNotifBadge((prev) => Math.max(0, prev - 1));
+    } catch (e: any) {
+      error(e?.message || 'Erreur lors du marquage');
+    }
+  };
+
+  // Ouvrir/fermer panneau
+  const handleNotifClick = () => {
+    setNotifOpen((v) => !v);
+    if (!notifOpen) loadNotifications();
+  };
+  // Fermer au clic extérieur
+  useEffect(() => {
+    if (!notifOpen) return;
+    const close = (e: MouseEvent) => {
+      if (
+        notifPanelRef.current &&
+        !notifPanelRef.current.contains(e.target as Node)
+      ) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [notifOpen]);
+
+  // Fermer le menu si clic en dehors
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    }
+    if (profileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [profileMenuOpen]);
 
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -86,11 +175,17 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
                 7
               </span>
             </button>
-            <button className="h-12 w-12 md:h-10 md:w-10 p-0 hover:bg-gray-100 rounded-lg relative transition-colors flex items-center justify-center h-full">
+            <button
+              className="h-12 w-12 md:h-10 md:w-10 p-0 hover:bg-gray-100 rounded-lg relative transition-colors flex items-center justify-center h-full notif-bell"
+              onClick={handleNotifClick}
+              aria-label="Notifications"
+            >
               <Bell className="h-6 w-6 text-gray-600" />
-              <span className="absolute -top-1 -right-1 h-[18px] min-w-[18px] text-[11px] bg-red-500 text-white rounded-full flex items-center justify-center font-medium px-1">
-                12
-              </span>
+              {notifBadge > 0 && (
+                <span className="absolute -top-1 -right-1 h-[18px] min-w-[18px] text-[11px] bg-red-500 text-white rounded-full flex items-center justify-center font-medium px-1 animate-pulse">
+                  {notifBadge}
+                </span>
+              )}
             </button>
           </div>
           {/* Right section */}
@@ -101,18 +196,80 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
               <span>Créer</span>
             </button> */}
             <div className="flex items-center space-x-4 md:space-x-3 w-full">
-              {/* TODO: Connecter l'avatar utilisateur au menu profil/utilisateur */}
-              <Avatar
-                userId={user?.id}
-                prenom={user?.prenom || ''}
-                nom={user?.nom || ''}
-                photo={getMediaUrl(user?.photo_profil)}
-                size={40}
-                className="h-9 w-9 sm:h-12 sm:w-12 md:h-10 md:w-10 ring-2 ring-blue-500 ring-offset-2"
-              />
-              <span className="hidden sm:block flex-1 text-sm sm:text-lg md:text-base font-bold text-gray-700 ml-1 truncate text-right">
-                {user?.prenom}
-              </span>
+              <button
+                className="flex items-center space-x-2 focus:outline-none group"
+                onClick={() => setProfileMenuOpen((v) => !v)}
+                aria-label="Ouvrir le menu profil"
+              >
+                <Avatar
+                  userId={user?.id}
+                  prenom={user?.prenom || ''}
+                  nom={user?.nom || ''}
+                  photo={getMediaUrl(user?.photo_profil)}
+                  size={40}
+                  className="h-9 w-9 sm:h-12 sm:w-12 md:h-10 md:w-10 ring-2 ring-blue-500 ring-offset-2 group-hover:ring-4 group-hover:ring-blue-300 transition-all duration-200"
+                />
+                <span className="hidden sm:block flex-1 text-sm sm:text-lg md:text-base font-bold text-gray-700 ml-1 truncate text-right group-hover:text-blue-600 transition-colors">
+                  {user?.prenom}
+                </span>
+                <svg
+                  className={`w-4 h-4 ml-1 transition-transform duration-200 ${
+                    profileMenuOpen ? 'rotate-180' : ''
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {/* Menu profil dropdown */}
+              {profileMenuOpen && (
+                <div
+                  ref={profileMenuRef}
+                  className="absolute right-0 top-14 sm:top-16 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 animate-fade-in-up"
+                >
+                  <div className="flex flex-col items-center py-6 px-4">
+                    <Avatar
+                      userId={user?.id}
+                      prenom={user?.prenom || ''}
+                      nom={user?.nom || ''}
+                      photo={getMediaUrl(user?.photo_profil)}
+                      size={56}
+                      className="mb-2 ring-2 ring-blue-400"
+                    />
+                    <div className="font-bold text-lg text-gray-900 mb-1 truncate w-full text-center">
+                      {user?.prenom} {user?.nom}
+                    </div>
+                    <div className="text-gray-500 text-sm mb-4 truncate w-full text-center">
+                      {user?.email}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setChangePwdOpen(true);
+                        setProfileMenuOpen(false);
+                      }}
+                      className="w-full py-2 mb-2 rounded-full bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 font-semibold shadow hover:from-blue-200 hover:to-blue-300 transition-all text-base border border-blue-200"
+                    >
+                      Modifier le mot de passe
+                    </button>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setProfileMenuOpen(false);
+                      }}
+                      className="w-full py-2 mt-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold shadow-md hover:from-blue-600 hover:to-blue-700 transition-all text-base"
+                    >
+                      Déconnexion
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -151,6 +308,20 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           </div>
         </div>
       )}
+      <NotificationPanel
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        notifications={notifications}
+        loading={notifLoading}
+        onMarkAsRead={handleMarkAsRead}
+        onRefresh={loadNotifications}
+        showToast={(msg) => success(msg)}
+      />
+      <ChangePasswordModal
+        open={changePwdOpen}
+        onClose={() => setChangePwdOpen(false)}
+        onSuccess={logout}
+      />
     </nav>
   );
 }
