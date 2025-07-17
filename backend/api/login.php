@@ -90,6 +90,8 @@ $payload = [
     'user_id' => $user['id'],
     'email' => $user['email'],
     'role' => $user['role'],
+    'prenom' => $user['prenom'],
+    'nom' => $user['nom'],
     'iat' => time(),
     'exp' => time() + (7 * 24 * 60 * 60) // 7 jours
 ];
@@ -132,4 +134,4 @@ echo json_encode([
         'role' => $user['role'],
         'photo_profil' => $user['photo_profil'] ?? null
     ]
-]); 
+]);

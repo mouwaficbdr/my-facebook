@@ -1,11 +1,13 @@
 <?php
 // backend/lib/jwt.php
 
-function base64url_encode($data) {
+function base64url_encode($data)
+{
     return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
 }
 
-function base64url_decode($data) {
+function base64url_decode($data)
+{
     $remainder = strlen($data) % 4;
     if ($remainder) {
         $data .= str_repeat('=', 4 - $remainder);
@@ -13,7 +15,8 @@ function base64url_decode($data) {
     return base64_decode(strtr($data, '-_', '+/'));
 }
 
-function generate_jwt(array $payload): string {
+function generate_jwt(array $payload): string
+{
     $header = ['alg' => 'HS256', 'typ' => 'JWT'];
     $key = getenv('JWT_SECRET') ?: 'changeme';
     $header_enc = base64url_encode(json_encode($header));
@@ -23,7 +26,8 @@ function generate_jwt(array $payload): string {
     return "$header_enc.$payload_enc.$signature_enc";
 }
 
-function validate_jwt(string $jwt) {
+function validate_jwt(string $jwt)
+{
     $key = getenv('JWT_SECRET') ?: 'changeme';
     $parts = explode('.', $jwt);
     if (count($parts) !== 3) return false;
@@ -37,7 +41,8 @@ function validate_jwt(string $jwt) {
     return $payload;
 }
 
-function get_authenticated_user() {
+function get_authenticated_user()
+{
     // 1. JWT via cookie
     if (isset($_COOKIE['jwt'])) {
         $jwt = $_COOKIE['jwt'];
@@ -58,6 +63,35 @@ function get_authenticated_user() {
         'id' => $payload['user_id'],
         'email' => $payload['email'] ?? null,
         'role' => $payload['role'] ?? 'user',
-        // Ajoute d'autres champs si besoin
+        'user_id' => $payload['user_id'], // Ajout pour compatibilité
+        'prenom' => $payload['prenom'] ?? null,
+        'nom' => $payload['nom'] ?? null,
     ];
+}
+
+// Alias pour compatibilité avec les nouveaux endpoints
+function verify_jwt()
+{
+    $user = get_authenticated_user();
+    if (!$user) return null;
+
+    // Si les champs prenom/nom ne sont pas dans le JWT (ancien token),
+    // on les récupère de la base de données
+    if (!isset($user['prenom']) || !isset($user['nom'])) {
+        try {
+            require_once __DIR__ . '/../config/db.php';
+            $pdo = getPDO();
+            $stmt = $pdo->prepare('SELECT prenom, nom FROM users WHERE id = ?');
+            $stmt->execute([$user['user_id']]);
+            $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($userData) {
+                $user['prenom'] = $userData['prenom'];
+                $user['nom'] = $userData['nom'];
+            }
+        } catch (Exception $e) {
+            // En cas d'erreur, on continue avec les données disponibles
+        }
+    }
+
+    return $user;
 }

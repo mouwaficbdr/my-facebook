@@ -14,6 +14,7 @@ import {
   fetchNotifications,
   markNotificationsAsRead,
 } from '../api/notifications';
+import { fetchUnreadCount } from '../api/messages';
 
 interface NavbarProps {
   onMenuClick: () => void;
@@ -30,6 +31,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [notifLoading, setNotifLoading] = useState(false);
   const [notifBadge, setNotifBadge] = useState(0);
+  const [messagesBadge, setMessagesBadge] = useState(0);
   const notifPollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const notifPanelRef = useRef<HTMLDivElement>(null);
   const { success, error } = useToast();
@@ -47,9 +49,32 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
       setNotifLoading(false);
     }
   };
+
+  // Chargement compteur messages
+  const loadMessagesCount = async () => {
+    try {
+      const count = await fetchUnreadCount();
+      setMessagesBadge(count);
+    } catch (e: any) {
+      // Silencieux pour éviter le spam d'erreurs - seulement en dev
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erreur compteur messages:', e.message);
+      }
+      // En cas d'erreur, on garde le compteur à 0
+      setMessagesBadge(0);
+    }
+  };
+
   useEffect(() => {
     loadNotifications();
-    notifPollingRef.current = setInterval(loadNotifications, 20000);
+    loadMessagesCount();
+
+    // Polling toutes les 20s pour notifications et messages
+    notifPollingRef.current = setInterval(() => {
+      loadNotifications();
+      loadMessagesCount();
+    }, 20000);
+
     return () => {
       if (notifPollingRef.current) clearInterval(notifPollingRef.current);
     };
@@ -169,11 +194,17 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
             >
               <Home className="h-6 w-6" />
             </button>
-            <button className="h-12 w-12 md:h-10 md:w-10 p-0 hover:bg-gray-100 rounded-lg relative transition-colors flex items-center justify-center h-full">
+            <button
+              className="h-12 w-12 md:h-10 md:w-10 p-0 hover:bg-gray-100 rounded-lg relative transition-colors flex items-center justify-center h-full"
+              onClick={() => navigate('/messages')}
+              aria-label="Messages"
+            >
               <MessageCircle className="h-6 w-6 text-gray-600" />
-              <span className="absolute -top-1 -right-1 h-[18px] min-w-[18px] text-[11px] bg-red-500 text-white rounded-full flex items-center justify-center font-medium px-1">
-                7
-              </span>
+              {messagesBadge > 0 && (
+                <span className="absolute -top-1 -right-1 h-[18px] min-w-[18px] text-[11px] bg-red-500 text-white rounded-full flex items-center justify-center font-medium px-1 animate-pulse">
+                  {messagesBadge}
+                </span>
+              )}
             </button>
             <button
               className="h-12 w-12 md:h-10 md:w-10 p-0 hover:bg-gray-100 rounded-lg relative transition-colors flex items-center justify-center h-full notif-bell"

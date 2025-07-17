@@ -8,6 +8,7 @@ import ResetPassword from './pages/ResetPassword';
 import Home from './pages/Home';
 import ProfilePage from './pages/ProfilePage';
 import MyProfilePage from './pages/MyProfilePage';
+import Messages from './pages/Messages';
 import ToastGlobal from './components/ToastGlobal';
 
 const App = () => {
@@ -22,6 +23,7 @@ const App = () => {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/home" element={<Home />} />
+            <Route path="/messages" element={<Messages />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/me" element={<MyProfilePage />} />
             <Route path="*" element={<Navigate to="/login" />} />

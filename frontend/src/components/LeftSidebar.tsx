@@ -7,6 +7,7 @@ import {
   Bookmark,
   BookOpen,
   Calendar,
+  Home,
 } from 'lucide-react';
 import Avatar from './Avatar';
 import { useNavigate } from 'react-router-dom';
@@ -19,9 +20,11 @@ const iconComponents = {
   Bookmark,
   BookOpen,
   Calendar,
+  Home,
 };
 
 const sidebarItems = [
+  { icon: 'Home', label: 'Feed' },
   { icon: 'Users2', label: 'Amis' },
   { icon: 'Bookmark', label: 'Enregistrés' },
   { icon: 'Play', label: 'Reels' },
@@ -97,6 +100,7 @@ export default function LeftSidebar({
                   iconComponents[item.icon as keyof typeof iconComponents];
                 // Palette d'icônes colorées
                 const iconColors = [
+                  'text-blue-600', // Feed
                   'text-green-500', // Amis
                   'text-yellow-500', // Enregistrés
                   'text-purple-500', // Reels
@@ -110,7 +114,9 @@ export default function LeftSidebar({
                     key={index}
                     className="w-full flex items-center justify-start h-12 text-left relative hover:bg-gray-100 rounded-lg px-3"
                     onClick={() => {
-                      if (item.label === 'Amis' && onSectionChange)
+                      if (item.label === 'Feed' && onSectionChange)
+                        onSectionChange('feed');
+                      else if (item.label === 'Amis' && onSectionChange)
                         onSectionChange('friends');
                       else if (item.label === 'Enregistrés' && onSectionChange)
                         onSectionChange('saved');
@@ -122,8 +128,6 @@ export default function LeftSidebar({
                         onSectionChange('pages');
                       else if (item.label === 'Évènements' && onSectionChange)
                         onSectionChange('evenements');
-                      else if (item.label === 'Publications' && onSectionChange)
-                        onSectionChange('feed');
                     }}
                   >
                     <div className="w-9 h-9 mr-3 flex items-center justify-center flex-shrink-0">
