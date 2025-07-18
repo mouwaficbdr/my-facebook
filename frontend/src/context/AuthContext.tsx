@@ -39,10 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(JSON.parse(savedUser));
         }
       } catch (error) {
-        console.error(
-          "Erreur lors de la vérification de l'authentification:",
-          error
-        );
+        // Suppression du console.error de debug
       } finally {
         setIsLoading(false);
       }

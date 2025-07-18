@@ -187,5 +187,12 @@ export async function searchFriendsForChat(query: string): Promise<
     throw new Error(data.message || 'Erreur lors de la recherche');
   }
 
-  return data.data.users || [];
+  // Supporte les deux formats de réponse (data.users ou users à la racine)
+  if (data && data.data && Array.isArray(data.data.users)) {
+    return data.data.users;
+  } else if (Array.isArray(data.users)) {
+    return data.users;
+  } else {
+    return [];
+  }
 }

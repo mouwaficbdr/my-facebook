@@ -72,10 +72,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
           // en cas de problème réseau temporaire
         }
       } catch (error) {
-        console.error(
-          "Erreur lors de la vérification de l'authentification admin:",
-          error
-        );
+        // Suppression du console.error de debug
         // Ne pas rediriger automatiquement pour éviter les boucles infinies
         setUser(null);
         localStorage.removeItem('admin_user');

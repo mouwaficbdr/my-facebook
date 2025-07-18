@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   fetchConversations,
   fetchMessages,
@@ -30,6 +30,7 @@ export default function Messages() {
   const { user } = useAuth();
   const { success, error } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // États principaux
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -65,6 +66,34 @@ export default function Messages() {
   useEffect(() => {
     loadConversations();
 
+    // Si un paramètre user=ID est présent dans l'URL, sélectionner la conversation correspondante
+    const userIdParam = searchParams.get('user');
+    if (userIdParam) {
+      const userId = parseInt(userIdParam, 10);
+      // Attendre le chargement des conversations pour sélectionner
+      setTimeout(() => {
+        setSelectedConversation((prev) => {
+          // Si déjà sélectionné, ne rien faire
+          if (prev && prev.friend_id === userId) return prev;
+          // Chercher la conversation existante
+          const conv = conversations.find((c) => c.friend_id === userId);
+          if (conv) return conv;
+          // Sinon, créer une conversation temporaire (sera remplacée au prochain polling)
+          return {
+            friend_id: userId,
+            nom: '',
+            prenom: '',
+            photo_profil: null,
+            last_message: '',
+            last_message_time: '',
+            last_message_formatted: '',
+            last_sender_id: 0,
+            unread_count: 0,
+          };
+        });
+      }, 500);
+    }
+
     // Polling toutes les 3 secondes pour les nouveaux messages
     pollingRef.current = setInterval(() => {
       if (selectedConversation) {
@@ -92,6 +121,43 @@ export default function Messages() {
       setShowMobileChat(true);
     }
   }, [selectedConversation]);
+
+  // Compléter dynamiquement les infos du correspondant si elles sont manquantes
+  useEffect(() => {
+    if (
+      selectedConversation &&
+      (!selectedConversation.nom || !selectedConversation.prenom)
+    ) {
+      // Chercher dans la liste des conversations
+      const conv = conversations.find(
+        (c) => c.friend_id === selectedConversation.friend_id
+      );
+      if (conv) {
+        setSelectedConversation((prev) =>
+          prev && prev.friend_id === conv.friend_id ? conv : prev
+        );
+      } else {
+        // Sinon, chercher via l'API de recherche d'amis
+        searchFriendsForChat('').then((results) => {
+          const friend = results.find(
+            (f: any) => f.id === selectedConversation.friend_id
+          );
+          if (friend) {
+            setSelectedConversation((prev) =>
+              prev && prev.friend_id === friend.id
+                ? {
+                    ...prev,
+                    nom: friend.nom,
+                    prenom: friend.prenom,
+                    photo_profil: friend.photo_profil,
+                  }
+                : prev
+            );
+          }
+        });
+      }
+    }
+  }, [selectedConversation, conversations]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -501,9 +567,6 @@ export default function Messages() {
                       <h2 className="font-semibold text-gray-900">
                         {selectedConversation.prenom} {selectedConversation.nom}
                       </h2>
-                      <p className="text-sm text-green-500 font-medium">
-                        En ligne
-                      </p>
                     </div>
                   </button>
                 </div>

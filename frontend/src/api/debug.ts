@@ -16,7 +16,7 @@ export async function debugAuth() {
 
     return await res.json();
   } catch (err: any) {
-    console.error("Erreur lors du débogage de l'authentification:", err);
+    // Suppression du console.error de debug
     throw err;
   }
 }

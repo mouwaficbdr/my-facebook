@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   MapPin,
   Calendar,
@@ -216,6 +216,7 @@ export default function ProfilePage() {
   const toast = useToast();
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const navigate = useNavigate();
 
   // Ajout pour la pagination des amis
   const [friendsPagination, setFriendsPagination] = useState({
@@ -276,7 +277,6 @@ export default function ProfilePage() {
     })
       .then(async (res) => {
         const data = await res.json();
-        console.log('[PROFILE API]', data); // DEBUG
         if (!data.success) throw new Error(data.message);
         setProfile(data.data.user);
         setFriendStatus(data.data.friend_status);
@@ -307,7 +307,6 @@ export default function ProfilePage() {
       friendsPagination.per_page
     )
       .then(({ friends, pagination }) => {
-        console.log('[FRIENDS API]', friends, pagination); // DEBUG
         setFriends((prev) => [...prev, ...friends]);
         setFriendsPagination(pagination);
       })
@@ -347,7 +346,6 @@ export default function ProfilePage() {
     });
     fetchFriends(profile.id, 1, 20)
       .then(({ friends, pagination }) => {
-        console.log('[FRIENDS API]', friends, pagination); // DEBUG
         setFriends(friends);
         setFriendsPagination(pagination);
       })
@@ -789,7 +787,10 @@ export default function ProfilePage() {
                       onStatusChange={setFriendStatus}
                     />
                     {friendStatus === 'friends' && (
-                      <button className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all duration-300 hover:scale-105">
+                      <button
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all duration-300 hover:scale-105"
+                        onClick={() => navigate(`/messages?user=${profile.id}`)}
+                      >
                         <MessageCircle className="w-5 h-5" />
                         <span className="hidden sm:inline">Message</span>
                       </button>

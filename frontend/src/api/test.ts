@@ -16,7 +16,7 @@ export async function testAuth() {
 
     return await res.json();
   } catch (err: any) {
-    console.error("Erreur lors du test d'authentification:", err);
+    // Suppression du console.error de debug
     throw err;
   }
 }

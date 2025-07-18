@@ -58,10 +58,6 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
       setMessagesBadge(count);
     } catch (e: any) {
       // Silencieux pour éviter le spam d'erreurs - seulement en dev
-      if (import.meta.env.MODE === 'development') {
-        console.error('Erreur compteur messages:', e.message);
-      }
-      // En cas d'erreur, on garde le compteur à 0
       setMessagesBadge(0);
     }
   };

@@ -58,7 +58,7 @@ export async function checkAdminAuth() {
 
     return data;
   } catch (error) {
-    console.error('Admin auth check error:', error);
+    // Suppression du console.error de debug
     throw error;
   }
 }

@@ -21,12 +21,12 @@ export default defineConfig({
         cookieDomainRewrite: {
           '*': '',
         },
-        configure: (proxy, _options) => {
-          proxy.on('proxyReq', (_proxyReq, _req, _res) => {
+        configure: (proxy) => {
+          proxy.on('proxyReq', (_proxyReq, _req) => {
             // Log cookies being sent to the backend
             console.log('Cookies sent to backend:', _req.headers.cookie);
           });
-          proxy.on('proxyRes', (proxyRes, _req, _res) => {
+          proxy.on('proxyRes', (proxyRes) => {
             // Log cookies received from the backend
             console.log(
               'Cookies received from backend:',

@@ -177,11 +177,7 @@ export default function Stories() {
                 />
 
                 {/* Indicateur de nombre de stories */}
-                {userStory.stories.length > 1 && (
-                  <div className="absolute -bottom-1 right-0 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center border border-white">
-                    {userStory.stories.length}
-                  </div>
-                )}
+                {/* Supprimer le bloc qui affiche le compteur */}
               </div>
               <span className="mt-2 sm:mt-3 text-xs sm:text-sm text-center text-gray-700 truncate w-full font-medium">
                 {userStory.user_prenom} {userStory.user_nom}
