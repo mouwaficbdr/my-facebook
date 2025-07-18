@@ -712,7 +712,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 mb-16">
       <Navbar onMenuClick={() => {}} />
 
       {/* Header Cover avec design pleine largeur */}
