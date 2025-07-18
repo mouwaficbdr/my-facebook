@@ -38,12 +38,16 @@ function require_auth() {
         }
     }
     // 2. Sinon, fallback sur le cookie
+    if (!$token && !empty($_COOKIE['admin_jwt'])) {
+        $token = $_COOKIE['admin_jwt'];
+    }
     if (!$token && !empty($_COOKIE['jwt'])) {
         $token = $_COOKIE['jwt'];
     }
-    if (!$token && !empty($_COOKIE['token'])) {
-        $token = $_COOKIE['token'];
-    }
+    // Suppression du fallback sur 'token' (obsolète)
+    // if (!$token && !empty($_COOKIE['token'])) {
+    //     $token = $_COOKIE['token'];
+    // }
     if (!$token) {
         log_error('Aucun JWT trouvé', ['cookies' => $_COOKIE, 'headers' => $_SERVER]);
         http_response_code(401);

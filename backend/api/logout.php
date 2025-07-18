@@ -7,7 +7,7 @@ handle_cors();
 
 header('Content-Type: application/json');
 // Supprimer le cookie JWT (token)
-setcookie('token', '', [
+setcookie('jwt', '', [
     'expires' => time() - 3600,
     'path' => '/',
     'domain' => '',
