@@ -3,7 +3,8 @@
 require_once __DIR__ . '/jwt.php';
 require_once __DIR__ . '/log.php';
 
-function require_auth() {
+function require_auth()
+{
     // Auth spéciale pour tests automatisés : header X-User-Id
     if (isset($_SERVER['HTTP_X_USER_ID']) && getenv('APP_ENV') === 'test') {
         $userId = intval($_SERVER['HTTP_X_USER_ID']);
@@ -67,7 +68,8 @@ function require_auth() {
     $GLOBALS['auth_user'] = $payload;
 }
 
-function require_role($role) {
+function require_role($role)
+{
     if (empty($GLOBALS['auth_user']) || !isset($GLOBALS['auth_user']['role'])) {
         http_response_code(403);
         header('Content-Type: application/json');
@@ -82,9 +84,12 @@ function require_role($role) {
     }
 }
 
-function authenticate_user() {
-    // 1. JWT via cookie
-    if (isset($_COOKIE['jwt'])) {
+function authenticate_user()
+{
+    // 1. JWT via cookie (vérifier d'abord admin_jwt, puis jwt standard)
+    if (isset($_COOKIE['admin_jwt'])) {
+        $jwt = $_COOKIE['admin_jwt'];
+    } elseif (isset($_COOKIE['jwt'])) {
         $jwt = $_COOKIE['jwt'];
     } else {
         // 2. JWT via Authorization: Bearer ...
@@ -103,4 +108,4 @@ function authenticate_user() {
         'email' => $payload['email'] ?? null,
         'role' => $payload['role'] ?? 'user',
     ];
-} 
+}

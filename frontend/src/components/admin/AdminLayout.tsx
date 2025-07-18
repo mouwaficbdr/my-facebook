@@ -43,7 +43,7 @@ const navigation = [
 ];
 
 export default function AdminLayout() {
-  const { user, logout, canAdmin } = useAdminAuth();
+  const { user, logout, canAdmin, isLoading } = useAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { error } = useToast();
@@ -52,10 +52,11 @@ export default function AdminLayout() {
 
   // Vérifier l'authentification
   useEffect(() => {
-    if (!user) {
+    // Ne rediriger que si le chargement est terminé et qu'il n'y a pas d'utilisateur
+    if (!user && !isLoading) {
       navigate('/admin-login');
     }
-  }, [user, navigate]);
+  }, [user, navigate, isLoading]);
 
   const handleLogout = async () => {
     try {

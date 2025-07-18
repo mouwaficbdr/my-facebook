@@ -34,34 +34,66 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch('/api/admin/me.php', {
-          method: 'GET',
-          credentials: 'include',
-        });
-        const data = await res.json();
-        if (res.ok && data.success && data.admin) {
-          setUser(data.admin);
-          localStorage.setItem('admin_user', JSON.stringify(data.admin));
-        } else {
-          setUser(null);
-          localStorage.removeItem('admin_user');
-          navigate('/admin-login');
+        // Vérifier d'abord si on a un utilisateur en localStorage
+        const savedUser = localStorage.getItem('admin_user');
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+        }
+
+        // Ensuite vérifier avec l'API
+        try {
+          const adminModule = await import('../api/admin');
+          const response = await adminModule.checkAdminAuth();
+
+          if (response && response.user) {
+            setUser(response.user);
+            localStorage.setItem('admin_user', JSON.stringify(response.user));
+          } else {
+            setUser(null);
+            localStorage.removeItem('admin_user');
+          }
+        } catch (apiError) {
+          // Si l'API échoue avec une erreur 401/403, on déconnecte
+          if (
+            apiError &&
+            typeof apiError === 'object' &&
+            'status' in apiError &&
+            [401, 403].includes((apiError as any).status)
+          ) {
+            setUser(null);
+            localStorage.removeItem('admin_user');
+          } else if (!savedUser) {
+            // Si c'est une autre erreur (réseau par exemple) et qu'on n'a pas d'utilisateur en cache,
+            // on déconnecte aussi
+            setUser(null);
+            localStorage.removeItem('admin_user');
+          }
+          // Sinon, on garde l'utilisateur du localStorage pour éviter les déconnexions
+          // en cas de problème réseau temporaire
         }
       } catch (error) {
+        console.error(
+          "Erreur lors de la vérification de l'authentification admin:",
+          error
+        );
+        // Ne pas rediriger automatiquement pour éviter les boucles infinies
         setUser(null);
         localStorage.removeItem('admin_user');
-        navigate('/admin-login');
       } finally {
         setIsLoading(false);
       }
     };
+
     checkAuth();
-  }, []); // Correction ici : tableau de dépendances vide
+  }, []);
 
   const login = (userData: AdminUser) => {
     setUser(userData);
     localStorage.setItem('admin_user', JSON.stringify(userData));
-    navigate('/admin/dashboard');
+    // Attendre un court instant pour laisser le temps au cookie d'être enregistré
+    setTimeout(() => {
+      navigate('/admin/dashboard');
+    }, 100);
   };
 
   const logout = () => {
@@ -74,7 +106,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     }).catch(() => {
       // Ignorer les erreurs de déconnexion
     });
-    navigate('/admin/login');
+    navigate('/admin-login');
   };
 
   const canAdmin = () => {

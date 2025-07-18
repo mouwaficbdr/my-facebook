@@ -127,15 +127,18 @@ log_info('Admin login successful', [
 
 // 10. Réponse avec cookie sécurisé
 $dev = ($env === 'development' || $env === 'local' || $env === 'dev');
+
+// Définir les options du cookie avec des paramètres adaptés à l'environnement
 $cookieOptions = [
-  'expires' => time() + (8 * 60 * 60), // 8 heures
+  'expires' => time() + (24 * 60 * 60), // 24 heures
   'path' => '/', // Cookie accessible sur toute l'app
-  'domain' => '',
-  'secure' => !$dev,
-  'httponly' => true,
-  'samesite' => $dev ? 'Lax' : 'None'
+  'domain' => '', // Domaine vide pour correspondre au domaine actuel
+  'secure' => !$dev, // Sécurisé en production, non sécurisé en dev
+  'httponly' => true, // Toujours httponly pour la sécurité
+  'samesite' => $dev ? 'Lax' : 'None' // Lax en dev, None en prod pour les requêtes cross-origin
 ];
 
+// Définir le cookie
 setcookie('admin_jwt', $token, $cookieOptions);
 
 http_response_code(200);

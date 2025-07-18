@@ -28,6 +28,7 @@ if (strpos($path, '/api/') === 0) {
         // Routes admin
         'admin/login' => 'api/admin/login.php',
         'admin/logout' => 'api/admin/logout.php',
+        'admin/me' => 'api/admin/me.php',
         'admin/dashboard' => 'api/admin/dashboard.php',
         'admin/users' => 'api/admin/users.php',
         'admin/posts' => 'api/admin/posts.php',

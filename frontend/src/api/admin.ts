@@ -1,5 +1,6 @@
 // API calls for admin back office
 
+// Utiliser une URL absolue si VITE_API_BASE_URL est défini, sinon utiliser une URL relative
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 export async function adminLogin(email: string, password: string) {
@@ -29,6 +30,37 @@ export async function adminLogout() {
     throw new Error(error);
   }
   return data;
+}
+
+export async function checkAdminAuth() {
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/me.php`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+
+    // Lire le corps de la réponse une seule fois
+    const data = await res.json();
+
+    if (!res.ok) {
+      // Ajouter le code de statut à l'erreur pour pouvoir le vérifier dans le contexte
+      const error = new Error(data?.message || 'Non authentifié');
+      (error as any).status = res.status;
+      throw error;
+    }
+
+    if (!data.success || !data.user) {
+      const error = new Error('Données utilisateur invalides');
+      (error as any).status = 401;
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Admin auth check error:', error);
+    throw error;
+  }
 }
 
 export async function fetchDashboardStats() {
