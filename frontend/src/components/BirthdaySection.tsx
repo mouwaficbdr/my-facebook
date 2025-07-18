@@ -2,7 +2,7 @@ import { Gift, Calendar } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import BirthdayModal from './BirthdayModal';
 import { useToast } from '../hooks/useToast';
-import Loading from './Loading';
+import LoadingSection from './LoadingSection';
 import Avatar from './Avatar';
 import { Link } from 'react-router-dom';
 
@@ -48,9 +48,11 @@ export default function BirthdaySection() {
       </div>
       <div className="space-y-3">
         {loading ? (
-          <div className="py-6 flex justify-center">
-            <Loading />
-          </div>
+          <LoadingSection
+            message="Chargement des anniversaires..."
+            className="py-2"
+            spinnerSize="small"
+          />
         ) : error ? (
           <div className="text-center text-gray-400 text-sm py-6">{error}</div>
         ) : birthdays.length === 0 ? (

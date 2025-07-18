@@ -2,7 +2,7 @@ import { Search, Home, MessageCircle, Bell, Menu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/facebook-blue-logo-full.png';
 import logoMini from '../assets/facebook-logo-mini.png';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import UserSearchBar from './UserSearchBar';
 import { useState, useEffect, useRef } from 'react';
 import Avatar from './Avatar';
@@ -22,6 +22,7 @@ interface NavbarProps {
 
 export default function Navbar({ onMenuClick }: NavbarProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -188,18 +189,40 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
             style={{ height: '100%' }}
           >
             <button
-              className="h-12 w-12 md:h-10 md:w-10 p-0 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors flex items-center justify-center h-full"
+              className={`h-12 w-12 md:h-10 md:w-10 p-0 rounded-lg flex items-center justify-center h-full transition-colors
+                 ${
+                   location.pathname === '/home'
+                     ? 'bg-blue-100 text-blue-700 shadow font-bold'
+                     : 'hover:bg-blue-50'
+                 }`}
               onClick={() => navigate('/home')}
               aria-label="Accueil"
             >
-              <Home className="h-6 w-6" />
+              <Home
+                className={`h-6 w-6 ${
+                  location.pathname === '/home'
+                    ? 'text-blue-700'
+                    : 'text-gray-500'
+                }`}
+              />
             </button>
             <button
-              className="h-12 w-12 md:h-10 md:w-10 p-0 hover:bg-gray-100 rounded-lg relative transition-colors flex items-center justify-center h-full"
+              className={`h-12 w-12 md:h-10 md:w-10 p-0 rounded-lg relative flex items-center justify-center h-full transition-colors
+                ${
+                  location.pathname.startsWith('/messages')
+                    ? 'bg-blue-100 text-blue-700 shadow font-bold'
+                    : 'hover:bg-gray-100'
+                }`}
               onClick={() => navigate('/messages')}
               aria-label="Messages"
             >
-              <MessageCircle className="h-6 w-6 text-gray-600" />
+              <MessageCircle
+                className={`h-6 w-6 ${
+                  location.pathname.startsWith('/messages')
+                    ? 'text-blue-700'
+                    : 'text-gray-600'
+                }`}
+              />
               {messagesBadge > 0 && (
                 <span className="absolute -top-1 -right-1 h-[18px] min-w-[18px] text-[11px] bg-red-500 text-white rounded-full flex items-center justify-center font-medium px-1 animate-pulse">
                   {messagesBadge}
@@ -207,11 +230,22 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
               )}
             </button>
             <button
-              className="h-12 w-12 md:h-10 md:w-10 p-0 hover:bg-gray-100 rounded-lg relative transition-colors flex items-center justify-center h-full notif-bell"
+              className={`h-12 w-12 md:h-10 md:w-10 p-0 rounded-lg relative flex items-center justify-center h-full transition-colors notif-bell
+                ${
+                  location.pathname.startsWith('/notifications')
+                    ? 'bg-blue-100 text-blue-700 shadow font-bold'
+                    : 'hover:bg-gray-100'
+                }`}
               onClick={handleNotifClick}
               aria-label="Notifications"
             >
-              <Bell className="h-6 w-6 text-gray-600" />
+              <Bell
+                className={`h-6 w-6 ${
+                  location.pathname.startsWith('/notifications')
+                    ? 'text-blue-700'
+                    : 'text-gray-600'
+                }`}
+              />
               {notifBadge > 0 && (
                 <span className="absolute -top-1 -right-1 h-[18px] min-w-[18px] text-[11px] bg-red-500 text-white rounded-full flex items-center justify-center font-medium px-1 animate-pulse">
                   {notifBadge}

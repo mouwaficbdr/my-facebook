@@ -9,6 +9,7 @@ import {
   BookmarkX,
   Trash2,
 } from 'lucide-react';
+import ImageLoader from './ImageLoader';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
 import {
@@ -403,10 +404,12 @@ export default function PostCard({
       {/* Post Image */}
       {post.image_url && (
         <div className="mb-3">
-          <img
+          <ImageLoader
             src={post.image_url}
             alt="Post content"
-            className="w-full h-auto max-h-96 object-cover rounded-xl"
+            className="w-full h-auto max-h-96 rounded-xl"
+            objectFit="cover"
+            spinnerSize="medium"
           />
         </div>
       )}

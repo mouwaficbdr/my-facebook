@@ -93,7 +93,7 @@ export default function AdminLogin() {
     }
   };
 
-  if (loading) return <Loading />;
+  if (loading) return <Loading delay={300} />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">

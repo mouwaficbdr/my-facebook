@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext';
 import { getMediaUrl } from '../utils/cdn';
 import { useState } from 'react';
+import ImageLoader from './ImageLoader';
 
 interface AvatarProps {
   userId?: number;
@@ -28,12 +29,15 @@ export default function Avatar({
   const [imgError, setImgError] = useState(false);
   if (displayUrl && !imgError) {
     return (
-      <img
+      <ImageLoader
         src={displayUrl}
         alt={`${prenom} ${nom}`}
-        className={`rounded-full object-cover ${className}`}
-        style={{ width: size, height: size }}
+        className={`rounded-full ${className}`}
+        objectFit="cover"
+        spinnerSize="small"
+        spinnerColor="primary"
         onError={() => setImgError(true)}
+        style={{ width: size, height: size }}
       />
     );
   }

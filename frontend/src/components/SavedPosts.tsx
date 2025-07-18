@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Loading from './Loading';
+import LoadingSection from './LoadingSection';
+import Spinner from './Spinner';
 import ModernToast from './ModernToast';
 import { useToast } from '../hooks/useToast';
 import PostCard from './PostCard';
@@ -109,7 +111,13 @@ export default function SavedPosts() {
     return () => observer.disconnect();
   }, [fetchMorePosts, loaderRef]);
 
-  if (loading) return <Loading />;
+  if (loading)
+    return (
+      <LoadingSection
+        message="Chargement des posts enregistrés..."
+        className="py-8"
+      />
+    );
   if (fetchError)
     return (
       <div className="max-w-2xl mx-auto p-8 text-center">
@@ -185,7 +193,7 @@ export default function SavedPosts() {
             </div>
             {pagination.has_next && (
               <div ref={loaderRef} className="text-center py-8">
-                {isFetchingMore && <Loading />}
+                {isFetchingMore && <Spinner size="large" />}
               </div>
             )}
           </>

@@ -1,7 +1,7 @@
 import { UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useToast } from '../hooks/useToast';
-import Loading from './Loading';
+import LoadingSection from './LoadingSection';
 import Avatar from './Avatar';
 import FriendSuggestionsModal from './FriendSuggestionsModal';
 import { useNavigate } from 'react-router-dom';
@@ -73,9 +73,11 @@ export default function FriendSuggestionsSection() {
       </div>
       <div className="space-y-4">
         {loading ? (
-          <div className="py-6 flex justify-center">
-            <Loading />
-          </div>
+          <LoadingSection
+            message="Chargement des suggestions..."
+            className="py-2"
+            spinnerSize="small"
+          />
         ) : error ? (
           <div className="text-center text-gray-400 text-sm py-6">{error}</div>
         ) : suggestions.length === 0 ? (

@@ -27,7 +27,7 @@ export default function AdminProtectedRoute({
   }, [isAuthenticated, isLoading, requireAdmin, canAdmin, navigate]);
 
   if (isLoading) {
-    return <Loading />;
+    return <Loading delay={300} />;
   }
 
   if (!isAuthenticated) {

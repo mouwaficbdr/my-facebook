@@ -1,6 +1,6 @@
 import { X, Gift } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import Loading from './Loading';
+import LoadingSection from './LoadingSection';
 import Avatar from './Avatar';
 import { Link } from 'react-router-dom';
 
@@ -63,9 +63,10 @@ export default function BirthdayModal({ open, onClose }: BirthdayModalProps) {
         </div>
         <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
           {loading ? (
-            <div className="py-10 flex justify-center">
-              <Loading />
-            </div>
+            <LoadingSection
+              message="Chargement des anniversaires..."
+              className="py-6"
+            />
           ) : error ? (
             <div className="text-center text-gray-400 text-sm py-10">
               {error}

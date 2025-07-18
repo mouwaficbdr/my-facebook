@@ -12,6 +12,8 @@ import {
   Award,
 } from 'lucide-react';
 import Loading from '../components/Loading';
+import Spinner from '../components/Spinner';
+import LoadingSection from '../components/LoadingSection';
 import { useToast } from '../hooks/useToast';
 import Navbar from '../components/Navbar';
 import Avatar from '../components/Avatar';
@@ -440,7 +442,7 @@ export default function ProfilePage() {
 
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
-  if (loading) return <Loading />;
+  if (loading) return <Loading delay={300} />;
   if (fetchError)
     return (
       <div className="max-w-2xl mx-auto p-8 text-center">
@@ -542,7 +544,7 @@ export default function ProfilePage() {
                 </div>
                 {pagination.has_next && (
                   <div ref={loaderRef} className="text-center py-8">
-                    {isFetchingMore && <Loading />}
+                    {isFetchingMore && <Spinner size="large" />}
                   </div>
                 )}
               </>
@@ -681,7 +683,7 @@ export default function ProfilePage() {
                 </div>
                 {friendsPagination.has_next && (
                   <div ref={loaderRefFriends} className="text-center py-8">
-                    {isFetchingMoreFriends && <Loading />}
+                    {isFetchingMoreFriends && <Spinner size="large" />}
                   </div>
                 )}
               </>

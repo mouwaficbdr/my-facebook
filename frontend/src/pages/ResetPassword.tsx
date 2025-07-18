@@ -174,7 +174,7 @@ export default function ResetPassword() {
     }
   };
 
-  if (loading) return <Loading />;
+  if (loading) return <Loading delay={300} />;
 
   // Token invalid or missing
   if (tokenValid === false) {

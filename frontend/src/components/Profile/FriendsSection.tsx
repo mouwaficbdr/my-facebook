@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Loading from '../Loading';
+import LoadingSection from '../LoadingSection';
 import ModernToast from '../ModernToast';
 import Avatar from '../Avatar';
 import MutualFriendsModal from './MutualFriendsModal';
@@ -160,7 +160,7 @@ export default function FriendsSection() {
         <ModernToast toasts={toasts} onRemove={removeToast} />
       )}
       {loading ? (
-        <Loading />
+        <LoadingSection message="Chargement des amis..." className="py-8" />
       ) : (
         <div className="flex flex-col gap-8">
           {/* Demandes reçues : n'afficher la section que s'il y a des demandes */}

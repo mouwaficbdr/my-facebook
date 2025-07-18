@@ -49,7 +49,7 @@ export default function EmojiPicker({
         onClick={() => setIsOpen(!isOpen)}
         className="p-1.5 hover:bg-gray-200 rounded-full transition-colors"
       >
-        <Smile className="w-4 h-4 text-gray-500" />
+        <Smile className={`${className || 'w-6 h-6 text-yellow-600'}`} />
       </button>
 
       {isOpen &&

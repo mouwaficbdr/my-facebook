@@ -120,7 +120,7 @@ export default function ForgotPassword() {
     }
   };
 
-  if (loading) return <Loading />;
+  if (loading) return <Loading delay={300} />;
 
   return (
     <div className="min-h-screen overflow-hidden relative">

@@ -1,14 +1,43 @@
+import { useEffect, useState } from 'react';
 import logo from '@/assets/facebook-blue-logo-full.png';
 
+interface LoadingProps {
+  /**
+   * Délai avant l'affichage du loader (en ms)
+   * Permet d'éviter les flashs pour les chargements rapides
+   */
+  delay?: number;
+}
+
 /**
- * Composant Loading : loader moderne façon Facebook, bulle animée + shimmer
+ * Composant Loading : loader plein écran pour les transitions de page
  * - Full Tailwind, responsive, accessible
- * - Peut être utilisé partout (page, bouton, section...)
+ * - Transition fluide avec délai configurable pour éviter les flashs
+ * - À utiliser uniquement pour les chargements de page complète
  */
-const Loading = () => {
+const Loading: React.FC<LoadingProps> = ({ delay = 0 }) => {
+  const [isVisible, setIsVisible] = useState(delay === 0);
+
+  useEffect(() => {
+    if (delay > 0) {
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, delay);
+
+      return () => clearTimeout(timer);
+    }
+  }, [delay]);
+
+  if (!isVisible) return null;
+
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-blue-50 animate-fade-in"
+      style={{
+        animation: 'fadeIn 0.3s ease-in-out',
+        opacity: isVisible ? 1 : 0,
+        transition: 'opacity 0.3s ease-in-out',
+      }}
       role="status"
       aria-live="polite"
     >

@@ -470,7 +470,7 @@ export default function Messages() {
         {/* Zone de conversation principale */}
         <div
           className={cn(
-            'flex-1 flex flex-col bg-gradient-to-br from-white via-blue-50/20 to-purple-50/10',
+            'flex-1 flex flex-col bg-gray-100',
             !showMobileChat && 'hidden md:flex'
           )}
         >
@@ -552,49 +552,67 @@ export default function Messages() {
                   onSubmit={handleSendMessage}
                   className="flex items-end space-x-3"
                 >
-                  <div className="flex-1 relative">
-                    <textarea
-                      ref={messageInputRef}
-                      value={messageText}
-                      onChange={(e) => setMessageText(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Écrivez votre message..."
-                      className="w-full px-4 py-3 pr-24 bg-gray-50/80 border-0 rounded-2xl resize-none focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all backdrop-blur-sm"
-                      rows={1}
-                      style={{ minHeight: '44px', maxHeight: '120px' }}
-                      disabled={sendingMessage}
+                  <div className="flex items-center w-full gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="image-upload"
+                      disabled={uploadingImage}
                     />
-                    <div className="absolute right-2 bottom-2 flex items-center space-x-1">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        id="image-upload"
-                        disabled={uploadingImage}
+                    <label
+                      htmlFor="image-upload"
+                      className={cn(
+                        'p-3 rounded-full transition-all duration-200 cursor-pointer hover:scale-110',
+                        uploadingImage && 'opacity-50 cursor-not-allowed'
+                      )}
+                      title="Envoyer une image"
+                      style={{ marginBottom: 2 }}
+                    >
+                      {uploadingImage ? (
+                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <ImageIcon className="w-6 h-6 text-blue-600" />
+                      )}
+                    </label>
+                    <div className="flex-1 relative flex items-center">
+                      <textarea
+                        ref={messageInputRef}
+                        value={messageText}
+                        onChange={(e) => {
+                          setMessageText(e.target.value);
+                          if (messageInputRef.current) {
+                            messageInputRef.current.style.height = 'auto';
+                            messageInputRef.current.style.height =
+                              messageInputRef.current.scrollHeight + 'px';
+                          }
+                        }}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Écrivez votre message..."
+                        className="w-full px-5 py-3 pr-12 bg-white border-2 border-blue-100 rounded-3xl shadow focus:bg-blue-50 focus:border-blue-400 focus:ring-2 focus:ring-blue-300 transition-all duration-200 resize-none text-base placeholder:text-gray-400 placeholder:font-semibold align-middle"
+                        rows={1}
+                        style={{
+                          minHeight: '48px',
+                          maxHeight: '120px',
+                          overflow: 'hidden',
+                        }}
+                        disabled={sendingMessage}
                       />
-                      <label
-                        htmlFor="image-upload"
-                        className={cn(
-                          'p-2 hover:bg-blue-50 rounded-full transition-all duration-200 cursor-pointer hover:scale-105',
-                          uploadingImage && 'opacity-50 cursor-not-allowed'
-                        )}
-                      >
-                        {uploadingImage ? (
-                          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <ImageIcon className="w-4 h-4 text-blue-600" />
-                        )}
-                      </label>
-                      <EmojiPicker onEmojiSelect={handleEmojiSelect} />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                        <EmojiPicker
+                          onEmojiSelect={handleEmojiSelect}
+                          className="text-yellow-600"
+                        />
+                      </div>
                     </div>
                   </div>
                   <button
                     type="submit"
                     disabled={!messageText.trim() || sendingMessage}
-                    className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full transition-all duration-200 hover:scale-105 shadow-lg"
+                    className="p-3 rounded-full transition-all duration-200 hover:bg-gray-100 focus:ring-2 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Send className="w-5 h-5" />
+                    <Send className="w-6 h-6 text-blue-600" />
                   </button>
                 </form>
               </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Avatar from '../Avatar';
-import Loading from '../Loading';
+import LoadingSection from '../LoadingSection';
 import type { ToastType } from '../ModernToast';
 import ModernToast from '../ModernToast';
 
@@ -80,7 +80,10 @@ export default function MutualFriendsModal({
           />
         )}
         {loading ? (
-          <Loading />
+          <LoadingSection
+            message="Chargement des amis en commun..."
+            className="py-4"
+          />
         ) : error ? (
           <div className="text-red-500 text-center py-8">{error}</div>
         ) : mutuals.length === 0 ? (
