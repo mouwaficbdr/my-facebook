@@ -109,16 +109,36 @@ try {
 
 // 9. Réponse avec cookie sécurisé
 $dev = ($env === 'development' || $env === 'local' || $env === 'dev');
-$cookieOptions = [
-    'expires' => time() + (7 * 24 * 60 * 60),
-    'path' => '/',
-    'domain' => '',
-    'secure' => !$dev, // secure=true en prod, false en dev
-    'httponly' => true,
-    'samesite' => $dev ? 'Lax' : 'None'
-];
 
-setcookie('jwt', $token, $cookieOptions);
+// En développement, on définit des options de cookie plus permissives
+if ($dev) {
+    // Options pour le développement local
+    setcookie('jwt', $token, [
+        'expires' => time() + (7 * 24 * 60 * 60),
+        'path' => '/',
+        'domain' => '',
+        'secure' => false,
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+} else {
+    // Options pour la production
+    setcookie('jwt', $token, [
+        'expires' => time() + (7 * 24 * 60 * 60),
+        'path' => '/',
+        'domain' => '',
+        'secure' => true,
+        'httponly' => true,
+        'samesite' => 'None'
+    ]);
+}
+
+// Log pour le débogage
+error_log("Cookie JWT défini avec les options: " . json_encode([
+    'dev' => $dev,
+    'secure' => $dev ? 'false' : 'true',
+    'samesite' => $dev ? 'Lax' : 'None'
+]));
 
 http_response_code(200);
 echo json_encode([

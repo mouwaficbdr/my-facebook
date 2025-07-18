@@ -25,37 +25,66 @@ function require_auth()
             }
         }
     }
+
+    // Débogage - Enregistrer les informations de la requête
+    $debug_info = [
+        'cookies' => $_COOKIE,
+        'headers' => getallheaders(),
+        'method' => $_SERVER['REQUEST_METHOD'],
+        'uri' => $_SERVER['REQUEST_URI']
+    ];
+    error_log('Auth Debug: ' . json_encode($debug_info));
+
     $token = null;
+
     // 1. Vérifier le header Authorization
     if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
         if (preg_match('/Bearer\s+(.*)$/i', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
             $token = trim($matches[1]);
+            error_log('Token trouvé dans le header Authorization');
         }
     } elseif (function_exists('apache_request_headers')) {
         // Pour certains serveurs, le header peut être dans apache_request_headers
         $headers = apache_request_headers();
         if (isset($headers['Authorization']) && preg_match('/Bearer\s+(.*)$/i', $headers['Authorization'], $matches)) {
             $token = trim($matches[1]);
+            error_log('Token trouvé dans apache_request_headers');
         }
     }
+
     // 2. Sinon, fallback sur le cookie
     if (!$token && !empty($_COOKIE['admin_jwt'])) {
         $token = $_COOKIE['admin_jwt'];
+        error_log('Token trouvé dans le cookie admin_jwt');
     }
     if (!$token && !empty($_COOKIE['jwt'])) {
         $token = $_COOKIE['jwt'];
+        error_log('Token trouvé dans le cookie jwt');
     }
-    // Suppression du fallback sur 'token' (obsolète)
-    // if (!$token && !empty($_COOKIE['token'])) {
-    //     $token = $_COOKIE['token'];
-    // }
+
+    // 3. Fallback sur le paramètre de requête (pour les tests uniquement)
+    if (!$token && !empty($_GET['token'])) {
+        $token = $_GET['token'];
+        error_log('Token trouvé dans le paramètre GET token');
+    }
+
     if (!$token) {
         log_error('Aucun JWT trouvé', ['cookies' => $_COOKIE, 'headers' => $_SERVER]);
         http_response_code(401);
         header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Authentification requise.']);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Authentification requise.',
+            'debug' => [
+                'cookies' => $_COOKIE,
+                'headers' => getallheaders(),
+                'method' => $_SERVER['REQUEST_METHOD'],
+                'uri' => $_SERVER['REQUEST_URI']
+            ]
+        ]);
         exit;
     }
+
     $payload = validate_jwt($token);
     if (!$payload) {
         log_error('JWT invalide ou expiré', ['token' => $token]);
@@ -64,8 +93,21 @@ function require_auth()
         echo json_encode(['success' => false, 'message' => 'Token invalide ou expiré.']);
         exit;
     }
+
     // Expose le payload JWT globalement pour la suite du script
     $GLOBALS['auth_user'] = $payload;
+
+    // S'assurer que l'ID utilisateur est disponible
+    if (!isset($payload['user_id']) && isset($payload['id'])) {
+        $GLOBALS['auth_user']['user_id'] = $payload['id'];
+    }
+
+    // S'assurer que l'ID est disponible
+    if (!isset($payload['id']) && isset($payload['user_id'])) {
+        $GLOBALS['auth_user']['id'] = $payload['user_id'];
+    }
+
+    error_log('Authentification réussie pour l\'utilisateur: ' . ($GLOBALS['auth_user']['id'] ?? 'ID inconnu'));
 }
 
 function require_role($role)
