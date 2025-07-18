@@ -47,7 +47,7 @@ if (!preg_match('/^[a-f0-9]{64}$/', $input['token'])) {
 // 4. Recherche utilisateur avec token valide
 try {
     $pdo = getPDO();
-    $stmt = $pdo->prepare('SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > NOW() LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id FROM users WHERE reset_password_token = ? AND reset_token_expiry > NOW() LIMIT 1');
     $stmt->execute([$input['token']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (Throwable $e) {
@@ -69,7 +69,7 @@ $hash = password_hash($input['password'], PASSWORD_BCRYPT);
 
 // 7. Mise à jour mot de passe et nettoyage token
 try {
-    $stmt = $pdo->prepare('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?');
+    $stmt = $pdo->prepare('UPDATE users SET password_hash = ?, reset_password_token = NULL, reset_token_expiry = NULL WHERE id = ?');
     $stmt->execute([$hash, $user['id']]);
 } catch (Throwable $e) {
     log_error('DB error (update password)', ['error' => $e->getMessage()]);

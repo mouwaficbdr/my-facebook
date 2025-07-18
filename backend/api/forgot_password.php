@@ -72,7 +72,7 @@ $expires = date('Y-m-d H:i:s', time() + (60 * 60)); // 1 heure
 
 // 6. Sauvegarde token
 try {
-    $stmt = $pdo->prepare('UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?');
+    $stmt = $pdo->prepare('UPDATE users SET reset_password_token = ?, reset_token_expiry = ? WHERE id = ?');
     $stmt->execute([$token, $expires, $user['id']]);
 } catch (Throwable $e) {
     log_error('DB error (save reset token)', ['error' => $e->getMessage()]);

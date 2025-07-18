@@ -1,8 +1,7 @@
 <?php
 // backend/lib/mail.php
 
-// Inclusion de la configuration Brevo
-require_once __DIR__ . '/../config/mail_brevo.php';
+// Configuration pour l'envoi d'emails
 
 /**
  * Envoie un email en utilisant le service configuré
