@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchStories } from '../api/stories';
 import type { Story, UserStories } from '../api/stories';
 import LoadingSection from './LoadingSection';
@@ -6,11 +6,8 @@ import { useToast } from '../hooks/useToast';
 import StoryViewer from './StoryViewer';
 import StoryCreator from './StoryCreator';
 import { useAuth } from '../context/AuthContext';
-import ProgressiveImage from './ProgressiveImage';
 import Avatar from './Avatar';
 import { Plus } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 export default function Stories() {
   const [userStories, setUserStories] = useState<UserStories[]>([]);

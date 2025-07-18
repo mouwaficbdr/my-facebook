@@ -1,9 +1,7 @@
-import { useState, useRef, useContext, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { createStory } from '../api/stories';
 import { useToast } from '../hooks/useToast';
 import { useAuth } from '../context/AuthContext';
-import { testAuth } from '../api/test';
-import { debugAuth } from '../api/debug';
 
 interface StoryCreatorProps {
   onClose: () => void;
@@ -22,7 +20,6 @@ export default function StoryCreator({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
   const { user, isAuthenticated } = useAuth();
-  const [authStatus, setAuthStatus] = useState<any>(null);
 
   // Nous n'avons pas besoin de tester l'authentification au chargement du composant
   // car nous utilisons le paramètre debug_user_id pour l'authentification

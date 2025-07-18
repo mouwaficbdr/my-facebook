@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import Loading from '../components/Loading';
 import Spinner from '../components/Spinner';
-import LoadingSection from '../components/LoadingSection';
 import { useToast } from '../hooks/useToast';
 import Navbar from '../components/Navbar';
 import Avatar from '../components/Avatar';

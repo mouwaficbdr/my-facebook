@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import type { Story } from '../api/stories';
 import { fetchStoryViews, deleteStory } from '../api/stories';
 import { useToast } from '../hooks/useToast';
-import { useAuth } from '../context/AuthContext';
 import ImageLoader from './ImageLoader';
 import { ChevronLeft, ChevronRight, XCircle, Eye, Trash2 } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
@@ -33,7 +32,6 @@ export default function StoryViewer({
   const [deleting, setDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const toast = useToast();
-  const { user } = useAuth();
 
   // État pour suivre si l'image est chargée
   const [imageLoaded, setImageLoaded] = useState(false);

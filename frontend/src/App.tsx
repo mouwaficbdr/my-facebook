@@ -16,6 +16,7 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminPosts from './pages/admin/AdminPosts';
 import AdminLayout from './components/admin/AdminLayout';
 import ToastGlobal from './components/ToastGlobal';
+import ConfirmEmail from './pages/ConfirmEmail';
 
 const App = () => {
   return (
@@ -29,6 +30,7 @@ const App = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/confirm-email" element={<ConfirmEmail />} />
 
             {/* User routes */}
             <Route path="/home" element={<Home />} />

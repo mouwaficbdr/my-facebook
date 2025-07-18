@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import Loading from './Loading';
 import LoadingSection from './LoadingSection';
 import Spinner from './Spinner';
 import ModernToast from './ModernToast';
