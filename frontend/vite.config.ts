@@ -16,10 +16,32 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api'),
+        secure: false,
+        ws: true,
+        cookieDomainRewrite: {
+          '*': '',
+        },
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            // Log cookies being sent to the backend
+            console.log('Cookies sent to backend:', req.headers.cookie);
+          });
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
+            // Log cookies received from the backend
+            console.log(
+              'Cookies received from backend:',
+              proxyRes.headers['set-cookie']
+            );
+          });
+        },
       },
       '/uploads': {
         target: 'http://localhost:8000',
         changeOrigin: true,
+        secure: false,
+        cookieDomainRewrite: {
+          '*': '',
+        },
       },
     },
   },
