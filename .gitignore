@@ -68,3 +68,9 @@ dist-ssr/
 
 #--- Kiro ---
 .kiro/
+
+# Composer/PHPMailer
+/vendor/
+/backend/vendor/
+composer.lock
+backend/composer.lock
