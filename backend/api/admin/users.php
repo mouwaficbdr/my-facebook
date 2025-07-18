@@ -224,6 +224,23 @@ try {
       exit;
     }
 
+    // Vérifier les permissions : un modérateur ne peut pas désactiver un admin ou un autre modérateur
+    if (
+      $current_user['role'] === 'moderator' &&
+      ($target_user['role'] === 'admin' || $target_user['role'] === 'moderator')
+    ) {
+      http_response_code(403);
+      echo json_encode(['success' => false, 'message' => 'Vous n\'avez pas les droits pour désactiver cet utilisateur.']);
+      exit;
+    }
+
+    // Seul un admin peut désactiver un autre admin
+    if ($target_user['role'] === 'admin' && $current_user['role'] !== 'admin') {
+      http_response_code(403);
+      echo json_encode(['success' => false, 'message' => 'Seul un administrateur peut désactiver un autre administrateur.']);
+      exit;
+    }
+
     // Désactiver plutôt que supprimer (soft delete)
     $stmt = $pdo->prepare('UPDATE users SET is_active = 0, updated_at = NOW() WHERE id = ?');
     $stmt->execute([$user_id]);
