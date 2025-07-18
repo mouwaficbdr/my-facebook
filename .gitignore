@@ -65,3 +65,6 @@ dist-ssr/
 *.sql 
 !backend/db_schema.sql
 .vercel
+
+#--- Kiro ---
+.kiro/
