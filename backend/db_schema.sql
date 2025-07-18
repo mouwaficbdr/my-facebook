@@ -239,7 +239,7 @@ CREATE TABLE `users` (
   `date_inscription` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_login` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `role` enum('user','admin') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'user',
+  `role` enum('user','moderator','admin') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'user',
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `reset_password_token` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `reset_token_expiry` datetime DEFAULT NULL,
@@ -274,6 +274,61 @@ ALTER TABLE users
 -- 2024-07-06 : Ajout endpoints API notifications (api/notifications.php, api/notifications/read.php)
 -- GET notifications.php : liste paginée des notifications utilisateur
 -- POST notifications/read.php : marquer une ou plusieurs notifications comme lues
+
+-- 2024-07-17 : Ajout du module back office (administration)
+-- Table pour suivre les posts supprimés
+CREATE TABLE IF NOT EXISTS deleted_posts (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `original_id` int unsigned NOT NULL,
+  `user_id` int unsigned NOT NULL,
+  `contenu` text COLLATE utf8mb4_unicode_ci,
+  `image_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` enum('text','image','video') COLLATE utf8mb4_unicode_ci DEFAULT 'text',
+  `is_public` tinyint(1) DEFAULT '1',
+  `original_created_at` datetime DEFAULT NULL,
+  `deleted_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `deleted_by` int unsigned NOT NULL,
+  `reason` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_original_id` (`original_id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_deleted_by` (`deleted_by`),
+  KEY `idx_deleted_at` (`deleted_at`),
+  CONSTRAINT `deleted_posts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `deleted_posts_ibfk_2` FOREIGN KEY (`deleted_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table pour les logs de modération
+CREATE TABLE IF NOT EXISTS moderation_logs (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `admin_id` int unsigned NOT NULL,
+  `action_type` enum('delete_post','delete_comment','ban_user','unban_user','change_role','other') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `target_id` int unsigned NOT NULL,
+  `target_type` enum('post','comment','user') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `details` json DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_admin_id` (`admin_id`),
+  KEY `idx_action_type` (`action_type`),
+  KEY `idx_target` (`target_type`, `target_id`),
+  KEY `idx_created_at` (`created_at`),
+  CONSTRAINT `moderation_logs_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table pour les statistiques d'activité (pour le dashboard)
+CREATE TABLE IF NOT EXISTS activity_stats (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `date` date NOT NULL,
+  `new_users` int unsigned NOT NULL DEFAULT '0',
+  `new_posts` int unsigned NOT NULL DEFAULT '0',
+  `new_comments` int unsigned NOT NULL DEFAULT '0',
+  `new_likes` int unsigned NOT NULL DEFAULT '0',
+  `deleted_posts` int unsigned NOT NULL DEFAULT '0',
+  `deleted_comments` int unsigned NOT NULL DEFAULT '0',
+  `active_users` int unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_date` (`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
