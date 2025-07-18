@@ -28,13 +28,14 @@ if (getenv('APP_ENV') === 'production' || getenv('APP_ENV') === 'prod') {
 
 try {
     $pdo = getPDO();
-    
+
     // Paramètres de pagination
     $page = max(1, intval($_GET['page'] ?? 1));
     $limit = min(20, max(5, intval($_GET['limit'] ?? 10)));
     $offset = ($page - 1) * $limit;
-    
+
     // Récupération des posts avec informations utilisateur et statistiques
+    // Modifié pour ne montrer que les posts des amis et de l'utilisateur lui-même
     $query = "
         SELECT 
             p.id,
@@ -59,20 +60,43 @@ try {
         LEFT JOIN likes l ON p.id = l.post_id
         LEFT JOIN comments c ON p.id = c.post_id AND c.parent_id IS NULL
         WHERE p.is_public = 1 AND u.is_active = 1 AND u.email_confirmed = 1
+        AND (
+            -- Posts de l'utilisateur lui-même
+            p.user_id = ?
+            OR 
+            -- Posts des amis (relation acceptée)
+            p.user_id IN (
+                -- Amis qui ont envoyé une demande à l'utilisateur
+                SELECT user_id FROM friendships 
+                WHERE friend_id = ? AND status = 'accepted'
+                UNION
+                -- Amis à qui l'utilisateur a envoyé une demande
+                SELECT friend_id FROM friendships 
+                WHERE user_id = ? AND status = 'accepted'
+            )
+        )
         GROUP BY p.id
         ORDER BY p.created_at DESC
         LIMIT ? OFFSET ?
     ";
-    
+
     $stmt = $pdo->prepare($query);
-    $stmt->execute([$user['user_id'], $user['user_id'], $limit, $offset]);
+    $stmt->execute([
+        $user['user_id'],  // Pour user_liked
+        $user['user_id'],  // Pour user_like_type
+        $user['user_id'],  // Pour p.user_id = ?
+        $user['user_id'],  // Pour friend_id = ?
+        $user['user_id'],  // Pour user_id = ?
+        $limit,
+        $offset
+    ]);
     $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     // Récupération des commentaires pour chaque post
     foreach ($posts as &$post) {
         // Vérification de l'existence de la clé 'id' avant usage
         if (!isset($post['id'])) continue;
-        
+
         // Commentaires récents (max 3) avec likes et réponses
         $commentsQuery = "
             SELECT 
@@ -92,19 +116,19 @@ try {
             ORDER BY c.created_at DESC
             LIMIT 3
         ";
-        
+
         $commentsStmt = $pdo->prepare($commentsQuery);
         $commentsStmt->execute([$post['id']]);
         $post['comments'] = $commentsStmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
         // Formatage des dates
         $post['created_at_formatted'] = formatRelativeTime($post['created_at']);
         $post['updated_at_formatted'] = formatRelativeTime($post['updated_at']);
-        
+
         foreach ($post['comments'] as &$comment) {
             $comment['created_at_formatted'] = formatRelativeTime($comment['created_at']);
         }
-        
+
         // Conversion des types
         $post['likes_count'] = intval($post['likes_count']);
         $post['comments_count'] = intval($post['comments_count']);
@@ -112,13 +136,38 @@ try {
         $post['user_id'] = isset($post['user_id']) ? intval($post['user_id']) : null;
         $post['id'] = isset($post['id']) ? intval($post['id']) : null;
     }
-    
+
     // Récupération du nombre total de posts pour la pagination
-    $countQuery = "SELECT COUNT(*) as total FROM posts WHERE is_public = 1";
+    // Modifié pour compter uniquement les posts des amis et de l'utilisateur lui-même
+    $countQuery = "
+        SELECT COUNT(*) as total 
+        FROM posts p
+        INNER JOIN users u ON p.user_id = u.id
+        WHERE p.is_public = 1 AND u.is_active = 1 AND u.email_confirmed = 1
+        AND (
+            -- Posts de l'utilisateur lui-même
+            p.user_id = ?
+            OR 
+            -- Posts des amis (relation acceptée)
+            p.user_id IN (
+                -- Amis qui ont envoyé une demande à l'utilisateur
+                SELECT user_id FROM friendships 
+                WHERE friend_id = ? AND status = 'accepted'
+                UNION
+                -- Amis à qui l'utilisateur a envoyé une demande
+                SELECT friend_id FROM friendships 
+                WHERE user_id = ? AND status = 'accepted'
+            )
+        )
+    ";
     $countStmt = $pdo->prepare($countQuery);
-    $countStmt->execute();
+    $countStmt->execute([
+        $user['user_id'],  // Pour p.user_id = ?
+        $user['user_id'],  // Pour friend_id = ?
+        $user['user_id']   // Pour user_id = ?
+    ]);
     $totalPosts = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
-    
+
     http_response_code(200);
     echo json_encode([
         'success' => true,
@@ -134,7 +183,6 @@ try {
             ]
         ]
     ]);
-    
 } catch (Throwable $e) {
     log_error('Feed error', [
         'error' => $e->getMessage(),
@@ -148,11 +196,12 @@ try {
 /**
  * Formate une date en temps relatif (ex: "il y a 2 heures")
  */
-function formatRelativeTime($datetime) {
+function formatRelativeTime($datetime)
+{
     $now = new DateTime();
     $date = new DateTime($datetime);
     $diff = $now->diff($date);
-    
+
     if ($diff->y > 0) {
         return "il y a " . $diff->y . " an" . ($diff->y > 1 ? "s" : "");
     } elseif ($diff->m > 0) {
@@ -166,4 +215,4 @@ function formatRelativeTime($datetime) {
     } else {
         return "à l'instant";
     }
-} 
+}
