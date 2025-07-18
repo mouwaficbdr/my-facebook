@@ -12,7 +12,7 @@ export default function AdminProtectedRoute({
   children,
   requireAdmin = false,
 }: AdminProtectedRouteProps) {
-  const { user, isAuthenticated, isLoading, canAdmin } = useAdminAuth();
+  const { isAuthenticated, isLoading, canAdmin } = useAdminAuth();
   const navigate = useNavigate();
 
   useEffect(() => {

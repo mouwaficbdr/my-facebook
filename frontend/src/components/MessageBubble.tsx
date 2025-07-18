@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { cn } from '../utils/cn';
 import Avatar from './Avatar';
 import { Download, Eye, MoreVertical, Trash2 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import { deleteMessage } from '../api/messages';
 import { useToast } from '../hooks/useToast';
 import ConfirmModal from './ConfirmModal';
@@ -33,7 +32,6 @@ export default function MessageBubble({
   showAvatar = false,
   onMessageDeleted,
 }: MessageBubbleProps) {
-  const { user } = useAuth();
   const { success, error } = useToast();
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
@@ -281,7 +279,6 @@ export default function MessageBubble({
         confirmText={deleting ? 'Suppression...' : 'Supprimer'}
         cancelText="Annuler"
         type="danger"
-        loading={deleting}
       />
     </>
   );

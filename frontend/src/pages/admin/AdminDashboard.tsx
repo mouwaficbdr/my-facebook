@@ -36,7 +36,7 @@ interface DashboardStats {
 
 export default function AdminDashboard() {
   const { user } = useAdminAuth();
-  const { success, error } = useToast();
+  const { error } = useToast();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 

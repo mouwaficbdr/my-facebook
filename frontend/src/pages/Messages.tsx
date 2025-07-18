@@ -14,13 +14,10 @@ import {
   Search,
   Send,
   ArrowLeft,
-  MoreVertical,
   Image as ImageIcon,
   Phone,
   Video,
   Info,
-  Plus,
-  Smile,
   UserPlus,
 } from 'lucide-react';
 import Avatar from '../components/Avatar';
@@ -53,18 +50,16 @@ export default function Messages() {
   const [showSearch, setShowSearch] = useState(false);
 
   // États UI
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showMobileChat, setShowMobileChat] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<number | null>(null);
 
   // Polling pour les nouveaux messages
-  const pollingRef = useRef<NodeJS.Timeout>();
+  const pollingRef = useRef<number | null>(null);
 
   // Charger les conversations au montage
   useEffect(() => {
@@ -308,7 +303,6 @@ export default function Messages() {
       error(err.message || "Erreur lors de l'envoi de l'image");
     } finally {
       setUploadingImage(false);
-      setImagePreview(null);
       // Reset input
       e.target.value = '';
     }
@@ -330,7 +324,7 @@ export default function Messages() {
 
   return (
     <div className="h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 flex flex-col">
-      <Navbar onMenuClick={() => setSidebarOpen(true)} />
+      <Navbar onMenuClick={() => setShowMobileChat(true)} />
 
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar des conversations */}

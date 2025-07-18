@@ -5,7 +5,6 @@ import {
   LayoutDashboard,
   Users,
   FileText,
-  Settings,
   LogOut,
   Menu,
   X,
@@ -70,7 +69,7 @@ export default function AdminLayout() {
   };
 
   const filteredNavigation = navigation.filter(
-    (item) => !item.adminOnly || canAdmin()
+    (item: any) => !item.adminOnly || canAdmin()
   );
 
   return (
