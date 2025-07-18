@@ -25,12 +25,14 @@ define('DB_SSL', getenv('DB_SSL') === 'true');
 
 
 // Variables d'environnement pour l'envoi d'emails
+define('MAIL_DRIVER', getenv('MAIL_DRIVER') ?: 'simulation');
 define('MAIL_HOST', getenv('MAIL_HOST') ?: 'smtp.mailtrap.io');
 define('MAIL_PORT', getenv('MAIL_PORT') ?: 2525);
 define('MAIL_USER', getenv('MAIL_USER') ?: '');
 define('MAIL_PASS', getenv('MAIL_PASS') ?: '');
 define('MAIL_FROM', getenv('MAIL_FROM') ?: 'no-reply@myfacebook.com');
 define('MAIL_FROM_NAME', getenv('MAIL_FROM_NAME') ?: 'MyFacebook');
+define('BREVO_API_KEY', getenv('BREVO_API_KEY') ?: '');
 
 // Variables d'environnement pour JWT
 define('JWT_SECRET', getenv('JWT_SECRET') ?: 'changeme');
@@ -39,5 +41,3 @@ define('JWT_EXPIRATION', getenv('JWT_EXPIRATION') ?: 3600);
 // Variables d'environnement pour le rate limiting
 define('RATE_LIMIT_MAX', getenv('RATE_LIMIT_MAX') ?: 5);
 define('RATE_LIMIT_WINDOW', getenv('RATE_LIMIT_WINDOW') ?: 600);
-
-
