@@ -12,11 +12,17 @@
 - Base de données déjà configurée et fonctionnelle
 - Certificat SSL : `backend/ca.pem`
 
-### 3. **Service d'email (optionnel pour l'instant)**
+### 3. **Service d'email**
 
 - **Développement** : Mailtrap (gratuit)
-- **Production** : Simulation d'email (pas de domaine requis)
-- **Plus tard** : SendGrid ou autre service quand vous aurez un domaine
+- **Production** : Brevo (anciennement Sendinblue)
+
+Configuration requise pour Brevo :
+
+1. Créer un compte sur [Brevo](https://www.brevo.com/)
+2. Générer une clé API dans les paramètres du compte
+3. Configurer la variable d'environnement `BREVO_API_KEY`
+4. Définir `MAIL_DRIVER=brevo` dans les variables d'environnement
 
 ## 🔧 Configuration
 
@@ -41,17 +47,18 @@ DB_SSL_CA=backend/ca.pem
 # JWT
 JWT_SECRET=your-super-secret-jwt-key-here-make-it-long-and-random
 
-# Email (simulation en prod, Mailtrap en dev)
-MAIL_DRIVER=mailtrap
-MAIL_HOST=smtp.mailtrap.io
-MAIL_PORT=2525
-MAIL_USER=your-mailtrap-user
-MAIL_PASS=your-mailtrap-pass
+# Email (Brevo en production)
+MAIL_DRIVER=brevo
 MAIL_FROM=noreply@myfacebook.com
 MAIL_FROM_NAME=My Facebook
+BREVO_API_KEY=your-brevo-api-key
 
-# SendGrid (pour plus tard)
-# SENDGRID_API_KEY=your-sendgrid-api-key
+# Mailtrap (pour développement uniquement)
+# MAIL_DRIVER=mailtrap
+# MAIL_HOST=smtp.mailtrap.io
+# MAIL_PORT=2525
+# MAIL_USER=your-mailtrap-user
+# MAIL_PASS=your-mailtrap-pass
 
 # Rate limiting
 RATE_LIMIT_MAX=10
@@ -137,9 +144,9 @@ curl -X POST https://my-facebook-backend-production.up.railway.app/api/login.php
    - Vérifier que `backend/ca.pem` est présent
 
 3. **Emails non envoyés**
-   - En production : Les emails sont simulés (normal)
-   - En dev : Vérifier les credentials Mailtrap
-   - Plus tard : Configurer SendGrid quand vous aurez un domaine
+   - En production : Vérifier la clé API Brevo et les logs d'erreur
+   - En dev : Vérifier les credentials Mailtrap ou la clé API Brevo selon la configuration
+   - Vérifier que les variables MAIL_FROM et MAIL_FROM_NAME sont correctement définies
 
 ### **Logs et monitoring**
 
