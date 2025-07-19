@@ -210,7 +210,7 @@ export default function MyProfilePage() {
     fetch(
       `${API_BASE}/api/users/profile.php?id=${user?.id}&page=${
         pagination.current_page + 1
-      }&limit=10`,
+      }&limit=20`,
       { credentials: 'include' }
     )
       .then(async (res) => {
@@ -235,7 +235,10 @@ export default function MyProfilePage() {
           fetchMorePosts();
         }
       },
-      { threshold: 1 }
+      {
+        threshold: 0.1,
+        rootMargin: '200px', // Déclenche 200px avant d'atteindre le bas
+      }
     );
     observer.observe(loaderRef.current);
     return () => observer.disconnect();
@@ -246,7 +249,7 @@ export default function MyProfilePage() {
     if (!user?.id) return;
     setLoading(true);
     setFetchError(null);
-    fetch(`${API_BASE}/api/users/profile.php?id=${user.id}&page=1&limit=10`, {
+    fetch(`${API_BASE}/api/users/profile.php?id=${user.id}&page=1&limit=20`, {
       credentials: 'include',
     })
       .then(async (res) => {
@@ -276,7 +279,7 @@ export default function MyProfilePage() {
     if (!user?.id) return;
     setLoading(true);
     setFetchError(null);
-    fetch(`${API_BASE}/api/users/profile.php?id=${user.id}&page=1&limit=10`, {
+    fetch(`${API_BASE}/api/users/profile.php?id=${user.id}&page=1&limit=20`, {
       credentials: 'include',
     })
       .then(async (res) => {
@@ -966,11 +969,11 @@ export default function MyProfilePage() {
                 </div>
               ) : (
                 <>
-                  <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 sm:gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {posts.map((post, idx) => (
                       <div
                         key={`posts-post-${post.id}-${idx}`}
-                        className="break-inside-avoid mb-6 w-full animate-fade-in-up"
+                        className="w-full animate-fade-in-up"
                         style={{ animationDelay: `${idx * 60}ms` }}
                       >
                         <div className="transform hover:scale-[1.02] transition-transform duration-300">

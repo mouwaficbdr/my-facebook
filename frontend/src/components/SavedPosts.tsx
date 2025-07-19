@@ -46,7 +46,7 @@ export default function SavedPosts() {
   useEffect(() => {
     setLoading(true);
     setFetchError(null);
-    fetch(`${API_BASE}/api/posts/saved.php?page=1&limit=10`, {
+    fetch(`${API_BASE}/api/posts/saved.php?page=1&limit=20`, {
       credentials: 'include',
     })
       .then(async (res) => {
@@ -74,7 +74,7 @@ export default function SavedPosts() {
     fetch(
       `${API_BASE}/api/posts/saved.php?page=${
         pagination.current_page + 1
-      }&limit=10`,
+      }&limit=20`,
       {
         credentials: 'include',
       }
@@ -104,7 +104,10 @@ export default function SavedPosts() {
           fetchMorePosts();
         }
       },
-      { threshold: 1 }
+      {
+        threshold: 0.1,
+        rootMargin: '200px', // Déclenche 200px avant d'atteindre le bas
+      }
     );
     observer.observe(loaderRef.current);
     return () => observer.disconnect();

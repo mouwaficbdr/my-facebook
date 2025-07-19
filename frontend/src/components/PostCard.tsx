@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Heart,
   MessageCircle,
@@ -23,8 +24,6 @@ import ShareModal from './ShareModal';
 import Avatar from './Avatar';
 import { useNavigate } from 'react-router-dom';
 import ConfirmModal from './ConfirmModal';
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 interface Comment {
   id: number;
@@ -72,7 +71,7 @@ interface PostCardProps {
   onSave?: (postId: number, isSaved: boolean) => void;
 }
 
-export default function PostCard({
+function PostCard({
   post,
   onLike,
   onComment,
@@ -147,262 +146,176 @@ export default function PostCard({
     };
   }, [showCommentsPanel, showInlineComment]);
 
-  // Charger les commentaires (panel)
-  const loadComments = async (reset = false) => {
-    if (loadingComments || loadingMoreComments) return;
-    setCommentsError(null);
-    if (reset) setLoadingComments(true);
-    else setLoadingMoreComments(true);
-    try {
-      const offset = reset
-        ? 0
-        : (commentsPagination?.offset || 0) +
-          (commentsPagination?.limit || commentsLimit);
-      const data = await fetchComments(
-        post.id,
-        offset,
-        commentsLimit,
-        user?.id
-      );
-      setComments((prev) =>
-        reset ? data.comments : [...prev, ...data.comments]
-      );
-      setCommentsPagination(data.pagination);
-    } catch (err: unknown) {
-      setCommentsError(
-        err instanceof Error
-          ? err.message
-          : 'Erreur lors du chargement des commentaires'
-      );
-    } finally {
-      setLoadingComments(false);
-      setLoadingMoreComments(false);
-    }
-  };
+  // Charger les commentaires (panel) - optimisé avec useCallback
+  const loadComments = useCallback(
+    async (reset = false) => {
+      if (loadingComments || loadingMoreComments) return;
+      setCommentsError(null);
+      if (reset) setLoadingComments(true);
+      else setLoadingMoreComments(true);
+      try {
+        const offset = reset
+          ? 0
+          : (commentsPagination?.offset || 0) +
+            (commentsPagination?.limit || commentsLimit);
+        const data = await fetchComments(
+          post.id,
+          offset,
+          commentsLimit,
+          user?.id
+        );
+        setComments((prev) =>
+          reset ? data.comments : [...prev, ...data.comments]
+        );
+        setCommentsPagination(data.pagination);
+      } catch (err: unknown) {
+        setCommentsError(
+          err instanceof Error
+            ? err.message
+            : 'Erreur lors du chargement des commentaires'
+        );
+      } finally {
+        setLoadingComments(false);
+        setLoadingMoreComments(false);
+      }
+    },
+    [
+      loadingComments,
+      loadingMoreComments,
+      commentsPagination,
+      post.id,
+      user?.id,
+    ]
+  );
 
-  // Ouvrir le panneau de commentaires
-  const handleOpenCommentsPanel = () => {
+  // Ouvrir le panneau de commentaires - optimisé avec useCallback
+  const handleOpenCommentsPanel = useCallback(() => {
     setShowCommentsPanel(true);
     setShowInlineComment(false);
     if (comments.length === 0) {
       loadComments(true);
     }
-  };
+  }, [comments.length, loadComments]);
 
-  // Clic sur "Commenter" (champ inline)
-  const handleShowInlineComment = () => {
+  // Clic sur "Commenter" (champ inline) - optimisé avec useCallback
+  const handleShowInlineComment = useCallback(() => {
     setShowInlineComment(true);
     setShowCommentsPanel(false);
-  };
+  }, []);
 
-  // Ajout de commentaire (panel ou inline)
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!commentText.trim()) return;
-    setIsSubmitting(true);
-    try {
-      const response = await addComment(post.id, commentText);
-      setCommentText('');
-      success('Commentaire ajouté !');
+  // Ajout de commentaire (panel ou inline) - optimisé avec useCallback
+  const handleAddComment = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!commentText.trim()) return;
+      setIsSubmitting(true);
+      try {
+        const response = await addComment(post.id, commentText);
+        setCommentText('');
+        success('Commentaire ajouté !');
 
-      // Mettre à jour le compteur de commentaires du post
-      if (response.comments_count !== undefined) {
-        // Mettre à jour le post parent via un callback
-        onComment?.(post.id, commentText, response.comments_count);
-      }
+        // Mettre à jour le compteur de commentaires du post
+        if (response.comments_count !== undefined) {
+          // Mettre à jour le post parent via un callback
+          onComment?.(post.id, commentText, response.comments_count);
+        }
 
-      if (showCommentsPanel) {
-        setComments((prev) => [response.comment, ...prev]);
-        setCommentsPagination((prev) =>
-          prev ? { ...prev, total: prev.total + 1 } : prev
+        if (showCommentsPanel) {
+          setComments((prev) => [response.comment, ...prev]);
+          setCommentsPagination((prev) =>
+            prev ? { ...prev, total: prev.total + 1 } : prev
+          );
+        }
+      } catch (err: unknown) {
+        error(
+          err instanceof Error
+            ? err.message
+            : "Erreur lors de l'ajout du commentaire"
         );
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (err: unknown) {
-      error(
-        err instanceof Error
-          ? err.message
-          : "Erreur lors de l'ajout du commentaire"
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    },
+    [commentText, post.id, onComment, showCommentsPanel, success, error]
+  );
 
   // Infinite scroll (panel)
   const commentsScrollRef = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
-    if (!showCommentsPanel) return;
+    const el = commentsScrollRef.current;
+    if (!el || !showCommentsPanel) return;
+
     const handleScroll = () => {
-      const el = commentsScrollRef.current;
-      if (!el || loadingMoreComments || !commentsPagination?.has_next) return;
-      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 80) {
-        loadComments(false);
+      if (
+        el.scrollTop + el.clientHeight >= el.scrollHeight - 10 &&
+        commentsPagination?.has_next &&
+        !loadingMoreComments
+      ) {
+        loadComments();
       }
     };
-    const el = commentsScrollRef.current;
-    if (el) el.addEventListener('scroll', handleScroll);
+
+    el.addEventListener('scroll', handleScroll);
     return () => {
       if (el) el.removeEventListener('scroll', handleScroll);
     };
-  }, [showCommentsPanel, commentsPagination, loadingMoreComments]);
+  }, [
+    showCommentsPanel,
+    commentsPagination,
+    loadingMoreComments,
+    loadComments,
+  ]);
 
-  const handleLike = async () => {
+  const handleLike = useCallback(async () => {
     if (likeLoading) return;
     setLikeLoading(true);
     try {
-      // Appeler le callback parent et attendre la réponse
-      // Le parent mettra à jour les props, qui seront synchronisées via useEffect
-      await onLike(post.id, isLiked ? 'unlike' : 'like');
+      const action = isLiked ? 'unlike' : 'like';
+      const result = await onLike(post.id, action);
+      setIsLiked(result.user_liked);
+      setLikesCount(result.reactions.total || 0);
     } catch (err) {
-      error(err instanceof Error ? err.message : 'Erreur lors du like');
+      console.error('Erreur lors du like:', err);
     } finally {
       setLikeLoading(false);
     }
-  };
+  }, [likeLoading, isLiked, onLike, post.id]);
 
-  // Handler suppression
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
+    if (!onDelete) return;
     try {
-      const res = await fetch(`${API_BASE}/api/posts/delete.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ post_id: post.id }),
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.message);
-      success(data.message || 'Post supprimé.');
-      onDelete?.(post.id);
-    } catch (err: unknown) {
-      error(
-        err instanceof Error ? err.message : 'Erreur lors de la suppression.'
-      );
+      await onDelete(post.id);
+      setShowConfirm(false);
+    } catch (err) {
+      console.error('Erreur lors de la suppression:', err);
     }
-  };
-  // Handler sauvegarde
-  const handleSave = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/posts/save.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ post_id: post.id }),
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.message);
+  }, [onDelete, post.id]);
 
-      // Mettre à jour l'état local
+  const handleSave = useCallback(async () => {
+    if (!onSave) return;
+    try {
+      await onSave(post.id, !isSaved);
       setIsSaved(!isSaved);
-
-      // Appeler le callback parent (qui gère les toasts)
-      onSave?.(post.id, !isSaved);
-    } catch (err: unknown) {
-      error(
-        err instanceof Error ? err.message : "Erreur lors de l'enregistrement."
-      );
+    } catch (err) {
+      console.error('Erreur lors de la sauvegarde:', err);
     }
-  };
+  }, [onSave, post.id, isSaved]);
 
-  return (
-    <div className="bg-white rounded-2xl shadow-sm mb-4 border-0">
-      {/* Post Header */}
-      <div className="p-4 pb-3">
-        <div className="flex items-start space-x-3">
-          <div
-            className="cursor-pointer group"
-            onClick={() => {
-              if (user?.id === post.user_id) {
-                navigate('/me');
-              } else {
-                navigate(`/profile/${post.user_id}`);
-              }
-            }}
-          >
-            <Avatar
-              userId={post.user_id}
-              prenom={post.prenom}
-              nom={post.nom}
-              photo={post.photo_profil}
-              size={40}
-              className="w-10 h-10 group-hover:ring-2 group-hover:ring-blue-500 transition"
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between">
-              <div className="min-w-0 flex-1">
-                <p
-                  className="text-[15px] font-semibold text-gray-900 truncate cursor-pointer group hover:underline"
-                  onClick={() => {
-                    if (user?.id === post.user_id) {
-                      navigate('/me');
-                    } else {
-                      navigate(`/profile/${post.user_id}`);
-                    }
-                  }}
-                >
-                  {post.prenom} {post.nom}
-                </p>
-                <p className="text-[13px] text-gray-500 mt-0.5">
-                  {post.created_at_formatted}
-                </p>
-              </div>
-              <div className="relative ml-2 flex-shrink-0">
-                <button
-                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 flex items-center justify-center"
-                  onClick={() => setShowMenu((v) => !v)}
-                  aria-label="Options du post"
-                >
-                  <MoreHorizontal className="h-4 w-4 text-gray-500" />
-                </button>
-                {showMenu && (
-                  <div
-                    ref={menuRef}
-                    className="absolute right-0 top-10 z-30 min-w-[180px] bg-white rounded-xl shadow-lg border border-gray-100 py-2 flex flex-col animate-fade-in"
-                  >
-                    {user?.id === post.user_id && (
-                      <button
-                        className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors text-sm font-medium w-full text-left"
-                        onClick={() => {
-                          setShowMenu(false);
-                          setShowConfirm(true);
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4" /> Supprimer
-                      </button>
-                    )}
-                    <button
-                      className={`flex items-center gap-2 px-4 py-2 transition-colors text-sm font-medium w-full text-left ${
-                        isSaved
-                          ? 'text-orange-600 hover:bg-orange-50'
-                          : 'text-blue-700 hover:bg-blue-50'
-                      }`}
-                      onClick={() => {
-                        setShowMenu(false);
-                        handleSave();
-                      }}
-                    >
-                      {isSaved ? (
-                        <BookmarkX className="w-4 h-4" />
-                      ) : (
-                        <Bookmark className="w-4 h-4" />
-                      )}
-                      {isSaved ? 'Retirer' : 'Enregistrer'}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* Post Content */}
-      <div className="px-4 pb-3">
-        <p className="text-gray-900 text-[16px] leading-relaxed whitespace-pre-wrap">
+  // Optimisation du rendu avec useMemo pour les éléments coûteux
+  const postContent = useMemo(
+    () => (
+      <div className="px-4 py-3">
+        <p className="text-gray-900 leading-relaxed whitespace-pre-wrap break-words">
           {post.contenu}
         </p>
       </div>
-      {/* Post Image */}
-      {post.image_url && (
+    ),
+    [post.contenu]
+  );
+
+  const postImage = useMemo(
+    () =>
+      post.image_url && (
         <div className="mb-3">
           <ImageLoader
             src={post.image_url}
@@ -412,7 +325,96 @@ export default function PostCard({
             spinnerSize="medium"
           />
         </div>
-      )}
+      ),
+    [post.image_url]
+  );
+
+  return (
+    <div
+      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+      style={{
+        // Optimisations CSS pour un scrolling plus smooth
+        contain: 'layout style paint',
+        willChange: 'transform',
+      }}
+    >
+      {/* Header */}
+      <div className="px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Avatar
+            userId={post.user_id}
+            prenom={post.prenom}
+            nom={post.nom}
+            photo={post.photo_profil}
+            size={40}
+            className="cursor-pointer"
+            onClick={() => navigate(`/profile/${post.user_id}`)}
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2">
+              <h3
+                className="font-semibold text-gray-900 truncate cursor-pointer hover:text-blue-600 transition-colors"
+                onClick={() => navigate(`/profile/${post.user_id}`)}
+              >
+                {post.prenom} {post.nom}
+              </h3>
+            </div>
+            <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <span>{post.created_at_formatted}</span>
+              {post.ville && (
+                <>
+                  <span>·</span>
+                  <span>{post.ville}</span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="relative">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <MoreHorizontal className="w-5 h-5 text-gray-600" />
+          </button>
+          {showMenu && (
+            <div
+              ref={menuRef}
+              className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-10"
+            >
+              {onSave && (
+                <button
+                  onClick={handleSave}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
+                >
+                  {isSaved ? (
+                    <BookmarkX className="w-4 h-4" />
+                  ) : (
+                    <Bookmark className="w-4 h-4" />
+                  )}
+                  <span>
+                    {isSaved ? 'Retirer des enregistrements' : 'Enregistrer'}
+                  </span>
+                </button>
+              )}
+              {onDelete && user?.id === post.user_id && (
+                <button
+                  onClick={() => setShowConfirm(true)}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-red-600"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Supprimer</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Content */}
+      {postContent}
+      {postImage}
+
       {/* Engagement Stats */}
       <div className="px-4 py-3 border-t border-gray-100">
         <div className="flex items-center justify-between text-[13px] text-gray-500">
@@ -432,10 +434,10 @@ export default function PostCard({
               {post.comments_count} commentaire
               {post.comments_count !== 1 ? 's' : ''}
             </button>
-            {/* Bouton de partage retiré du compteur, laissé uniquement dans la barre d'actions */}
           </div>
         </div>
       </div>
+
       {/* Action Buttons */}
       <div className="px-4 py-1 border-t border-gray-100">
         <div className="flex items-center">
@@ -472,6 +474,7 @@ export default function PostCard({
           </button>
         </div>
       </div>
+
       {/* Champ de commentaire inline */}
       {showInlineComment && !showCommentsPanel && (
         <div ref={commentsContainerRef}>
@@ -507,6 +510,7 @@ export default function PostCard({
           </form>
         </div>
       )}
+
       {/* Panneau extensible commentaires */}
       {showCommentsPanel && (
         <div
@@ -580,11 +584,15 @@ export default function PostCard({
       )}
 
       {/* Share Modal */}
-      <ShareModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        post={post}
-      />
+      {showShareModal &&
+        createPortal(
+          <ShareModal
+            isOpen={showShareModal}
+            onClose={() => setShowShareModal(false)}
+            post={post}
+          />,
+          document.body
+        )}
       {/* ConfirmModal pour suppression */}
       <ConfirmModal
         isOpen={showConfirm}
@@ -599,3 +607,18 @@ export default function PostCard({
     </div>
   );
 }
+
+// Optimisation avec React.memo pour éviter les re-renders inutiles
+export default React.memo(PostCard, (prevProps, nextProps) => {
+  // Comparaison personnalisée pour optimiser les re-renders
+  return (
+    prevProps.post.id === nextProps.post.id &&
+    prevProps.post.likes_count === nextProps.post.likes_count &&
+    prevProps.post.comments_count === nextProps.post.comments_count &&
+    prevProps.post.user_liked === nextProps.post.user_liked &&
+    prevProps.post.user_saved === nextProps.post.user_saved &&
+    prevProps.post.contenu === nextProps.post.contenu &&
+    prevProps.post.image_url === nextProps.post.image_url &&
+    prevProps.post.created_at_formatted === nextProps.post.created_at_formatted
+  );
+});

@@ -147,11 +147,6 @@ export default function Stories() {
     <div className="mb-6">
       <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-200">
         {addStoryBubble}
-        {!fetchError && userStories.length === 0 && (
-          <div className="text-gray-500 text-center w-full">
-            Aucune story à afficher.
-          </div>
-        )}
         {!fetchError &&
           userStories.map((userStory, userIndex) => (
             <div

@@ -10,6 +10,8 @@ interface AvatarProps {
   photo?: string | null;
   size?: number; // en px, défaut 40
   className?: string;
+  onClick?: () => void;
+  [key: string]: any; // Pour accepter d'autres props HTML
 }
 
 export default function Avatar({
@@ -19,6 +21,8 @@ export default function Avatar({
   photo,
   size = 40,
   className = '',
+  onClick,
+  ...otherProps
 }: AvatarProps) {
   const { user } = useAuth();
   const initials = `${prenom?.[0] || ''}${nom?.[0] || ''}`.toUpperCase();
@@ -27,6 +31,7 @@ export default function Avatar({
   const displayPhoto = isCurrentUser ? user?.photo_profil : photo;
   const displayUrl = displayPhoto ? getMediaUrl(displayPhoto) : undefined;
   const [imgError, setImgError] = useState(false);
+
   if (displayUrl && !imgError) {
     return (
       <ImageLoader
@@ -38,6 +43,8 @@ export default function Avatar({
         spinnerColor="primary"
         onError={() => setImgError(true)}
         style={{ width: size, height: size }}
+        onClick={onClick}
+        {...otherProps}
       />
     );
   }
@@ -46,6 +53,8 @@ export default function Avatar({
       className={`flex items-center justify-center rounded-full bg-blue-100 text-blue-600 font-bold ${className}`}
       style={{ width: size, height: size, fontSize: size * 0.45 }}
       aria-label={initials}
+      onClick={onClick}
+      {...otherProps}
     >
       {initials}
     </div>

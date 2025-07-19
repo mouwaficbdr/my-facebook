@@ -70,26 +70,69 @@ export default function Messages() {
     const userIdParam = searchParams.get('user');
     if (userIdParam) {
       const userId = parseInt(userIdParam, 10);
+
+      // Fonction pour charger les infos du profil si nécessaire
+      const loadProfileInfo = async (friendId: number) => {
+        try {
+          const response = await fetch(
+            `${
+              import.meta.env.VITE_API_BASE_URL
+            }/api/users/profile.php?id=${friendId}`,
+            {
+              credentials: 'include',
+            }
+          );
+          const data = await response.json();
+          if (data.success && data.data.profile) {
+            const profile = data.data.profile;
+            return {
+              friend_id: friendId,
+              nom: profile.nom,
+              prenom: profile.prenom,
+              photo_profil: profile.photo_profil,
+              last_message: '',
+              last_message_time: '',
+              last_message_formatted: '',
+              last_sender_id: 0,
+              unread_count: 0,
+            };
+          }
+        } catch (err) {
+          console.error('Erreur lors de la récupération du profil:', err);
+        }
+        return null;
+      };
+
       // Attendre le chargement des conversations pour sélectionner
-      setTimeout(() => {
+      setTimeout(async () => {
         setSelectedConversation((prev) => {
           // Si déjà sélectionné, ne rien faire
           if (prev && prev.friend_id === userId) return prev;
           // Chercher la conversation existante
           const conv = conversations.find((c) => c.friend_id === userId);
           if (conv) return conv;
-          // Sinon, créer une conversation temporaire (sera remplacée au prochain polling)
-          return {
-            friend_id: userId,
-            nom: '',
-            prenom: '',
-            photo_profil: null,
-            last_message: '',
-            last_message_time: '',
-            last_message_formatted: '',
-            last_sender_id: 0,
-            unread_count: 0,
-          };
+
+          // Sinon, essayer de charger les infos du profil
+          loadProfileInfo(userId).then((profileInfo) => {
+            if (profileInfo) {
+              setSelectedConversation(profileInfo);
+            } else {
+              // Fallback: créer une conversation temporaire
+              setSelectedConversation({
+                friend_id: userId,
+                nom: '',
+                prenom: '',
+                photo_profil: null,
+                last_message: '',
+                last_message_time: '',
+                last_message_formatted: '',
+                last_sender_id: 0,
+                unread_count: 0,
+              });
+            }
+          });
+
+          return prev; // Retourner l'état actuel pendant le chargement
         });
       }, 500);
     }
@@ -138,23 +181,61 @@ export default function Messages() {
         );
       } else {
         // Sinon, chercher via l'API de recherche d'amis
-        searchFriendsForChat('').then((results) => {
-          const friend = results.find(
-            (f: any) => f.id === selectedConversation.friend_id
-          );
-          if (friend) {
-            setSelectedConversation((prev) =>
-              prev && prev.friend_id === friend.id
-                ? {
-                    ...prev,
-                    nom: friend.nom,
-                    prenom: friend.prenom,
-                    photo_profil: friend.photo_profil,
-                  }
-                : prev
+        const loadFriendInfo = async () => {
+          try {
+            const results = await searchFriendsForChat('');
+            const friend = results.find(
+              (f: any) => f.id === selectedConversation.friend_id
             );
+            if (friend) {
+              setSelectedConversation((prev) =>
+                prev && prev.friend_id === friend.id
+                  ? {
+                      ...prev,
+                      nom: friend.nom,
+                      prenom: friend.prenom,
+                      photo_profil: friend.photo_profil,
+                    }
+                  : prev
+              );
+            } else {
+              // Si pas trouvé dans les amis, essayer de récupérer les infos via l'API de profil
+              try {
+                const response = await fetch(
+                  `${
+                    import.meta.env.VITE_API_BASE_URL
+                  }/api/users/profile.php?id=${selectedConversation.friend_id}`,
+                  {
+                    credentials: 'include',
+                  }
+                );
+                const data = await response.json();
+                if (data.success && data.data.profile) {
+                  const profile = data.data.profile;
+                  setSelectedConversation((prev) =>
+                    prev && prev.friend_id === selectedConversation.friend_id
+                      ? {
+                          ...prev,
+                          nom: profile.nom,
+                          prenom: profile.prenom,
+                          photo_profil: profile.photo_profil,
+                        }
+                      : prev
+                  );
+                }
+              } catch (profileErr) {
+                console.error(
+                  'Erreur lors de la récupération du profil:',
+                  profileErr
+                );
+              }
+            }
+          } catch (err) {
+            console.error("Erreur lors de la recherche d'amis:", err);
           }
-        });
+        };
+
+        loadFriendInfo();
       }
     }
   }, [selectedConversation, conversations]);

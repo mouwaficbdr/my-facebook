@@ -10,7 +10,9 @@ interface ImageLoaderProps {
   objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
   onLoad?: () => void;
   onError?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
+  onClick?: () => void;
   style?: React.CSSProperties;
+  [key: string]: any; // Pour accepter d'autres props HTML
 }
 
 /**
@@ -28,7 +30,9 @@ const ImageLoader: React.FC<ImageLoaderProps> = ({
   objectFit = 'cover',
   onLoad,
   onError,
+  onClick,
   style,
+  ...otherProps
 }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -100,10 +104,12 @@ const ImageLoader: React.FC<ImageLoaderProps> = ({
           isLoading ? 'opacity-0' : 'opacity-100'
         } ${className.includes('rounded-full') ? 'rounded-full' : ''}`}
         style={{ objectFit }}
+        onClick={onClick}
         onError={(e) => {
           setHasError(true);
           if (onError) onError(e);
         }}
+        {...otherProps}
       />
     </div>
   );
