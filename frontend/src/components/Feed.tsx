@@ -6,24 +6,6 @@ import { useToast } from '../hooks/useToast';
 import { Search } from 'lucide-react';
 import Stories from './Stories';
 
-// Debounce hook pour optimiser les appels
-function useDebounce<T extends (...args: any[]) => any>(
-  callback: T,
-  delay: number
-): T {
-  const timeoutRef = useRef<NodeJS.Timeout>();
-  
-  return useCallback(
-    (...args: Parameters<T>) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => callback(...args), delay);
-    },
-    [callback, delay]
-  ) as T;
-}
-
 export default function Feed() {
   const { success, error } = useToast();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -32,7 +14,7 @@ export default function Feed() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  
+
   // Ref pour l'élément de déclenchement de l'infinite scroll
   const observerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -110,76 +92,75 @@ export default function Feed() {
     await loadFeed(currentPage + 1, true);
   }, [loadingMore, hasMore, currentPage]);
 
-  // Debounced version pour éviter les appels multiples
-  const debouncedLoadMore = useDebounce(loadMorePosts, 100);
+
 
   const handlePostCreated = useCallback(
     (newPost: Post) => {
-    setPosts((prev) => [newPost, ...prev]);
-    success('Post créé avec succès !');
+      setPosts((prev) => [newPost, ...prev]);
+      success('Post créé avec succès !');
     },
     [success]
   );
 
   const handleLike = useCallback(
     async (
-    postId: number,
-    action: 'like' | 'unlike',
-    type: string = 'like'
-  ) => {
-    try {
-      const result = await toggleLike(postId, action, type);
-      setPosts((prev) =>
-        prev.map((post) =>
-          post.id === postId
-            ? {
-                ...post,
-                user_liked: result.user_liked,
-                user_like_type: result.user_like_type,
-                likes_count: result.reactions.total ?? 0,
-              }
-            : post
-        )
-      );
-      return result;
-    } catch (err: any) {
-      error(err?.message || 'Erreur lors de la gestion du like');
-      throw err;
-    }
+      postId: number,
+      action: 'like' | 'unlike',
+      type: string = 'like'
+    ) => {
+      try {
+        const result = await toggleLike(postId, action, type);
+        setPosts((prev) =>
+          prev.map((post) =>
+            post.id === postId
+              ? {
+                  ...post,
+                  user_liked: result.user_liked,
+                  user_like_type: result.user_like_type,
+                  likes_count: result.reactions.total ?? 0,
+                }
+              : post
+          )
+        );
+        return result;
+      } catch (err: any) {
+        error(err?.message || 'Erreur lors de la gestion du like');
+        throw err;
+      }
     },
     [error]
   );
 
   const handleComment = useCallback(
     async (postId: number, _content: string, commentsCount?: number) => {
-    if (commentsCount !== undefined) {
-      setPosts((prev) =>
-        prev.map((post) =>
+      if (commentsCount !== undefined) {
+        setPosts((prev) =>
+          prev.map((post) =>
             post.id === postId
               ? { ...post, comments_count: commentsCount }
               : post
-        )
-      );
-    }
+          )
+        );
+      }
     },
     []
   );
 
   const handleDeletePost = useCallback(
     (postId: number) => {
-    setPosts((prev) => prev.filter((p) => p.id !== postId));
-    success('Post supprimé.');
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+      success('Post supprimé.');
     },
     [success]
   );
-  
+
   const handleSavePost = useCallback(
     (_postId: number, isSaved: boolean) => {
-    if (isSaved) {
-      success('Post enregistré');
-    } else {
-      success('Post retiré des enregistrements');
-    }
+      if (isSaved) {
+        success('Post enregistré');
+      } else {
+        success('Post retiré des enregistrements');
+      }
     },
     [success]
   );
@@ -188,7 +169,7 @@ export default function Feed() {
   const renderedPosts = useMemo(() => {
     return posts.map((post) => (
       <PostCard
-        key={`post-${post.id}-${post.updated_at || post.created_at}`}
+        key={`post-${post.id}`}
         post={post}
         onLike={handleLike}
         onComment={handleComment}
@@ -201,32 +182,32 @@ export default function Feed() {
   // Optimisation du skeleton loading
   const skeletonPosts = useMemo(
     () => (
-    <div className="space-y-4">
-      {[...Array(3)].map((_, i) => (
-        <div
-          key={`skeleton-${i}`}
-          className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-pulse"
-        >
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-            <div className="flex-1">
-              <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+      <div className="space-y-4">
+        {[...Array(3)].map((_, i) => (
+          <div
+            key={`skeleton-${i}`}
+            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-pulse"
+          >
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
             </div>
           </div>
-          <div className="space-y-3">
-            <div className="h-4 bg-gray-200 rounded"></div>
-            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-          </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
     ),
     []
   );
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="flex-1 max-w-full md:max-w-2xl xl:max-w-3xl mx-auto px-0 sm:px-2"
       style={{
@@ -272,7 +253,7 @@ export default function Feed() {
             </p>
           </div>
         ) : (
-          <div 
+          <div
             className="space-y-4"
             style={{
               // Optimisations CSS pour le conteneur des posts
@@ -281,10 +262,10 @@ export default function Feed() {
             }}
           >
             {renderedPosts}
-            
+
             {/* Élément de déclenchement optimisé pour l'infinite scroll */}
             {hasMore && (
-              <div 
+              <div
                 ref={observerRef}
                 className="flex justify-center items-center py-6"
                 style={{
@@ -303,10 +284,10 @@ export default function Feed() {
                 )}
               </div>
             )}
-            
+
             {/* Message de fin optimisé */}
             {!hasMore && posts.length > 0 && (
-              <div 
+              <div
                 className="text-center py-8 text-gray-500"
                 style={{ contain: 'layout' }}
               >

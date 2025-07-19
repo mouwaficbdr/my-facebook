@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { checkAdminAuth } from '../api/admin';
 
 interface AdminUser {
   id: number;
@@ -42,8 +43,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
         // Ensuite vérifier avec l'API
         try {
-          const adminModule = await import('../api/admin');
-          const response = await adminModule.checkAdminAuth();
+          const response = await checkAdminAuth();
 
           if (response && response.user) {
             setUser(response.user);
