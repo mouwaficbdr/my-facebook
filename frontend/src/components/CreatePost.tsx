@@ -2,9 +2,10 @@ import { useState } from 'react';
 import PostModal from './PostModal';
 import Avatar from './Avatar';
 import { useAuth } from '../context/AuthContext';
+import ReactDOM from 'react-dom';
 
 interface CreatePostProps {
-  onPostCreated: (post: any) => void;
+  onPostCreated: (post: unknown) => void; // TODO: typer précisément le post
 }
 
 export default function CreatePost({ onPostCreated }: CreatePostProps) {
@@ -36,11 +37,15 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
           </div>
         </div>
       </div>
-      <PostModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onPostCreated={onPostCreated}
-      />
+      {modalOpen &&
+        ReactDOM.createPortal(
+          <PostModal
+            isOpen={modalOpen}
+            onClose={() => setModalOpen(false)}
+            onPostCreated={onPostCreated}
+          />,
+          document.body
+        )}
     </>
   );
 }

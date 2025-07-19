@@ -227,7 +227,7 @@ export default function StoryViewer({
           onLoad={() => setImageLoaded(true)}
           onError={(e) => {
             if (e?.target) {
-              (e.target as HTMLImageElement).src = '/default-image.png';
+            (e.target as HTMLImageElement).src = '/default-image.png';
             }
           }}
         />

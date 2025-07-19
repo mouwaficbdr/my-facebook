@@ -3,7 +3,7 @@ import { API_BASE } from './base';
 export interface Notification {
   id: number;
   type: string;
-  data: any;
+  data: Record<string, unknown>; // Remplacement de 'any' par un type plus sûr
   is_read: boolean;
   created_at: string;
 }

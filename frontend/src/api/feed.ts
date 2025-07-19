@@ -170,7 +170,9 @@ export const deletePost = async (postId: number): Promise<void> => {
       'Content-Type': 'application/json',
     },
     credentials: 'include',
-    body: JSON.stringify({ post_id: postId }),
+    body: JSON.stringify({
+      post_id: postId,
+    }),
   });
 
   const data = await response.json();

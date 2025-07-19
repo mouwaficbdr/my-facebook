@@ -25,8 +25,10 @@ import { useAuth } from '../context/AuthContext';
 import ImageUploadButton from '../components/ImageUploadButton';
 import { getMediaUrl } from '../utils/cdn';
 import ConfirmModal from '../components/ConfirmModal';
+import { deletePost } from '../api/feed';
 import { useRef as useReactRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toggleLike } from '../api/feed';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -520,8 +522,6 @@ export default function MyProfilePage() {
   const handleDeletePost = useCallback(
     async (postId: number) => {
       try {
-        // Import dynamique pour éviter les dépendances circulaires
-        const { deletePost } = await import('../api/feed');
         await deletePost(postId);
         setPosts((prev) => prev.filter((p) => p.id !== postId));
         toast.success('Post supprimé.');
@@ -617,6 +617,37 @@ export default function MyProfilePage() {
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [profileMenuOpen]);
+
+  // Fonction pour gérer le like sur un post (identique à ProfilePage)
+  const handleLikePost = async (
+    postId: number,
+    action: 'like' | 'unlike',
+    type: string = 'like'
+  ) => {
+    try {
+      const result = await toggleLike(postId, action, type);
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                user_liked: result.user_liked,
+                user_like_type: result.user_like_type,
+                likes_count: result.reactions.total ?? 0,
+              }
+            : post
+        )
+      );
+      return result;
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Erreur lors de la gestion du like';
+      toast.error(message);
+      throw err;
+    }
+  };
 
   if (loading) return <Loading />;
   if (fetchError)
@@ -1059,13 +1090,7 @@ export default function MyProfilePage() {
                         <div className="transform hover:scale-[1.02] transition-transform duration-300">
                           <PostCard
                             post={post}
-                            onLike={() =>
-                              Promise.resolve({
-                                user_liked: false,
-                                user_like_type: undefined,
-                                reactions: {},
-                              })
-                            }
+                            onLike={handleLikePost}
                             onComment={() => {}}
                             onDelete={handleDeletePost}
                             onSave={handleSavePost}

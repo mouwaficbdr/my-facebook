@@ -1,5 +1,15 @@
 import PostCard from './PostCard';
 
+interface Comment {
+  id: number;
+  contenu: string;
+  created_at_formatted: string;
+  user_id: number;
+  nom: string;
+  prenom: string;
+  photo_profil: string | null;
+}
+
 interface Post {
   id: number;
   contenu: string;
@@ -16,7 +26,7 @@ interface Post {
   comments_count: number;
   user_liked: boolean;
   user_like_type?: string;
-  comments: any[];
+  comments: Comment[];
 }
 
 interface PostGridProps {
@@ -48,7 +58,11 @@ export default function PostGrid({
             >
               <PostCard
                 post={post}
-                onLike={async () => ({ user_liked: false, user_like_type: undefined, reactions: {} })}
+                onLike={async () => ({
+                  user_liked: false,
+                  user_like_type: undefined,
+                  reactions: {},
+                })}
                 onComment={() => {}}
                 onDelete={onDeletePost}
                 onSave={onSavePost}

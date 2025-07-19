@@ -12,7 +12,7 @@ import ReactDOM from 'react-dom';
 interface PostModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onPostCreated: (post: any) => void;
+  onPostCreated: (post: unknown) => void; // TODO: typer précisément le post
 }
 
 export default function PostModal({
@@ -108,8 +108,9 @@ export default function PostModal({
       setImagePreview(null);
       onPostCreated(post);
       onClose();
-    } catch (err: any) {
-      error(err?.message || 'Erreur lors de la création du post');
+    } catch (err: unknown) {
+      // Remplacement de 'any' par 'unknown' pour plus de sûreté
+      error((err as any)?.message || 'Erreur lors de la création du post'); // TODO: typer précisément l'erreur
     } finally {
       setIsSubmitting(false);
     }
@@ -117,9 +118,9 @@ export default function PostModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 sm:mx-0 p-0 overflow-hidden animate-modal-pop">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 relative animate-modal-pop">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <Avatar
               userId={user?.id}
@@ -141,7 +142,7 @@ export default function PostModal({
           </button>
         </div>
         {/* Body */}
-        <form onSubmit={handleSubmit} className="px-6 py-4">
+        <form onSubmit={handleSubmit}>
           <textarea
             ref={textareaRef}
             value={content}

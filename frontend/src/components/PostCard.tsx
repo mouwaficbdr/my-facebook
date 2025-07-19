@@ -101,6 +101,8 @@ function PostCard({
   const [likeLoading, setLikeLoading] = useState(false);
   const navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
+  // Ajout pour lightbox
+  const [showLightbox, setShowLightbox] = useState(false);
 
   // Synchroniser l'état local avec les props post.user_liked et post.likes_count
   React.useEffect(() => {
@@ -320,9 +322,10 @@ function PostCard({
           <ImageLoader
             src={post.image_url}
             alt="Post content"
-            className="w-full h-auto max-h-96 rounded-xl"
+            className="w-full h-auto max-h-96 rounded-xl cursor-pointer"
             objectFit="cover"
             spinnerSize="medium"
+            onClick={() => setShowLightbox(true)}
           />
         </div>
       ),
@@ -412,6 +415,24 @@ function PostCard({
       {/* Content */}
       {postContent}
       {postImage}
+      {showLightbox &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 animate-fade-in">
+            <button
+              className="absolute top-4 right-4 text-white text-3xl"
+              onClick={() => setShowLightbox(false)}
+              aria-label="Fermer"
+            >
+              &times;
+            </button>
+            <img
+              src={post.image_url}
+              alt="Post content"
+              className="max-h-[80vh] max-w-[90vw] rounded-2xl shadow-2xl"
+            />
+          </div>,
+          document.body
+        )}
 
       {/* Engagement Stats */}
       <div className="px-4 py-3 border-t border-gray-100">

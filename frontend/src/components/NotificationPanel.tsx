@@ -8,11 +8,12 @@ import {
   Eye,
 } from 'lucide-react';
 import Avatar from './Avatar';
+import type { Notification } from '../api/notifications';
 
 interface NotificationPanelProps {
   open: boolean;
   onClose: () => void;
-  notifications: any[];
+  notifications: Notification[];
   loading: boolean;
   onMarkAsRead: (id: number) => Promise<void>;
   onRefresh: () => void;

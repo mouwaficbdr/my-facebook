@@ -63,8 +63,8 @@ export default function FriendsSection() {
       }).then((res) => res.json()),
     ])
       .then(([reqRes, sugRes]) => {
-        let reqs = reqRes.success ? reqRes.requests || [] : [];
-        let sugs = sugRes.success ? sugRes.data?.suggestions || [] : [];
+        const reqs = reqRes.success ? reqRes.requests || [] : [];
+        const sugs = sugRes.success ? sugRes.data?.suggestions || [] : [];
         setRequests(reqs);
         setSuggestions(sugs);
         if (!reqRes.success)

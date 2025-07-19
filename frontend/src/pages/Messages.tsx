@@ -114,16 +114,15 @@ export default function Messages() {
       const loadProfileInfo = async (friendId: number) => {
         try {
           const response = await fetch(
-            `${
-              import.meta.env.VITE_API_BASE_URL
-            }/api/users/profile.php?id=${friendId}`,
+            `${import.meta.env.VITE_API_BASE_URL}/api/users/profile.php?id=${friendId}`,
             {
               credentials: 'include',
             }
           );
           const data = await response.json();
-          if (data.success && data.data.profile) {
-            const profile = data.data.profile;
+          // Compatibilité : profile ou user
+          const profile = data.data?.profile || data.data?.user;
+          if (data.success && profile) {
             return {
               friend_id: friendId,
               nom: profile.nom,
@@ -249,8 +248,9 @@ export default function Messages() {
                   }
                 );
                 const data = await response.json();
-                if (data.success && data.data.profile) {
-                  const profile = data.data.profile;
+                // Compatibilité : profile ou user
+                const profile = data.data?.profile || data.data?.user;
+                if (data.success && profile) {
                   setSelectedConversation((prev) =>
                     prev && prev.friend_id === selectedConversation.friend_id
                       ? {
