@@ -109,7 +109,7 @@ function PhotoLightbox({
         &#8592;
       </button>
       <img
-        src={images[current]}
+        src={getMediaUrl(images[current])}
         alt="Photo"
         className="max-h-[80vh] max-w-[90vw] rounded-2xl shadow-2xl"
       />
@@ -1442,7 +1442,7 @@ export default function MyProfilePage() {
                         onClick={() => setLightboxIdx(idx)}
                       >
                         <img
-                          src={url}
+                          src={getMediaUrl(url)}
                           alt="Photo"
                           className="object-cover w-full h-full transition-transform duration-200 hover:scale-105"
                         />

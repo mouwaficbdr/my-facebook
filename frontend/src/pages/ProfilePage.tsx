@@ -21,6 +21,7 @@ import ActionButton from '../components/ActionButton';
 import PostCard from '../components/PostCard';
 import { fetchFriends } from '../api/users';
 import { toggleLike } from '../api/feed';
+import { getMediaUrl } from '../utils/cdn';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -115,7 +116,7 @@ function PhotoLightbox({
         &#8592;
       </button>
       <img
-        src={images[current]}
+        src={getMediaUrl(images[current])}
         alt="Photo"
         className="max-h-[80vh] max-w-[90vw] rounded-2xl shadow-2xl"
       />
@@ -173,7 +174,7 @@ function ProfilePhotosTab({
                 onClick={() => setLightboxIdx(idx)}
               >
                 <img
-                  src={url}
+                  src={getMediaUrl(url)}
                   alt="Photo"
                   className="object-cover w-full h-full transition-transform duration-200 hover:scale-105"
                 />

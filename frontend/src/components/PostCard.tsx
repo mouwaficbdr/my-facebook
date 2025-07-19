@@ -24,6 +24,7 @@ import ShareModal from './ShareModal';
 import Avatar from './Avatar';
 import { useNavigate } from 'react-router-dom';
 import ConfirmModal from './ConfirmModal';
+import { getMediaUrl } from '../utils/cdn';
 
 interface Comment {
   id: number;
@@ -320,7 +321,7 @@ function PostCard({
       post.image_url && (
         <div className="mb-3">
           <ImageLoader
-            src={post.image_url}
+            src={getMediaUrl(post.image_url)}
             alt="Post content"
             className="w-full h-auto max-h-96 rounded-xl cursor-pointer"
             objectFit="cover"
@@ -426,7 +427,7 @@ function PostCard({
               &times;
             </button>
             <img
-              src={post.image_url}
+              src={getMediaUrl(post.image_url)}
               alt="Post content"
               className="max-h-[80vh] max-w-[90vw] rounded-2xl shadow-2xl"
             />
