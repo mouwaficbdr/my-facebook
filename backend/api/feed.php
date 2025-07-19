@@ -36,47 +36,63 @@ try {
 
     // Récupération des posts avec informations utilisateur et statistiques
     // Modifié pour ne montrer que les posts des amis et de l'utilisateur lui-même
+    // Ajout d'un shuffle aléatoire pour simuler un feed de réseau social
+    // Évite les posts consécutifs du même auteur
     $query = "
-        SELECT 
-            p.id,
-            p.contenu,
-            p.image_url,
-            p.type,
-            p.is_public,
-            p.created_at,
-            p.updated_at,
-            u.id as user_id,
-            u.nom,
-            u.prenom,
-            u.photo_profil,
-            u.ville,
-            u.pays,
-            COUNT(DISTINCT l.id) as likes_count,
-            COUNT(DISTINCT c.id) as comments_count,
-            EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = ?) as user_liked,
-            (SELECT type FROM likes WHERE post_id = p.id AND user_id = ? LIMIT 1) as user_like_type
-        FROM posts p
-        INNER JOIN users u ON p.user_id = u.id
-        LEFT JOIN likes l ON p.id = l.post_id
-        LEFT JOIN comments c ON p.id = c.post_id AND c.parent_id IS NULL
-        WHERE p.is_public = 1 AND u.is_active = 1 AND u.email_confirmed = 1
-        AND (
-            -- Posts de l'utilisateur lui-même
-            p.user_id = ?
-            OR 
-            -- Posts des amis (relation acceptée)
-            p.user_id IN (
-                -- Amis qui ont envoyé une demande à l'utilisateur
-                SELECT user_id FROM friendships 
-                WHERE friend_id = ? AND status = 'accepted'
-                UNION
-                -- Amis à qui l'utilisateur a envoyé une demande
-                SELECT friend_id FROM friendships 
-                WHERE user_id = ? AND status = 'accepted'
+        WITH ranked_posts AS (
+            SELECT 
+                p.id,
+                p.contenu,
+                p.image_url,
+                p.type,
+                p.is_public,
+                p.created_at,
+                p.updated_at,
+                u.id as user_id,
+                u.nom,
+                u.prenom,
+                u.photo_profil,
+                u.ville,
+                u.pays,
+                COUNT(DISTINCT l.id) as likes_count,
+                COUNT(DISTINCT c.id) as comments_count,
+                EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = ?) as user_liked,
+                (SELECT type FROM likes WHERE post_id = p.id AND user_id = ? LIMIT 1) as user_like_type,
+                -- Priorité temporelle
+                CASE 
+                    WHEN p.created_at >= DATE_SUB(NOW(), INTERVAL 1 DAY) THEN 1
+                    WHEN p.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 2
+                    ELSE 3
+                END as time_priority,
+                -- Seed pour le shuffle basé sur la date et l'ID
+                RAND(UNIX_TIMESTAMP(DATE(NOW())) + p.id + ?) as shuffle_seed
+            FROM posts p
+            INNER JOIN users u ON p.user_id = u.id
+            LEFT JOIN likes l ON p.id = l.post_id
+            LEFT JOIN comments c ON p.id = c.post_id AND c.parent_id IS NULL
+            WHERE p.is_public = 1 AND u.is_active = 1 AND u.email_confirmed = 1
+            AND (
+                -- Posts de l'utilisateur lui-même
+                p.user_id = ?
+                OR 
+                -- Posts des amis (relation acceptée)
+                p.user_id IN (
+                    -- Amis qui ont envoyé une demande à l'utilisateur
+                    SELECT user_id FROM friendships 
+                    WHERE friend_id = ? AND status = 'accepted'
+                    UNION
+                    -- Amis à qui l'utilisateur a envoyé une demande
+                    SELECT friend_id FROM friendships 
+                    WHERE user_id = ? AND status = 'accepted'
+                )
             )
+            GROUP BY p.id
         )
-        GROUP BY p.id
-        ORDER BY p.created_at DESC
+        SELECT * FROM ranked_posts
+        ORDER BY 
+            time_priority,
+            shuffle_seed DESC,
+            created_at DESC
         LIMIT ? OFFSET ?
     ";
 
@@ -84,6 +100,7 @@ try {
     $stmt->execute([
         $user['user_id'],  // Pour user_liked
         $user['user_id'],  // Pour user_like_type
+        $user['user_id'],  // Seed pour RAND()
         $user['user_id'],  // Pour p.user_id = ?
         $user['user_id'],  // Pour friend_id = ?
         $user['user_id'],  // Pour user_id = ?
@@ -91,6 +108,48 @@ try {
         $offset
     ]);
     $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Post-traitement pour éviter les auteurs consécutifs
+    $shuffledPosts = [];
+    $usedAuthors = [];
+    
+    foreach ($posts as $post) {
+        $authorId = $post['user_id'];
+        
+        // Si l'auteur a déjà été utilisé récemment, on le met en attente
+        if (in_array($authorId, $usedAuthors)) {
+            // Chercher un post d'un autre auteur dans la liste
+            $alternativePost = null;
+            foreach ($posts as $altPost) {
+                if (!in_array($altPost['user_id'], $usedAuthors) && !in_array($altPost['id'], array_column($shuffledPosts, 'id'))) {
+                    $alternativePost = $altPost;
+                    break;
+                }
+            }
+            
+            if ($alternativePost) {
+                $shuffledPosts[] = $alternativePost;
+                $usedAuthors[] = $alternativePost['user_id'];
+                // Garder seulement les 3 derniers auteurs pour éviter la répétition
+                if (count($usedAuthors) > 3) {
+                    array_shift($usedAuthors);
+                }
+            } else {
+                // Si pas d'alternative, on ajoute quand même mais on réinitialise
+                $shuffledPosts[] = $post;
+                $usedAuthors = [$authorId];
+            }
+        } else {
+            $shuffledPosts[] = $post;
+            $usedAuthors[] = $authorId;
+            // Garder seulement les 3 derniers auteurs
+            if (count($usedAuthors) > 3) {
+                array_shift($usedAuthors);
+            }
+        }
+    }
+    
+    $posts = $shuffledPosts;
 
     // Récupération des commentaires pour chaque post
     foreach ($posts as &$post) {
