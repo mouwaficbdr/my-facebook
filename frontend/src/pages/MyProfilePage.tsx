@@ -18,6 +18,7 @@ import {
 import Loading from '../components/Loading';
 import { useToast } from '../hooks/useToast';
 import Navbar from '../components/Navbar';
+import LeftSidebar from '../components/LeftSidebar';
 import Avatar from '../components/Avatar';
 import PostCard from '../components/PostCard';
 import { useAuth } from '../context/AuthContext';
@@ -25,7 +26,7 @@ import ImageUploadButton from '../components/ImageUploadButton';
 import { getMediaUrl } from '../utils/cdn';
 import ConfirmModal from '../components/ConfirmModal';
 import { useRef as useReactRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -123,6 +124,7 @@ function PhotoLightbox({
 
 export default function MyProfilePage() {
   const { user, updateUser } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -188,6 +190,44 @@ export default function MyProfilePage() {
   const profileUploadRef = useReactRef<{ openFilePicker: () => void }>(null);
   // State pour la lightbox des photos
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  // States pour la sidebar mobile
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [messagesBadge, setMessagesBadge] = useState(0);
+  // Variable notificationsBadge supprimée car non utilisée
+
+  const handleBadgesUpdate = (messages: number, _notifications: number) => {
+    setMessagesBadge(messages);
+    // setNotificationsBadge(notifications); // Supprimé car non utilisé
+  };
+
+  const handleSectionChange = (section: string) => {
+    setSidebarOpen(false); // Fermer la sidebar
+    switch (section) {
+      case 'feed':
+        navigate('/home');
+        break;
+      case 'friends':
+        navigate('/home?section=friends');
+        break;
+      case 'saved':
+        navigate('/home?section=saved');
+        break;
+      case 'reels':
+        navigate('/home?section=reels');
+        break;
+      case 'groupes':
+        navigate('/home?section=groupes');
+        break;
+      case 'pages':
+        navigate('/home?section=pages');
+        break;
+      case 'evenements':
+        navigate('/home?section=evenements');
+        break;
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     if (profile) {
@@ -567,7 +607,19 @@ export default function MyProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar onMenuClick={() => {}} />
+      <Navbar
+        onMenuClick={() => setSidebarOpen(true)}
+        onBadgesUpdate={handleBadgesUpdate}
+      />
+      {/* Mobile sidebar - visible seulement sur mobile */}
+      <div className="lg:hidden">
+        <LeftSidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          onSectionChange={handleSectionChange}
+          messagesBadge={messagesBadge}
+        />
+      </div>
       {/* Header Cover avec design pleine largeur */}
       <div className="relative">
         {/* Cover Image ou fallback dégradé avec preview */}

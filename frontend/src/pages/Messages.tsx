@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import Avatar from '../components/Avatar';
 import Navbar from '../components/Navbar';
+import LeftSidebar from '../components/LeftSidebar';
 import EmojiPicker from '../components/EmojiPicker';
 import MessageBubble from '../components/MessageBubble';
 import { cn } from '../utils/cn';
@@ -53,6 +54,44 @@ export default function Messages() {
   // États UI
   const [showMobileChat, setShowMobileChat] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  // States pour la sidebar mobile
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [messagesBadge, setMessagesBadge] = useState(0);
+  // Variable notificationsBadge supprimée car non utilisée
+
+  const handleBadgesUpdate = (messages: number, _notifications: number) => {
+    setMessagesBadge(messages);
+    // setNotificationsBadge(notifications); // Supprimé car non utilisé
+  };
+
+  const handleSectionChange = (section: string) => {
+    setSidebarOpen(false); // Fermer la sidebar
+    switch (section) {
+      case 'feed':
+        navigate('/home');
+        break;
+      case 'friends':
+        navigate('/home?section=friends');
+        break;
+      case 'saved':
+        navigate('/home?section=saved');
+        break;
+      case 'reels':
+        navigate('/home?section=reels');
+        break;
+      case 'groupes':
+        navigate('/home?section=groupes');
+        break;
+      case 'pages':
+        navigate('/home?section=pages');
+        break;
+      case 'evenements':
+        navigate('/home?section=evenements');
+        break;
+      default:
+        break;
+    }
+  };
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -471,7 +510,19 @@ export default function Messages() {
 
   return (
     <div className="h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20 flex flex-col">
-      <Navbar onMenuClick={() => setShowMobileChat(true)} />
+      <Navbar
+        onMenuClick={() => setSidebarOpen(true)}
+        onBadgesUpdate={handleBadgesUpdate}
+      />
+      {/* Mobile sidebar - visible seulement sur mobile */}
+      <div className="lg:hidden">
+        <LeftSidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          onSectionChange={handleSectionChange}
+          messagesBadge={messagesBadge}
+        />
+      </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar des conversations */}
@@ -652,13 +703,13 @@ export default function Messages() {
                   </button>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button className="p-3 hover:bg-blue-50 rounded-full transition-all duration-200 hover:scale-105">
+                  <button className="hidden md:block p-3 hover:bg-blue-50 rounded-full transition-all duration-200 hover:scale-105">
                     <Phone className="w-5 h-5 text-blue-600" />
                   </button>
-                  <button className="p-3 hover:bg-blue-50 rounded-full transition-all duration-200 hover:scale-105">
+                  <button className="hidden md:block p-3 hover:bg-blue-50 rounded-full transition-all duration-200 hover:scale-105">
                     <Video className="w-5 h-5 text-blue-600" />
                   </button>
-                  <button className="p-3 hover:bg-blue-50 rounded-full transition-all duration-200 hover:scale-105">
+                  <button className="hidden md:block p-3 hover:bg-blue-50 rounded-full transition-all duration-200 hover:scale-105">
                     <Info className="w-5 h-5 text-blue-600" />
                   </button>
                 </div>
@@ -734,7 +785,7 @@ export default function Messages() {
                         }}
                         onKeyPress={handleKeyPress}
                         placeholder="Écrivez votre message..."
-                        className="w-full px-5 py-3 pr-12 bg-white border-2 border-blue-100 rounded-3xl shadow focus:bg-blue-50 focus:border-blue-400 focus:ring-2 focus:ring-blue-300 transition-all duration-200 resize-none text-base placeholder:text-gray-400 placeholder:font-semibold align-middle"
+                        className="w-full px-5 py-3 pr-12 bg-white border-2 border-blue-100 rounded-3xl shadow focus:bg-blue-50 focus:border-blue-400 focus:ring-2 focus:ring-blue-300 transition-all duration-200 resize-none text-sm md:text-base placeholder:text-gray-400 placeholder:font-semibold align-middle"
                         rows={1}
                         style={{
                           minHeight: '48px',

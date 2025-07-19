@@ -17,10 +17,19 @@ export default function Home() {
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
       <Navbar onMenuClick={() => setSidebarOpen(true)} />
       <div className="flex flex-1 overflow-hidden">
-        <div className="h-full w-0 lg:w-80 flex-shrink-0 overflow-y-auto hidden lg:block">
+        {/* Mobile sidebar - visible seulement sur mobile */}
+        <div className="lg:hidden">
           <LeftSidebar
             isOpen={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
+            onSectionChange={setActiveSection}
+          />
+        </div>
+        {/* Desktop sidebar - visible seulement sur desktop */}
+        <div className="h-full w-0 lg:w-80 flex-shrink-0 overflow-y-auto hidden lg:block">
+          <LeftSidebar
+            isOpen={true}
+            onClose={() => {}}
             onSectionChange={setActiveSection}
           />
         </div>

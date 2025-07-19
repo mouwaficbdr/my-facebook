@@ -8,6 +8,8 @@ import {
   BookOpen,
   Calendar,
   Home,
+  MessageCircle,
+  Bell,
 } from 'lucide-react';
 import Avatar from './Avatar';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +23,8 @@ const iconComponents = {
   BookOpen,
   Calendar,
   Home,
+  MessageCircle,
+  Bell,
 };
 
 const sidebarItems = [
@@ -46,12 +50,14 @@ interface LeftSidebarProps {
       | 'pages'
       | 'evenements'
   ) => void;
+  messagesBadge?: number;
 }
 
 export default function LeftSidebar({
   isOpen,
   onClose,
   onSectionChange,
+  messagesBadge = 0,
 }: LeftSidebarProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -77,7 +83,10 @@ export default function LeftSidebar({
             {/* User Profile Section */}
             <div
               className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors px-3"
-              onClick={() => navigate('/me')}
+              onClick={() => {
+                navigate('/me');
+                onClose();
+              }}
             >
               <Avatar
                 userId={user?.id}
@@ -92,6 +101,28 @@ export default function LeftSidebar({
                 </p>
                 <p className="text-[13px] text-gray-500">Voir votre profil</p>
               </div>
+            </div>
+            {/* Mobile Navigation - Messages seulement */}
+            <div className="lg:hidden space-y-1">
+              <button
+                className="w-full flex items-center justify-start h-12 text-left relative hover:bg-gray-100 rounded-lg px-3"
+                onClick={() => {
+                  navigate('/messages');
+                  onClose();
+                }}
+              >
+                <div className="w-9 h-9 mr-3 flex items-center justify-center flex-shrink-0 relative">
+                  <MessageCircle className="h-6 w-6 text-blue-600" />
+                  {messagesBadge > 0 && (
+                    <span className="absolute -top-1 -right-1 h-[18px] min-w-[18px] text-[11px] bg-red-500 text-white rounded-full flex items-center justify-center font-medium px-1 animate-pulse">
+                      {messagesBadge}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[15px] font-medium text-gray-700 flex-1 truncate">
+                  Messages
+                </span>
+              </button>
             </div>
             {/* Navigation Items */}
             <div className="space-y-1">
@@ -114,20 +145,34 @@ export default function LeftSidebar({
                     key={index}
                     className="w-full flex items-center justify-start h-12 text-left relative hover:bg-gray-100 rounded-lg px-3"
                     onClick={() => {
-                      if (item.label === 'Feed' && onSectionChange)
+                      if (item.label === 'Feed' && onSectionChange) {
                         onSectionChange('feed');
-                      else if (item.label === 'Amis' && onSectionChange)
+                        onClose();
+                      } else if (item.label === 'Amis' && onSectionChange) {
                         onSectionChange('friends');
-                      else if (item.label === 'Enregistrés' && onSectionChange)
+                        onClose();
+                      } else if (
+                        item.label === 'Enregistrés' &&
+                        onSectionChange
+                      ) {
                         onSectionChange('saved');
-                      else if (item.label === 'Reels' && onSectionChange)
+                        onClose();
+                      } else if (item.label === 'Reels' && onSectionChange) {
                         onSectionChange('reels');
-                      else if (item.label === 'Groupes' && onSectionChange)
+                        onClose();
+                      } else if (item.label === 'Groupes' && onSectionChange) {
                         onSectionChange('groupes');
-                      else if (item.label === 'Pages' && onSectionChange)
+                        onClose();
+                      } else if (item.label === 'Pages' && onSectionChange) {
                         onSectionChange('pages');
-                      else if (item.label === 'Évènements' && onSectionChange)
+                        onClose();
+                      } else if (
+                        item.label === 'Évènements' &&
+                        onSectionChange
+                      ) {
                         onSectionChange('evenements');
+                        onClose();
+                      }
                     }}
                   >
                     <div className="w-9 h-9 mr-3 flex items-center justify-center flex-shrink-0">

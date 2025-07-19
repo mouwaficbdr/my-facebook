@@ -18,9 +18,10 @@ import { fetchUnreadCount } from '../api/messages';
 
 interface NavbarProps {
   onMenuClick: () => void;
+  onBadgesUpdate?: (messagesBadge: number, notificationsBadge: number) => void;
 }
 
-export default function Navbar({ onMenuClick }: NavbarProps) {
+export default function Navbar({ onMenuClick, onBadgesUpdate }: NavbarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -76,6 +77,13 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
       if (notifPollingRef.current) clearInterval(notifPollingRef.current);
     };
   }, []);
+
+  // Notifier le parent des changements de badges
+  useEffect(() => {
+    if (onBadgesUpdate) {
+      onBadgesUpdate(messagesBadge, notifBadge);
+    }
+  }, [messagesBadge, notifBadge, onBadgesUpdate]);
 
   // Marquer comme lu
   const handleMarkAsRead = async (id: number) => {
@@ -251,6 +259,19 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           </div>
           {/* Right section */}
           <div className="flex items-center space-x-3">
+            {/* Bouton notifications mobile */}
+            <button
+              className="md:hidden p-2 rounded-full hover:bg-gray-100 relative"
+              onClick={handleNotifClick}
+              aria-label="Notifications"
+            >
+              <Bell className="h-5 w-5 text-gray-600" />
+              {notifBadge > 0 && (
+                <span className="absolute -top-1 -right-1 h-[18px] min-w-[18px] text-[11px] bg-red-500 text-white rounded-full flex items-center justify-center font-medium px-1 animate-pulse">
+                  {notifBadge}
+                </span>
+              )}
+            </button>
             {/* TODO: Connecter le bouton Créer à la création de contenu réelle */}
             {/* <button className="hidden sm:flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 rounded-full px-4 py-2 text-sm font-medium">
               <Plus className="h-4 w-4" />

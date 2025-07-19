@@ -15,6 +15,7 @@ import Loading from '../components/Loading';
 import Spinner from '../components/Spinner';
 import { useToast } from '../hooks/useToast';
 import Navbar from '../components/Navbar';
+import LeftSidebar from '../components/LeftSidebar';
 import Avatar from '../components/Avatar';
 import ActionButton from '../components/ActionButton';
 import PostCard from '../components/PostCard';
@@ -229,6 +230,43 @@ export default function ProfilePage() {
   });
   const loaderRefFriends = useRef<HTMLDivElement | null>(null);
   const [isFetchingMoreFriends, setIsFetchingMoreFriends] = useState(false);
+  // States pour la sidebar mobile
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [messagesBadge, setMessagesBadge] = useState(0);
+
+  const handleBadgesUpdate = (messages: number, _notifications: number) => {
+    setMessagesBadge(messages);
+    // notifications non utilisé car pas de sidebar notifications sur cette page
+  };
+
+  const handleSectionChange = (section: string) => {
+    setSidebarOpen(false); // Fermer la sidebar
+    switch (section) {
+      case 'feed':
+        navigate('/home');
+        break;
+      case 'friends':
+        navigate('/home?section=friends');
+        break;
+      case 'saved':
+        navigate('/home?section=saved');
+        break;
+      case 'reels':
+        navigate('/home?section=reels');
+        break;
+      case 'groupes':
+        navigate('/home?section=groupes');
+        break;
+      case 'pages':
+        navigate('/home?section=pages');
+        break;
+      case 'evenements':
+        navigate('/home?section=evenements');
+        break;
+      default:
+        break;
+    }
+  };
 
   // Infinite scroll: charger plus de posts quand on atteint le bas
   const fetchMorePosts = useCallback(() => {
@@ -713,7 +751,19 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 mb-16">
-      <Navbar onMenuClick={() => {}} />
+      <Navbar
+        onMenuClick={() => setSidebarOpen(true)}
+        onBadgesUpdate={handleBadgesUpdate}
+      />
+      {/* Mobile sidebar - visible seulement sur mobile */}
+      <div className="lg:hidden">
+        <LeftSidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          onSectionChange={handleSectionChange}
+          messagesBadge={messagesBadge}
+        />
+      </div>
 
       {/* Header Cover avec design pleine largeur */}
       <div className="relative">

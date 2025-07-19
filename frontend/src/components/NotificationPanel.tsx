@@ -80,16 +80,16 @@ export default function NotificationPanel({
       onClick={onClose}
     >
       <div
-        className="mt-4 mr-4 w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-100 animate-fade-in-up overflow-hidden"
+        className="mt-2 mr-2 md:mt-4 md:mr-4 w-full max-w-xs md:max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-100 animate-fade-in-up overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white"
+          className="flex items-center justify-between px-4 md:px-5 py-3 md:py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center gap-2">
-            <Bell className="w-6 h-6 text-blue-500" />
-            <span className="font-bold text-lg text-gray-800">
+            <Bell className="w-5 h-5 md:w-6 md:h-6 text-blue-500" />
+            <span className="font-bold text-base md:text-lg text-gray-800">
               Notifications
             </span>
           </div>
@@ -101,7 +101,7 @@ export default function NotificationPanel({
             Rafraîchir
           </button>
         </div>
-        <div className="max-h-[70vh] overflow-y-auto">
+        <div className="max-h-[60vh] md:max-h-[70vh] overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-10">
               <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
@@ -118,7 +118,7 @@ export default function NotificationPanel({
             notifications.map((notif) => (
               <div
                 key={notif.id}
-                className={`flex items-start gap-3 px-5 py-4 border-b border-gray-50 transition-colors ${
+                className={`flex items-start gap-3 px-4 md:px-5 py-3 md:py-4 border-b border-gray-50 transition-colors ${
                   !notif.is_read ? 'bg-blue-50/60' : 'bg-white hover:bg-gray-50'
                 }`}
               >
