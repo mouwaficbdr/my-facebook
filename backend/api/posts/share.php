@@ -88,14 +88,38 @@ try {
         exit;
     }
     
-    // TODO: Quand la messagerie sera implémentée, créer un message ici
-    // Pour l'instant, on simule le partage
+    // Récupérer les informations de l'auteur du post
+    $authorQuery = "SELECT prenom, nom FROM users WHERE id = ?";
+    $authorStmt = $pdo->prepare($authorQuery);
+    $authorStmt->execute([$post['user_id']]);
+    $author = $authorStmt->fetch();
+    
+    // Créer un message avec le lien du post et les informations
+    $postPreview = strlen($post['contenu']) > 100 ? substr($post['contenu'], 0, 100) . '...' : $post['contenu'];
+    $messageContent = "📱 " . $author['prenom'] . " " . $author['nom'] . " a partagé un post :\n\n";
+    $messageContent .= "\"" . $postPreview . "\"\n\n";
+    $messageContent .= "🔗 Voir le post : https://" . $_SERVER['HTTP_HOST'] . "/post/" . $input['post_id'];
+    
+    // Insérer le message dans la base de données
+    $messageQuery = "
+        INSERT INTO messages (sender_id, receiver_id, contenu, created_at) 
+        VALUES (?, ?, ?, NOW())
+    ";
+    $messageStmt = $pdo->prepare($messageQuery);
+    $messageStmt->execute([
+        $user['id'],
+        $input['friend_id'],
+        $messageContent
+    ]);
+    
+    $messageId = $pdo->lastInsertId();
     
     // Log du partage pour debug
     log_info('Post shared', [
         'user_id' => $user['id'],
         'post_id' => $input['post_id'],
         'friend_id' => $input['friend_id'],
+        'message_id' => $messageId,
         'post_content' => substr($post['contenu'], 0, 100) . '...'
     ]);
     
@@ -106,6 +130,7 @@ try {
         'data' => [
             'post_id' => intval($input['post_id']),
             'friend_id' => intval($input['friend_id']),
+            'message_id' => intval($messageId),
             'shared_at' => date('Y-m-d H:i:s')
         ]
     ]);
