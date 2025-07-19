@@ -161,3 +161,21 @@ export const uploadPostImage = async (file: File): Promise<string> => {
   }
   return data.url;
 };
+
+// Suppression d'un post (propriétaire uniquement)
+export const deletePost = async (postId: number): Promise<void> => {
+  const response = await fetch(`${API_BASE}/api/posts/delete.php`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ post_id: postId }),
+  });
+
+  const data = await response.json();
+
+  if (!data.success) {
+    throw new Error(data.message || 'Erreur lors de la suppression du post');
+  }
+};

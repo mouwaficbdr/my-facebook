@@ -516,6 +516,22 @@ export default function MyProfilePage() {
     [toast]
   );
 
+  // Handler pour supprimer un post
+  const handleDeletePost = useCallback(
+    async (postId: number) => {
+      try {
+        // Import dynamique pour éviter les dépendances circulaires
+        const { deletePost } = await import('../api/feed');
+        await deletePost(postId);
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+        toast.success('Post supprimé.');
+      } catch (err: any) {
+        toast.error(err?.message || 'Erreur lors de la suppression du post');
+      }
+    },
+    [toast]
+  );
+
   // Handler suppression profil
   const handleDeleteProfile = () => setConfirmDelete('profile');
   const confirmDeleteProfile = async () => {
@@ -1051,6 +1067,7 @@ export default function MyProfilePage() {
                               })
                             }
                             onComment={() => {}}
+                            onDelete={handleDeletePost}
                             onSave={handleSavePost}
                           />
                         </div>

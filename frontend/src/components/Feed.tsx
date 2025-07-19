@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import CreatePost from './CreatePost';
 import PostCard from './PostCard';
-import { getFeed, toggleLike, type Post } from '../api/feed';
+import { getFeed, toggleLike, deletePost, type Post } from '../api/feed';
 import { useToast } from '../hooks/useToast';
 import { Search } from 'lucide-react';
 import Stories from './Stories';
@@ -92,8 +92,6 @@ export default function Feed() {
     await loadFeed(currentPage + 1, true);
   }, [loadingMore, hasMore, currentPage]);
 
-
-
   const handlePostCreated = useCallback(
     (newPost: Post) => {
       setPosts((prev) => [newPost, ...prev]);
@@ -147,11 +145,16 @@ export default function Feed() {
   );
 
   const handleDeletePost = useCallback(
-    (postId: number) => {
-      setPosts((prev) => prev.filter((p) => p.id !== postId));
-      success('Post supprimé.');
+    async (postId: number) => {
+      try {
+        await deletePost(postId);
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+        success('Post supprimé.');
+      } catch (err: any) {
+        error(err?.message || 'Erreur lors de la suppression du post');
+      }
     },
-    [success]
+    [success, error]
   );
 
   const handleSavePost = useCallback(
