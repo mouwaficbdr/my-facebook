@@ -12,8 +12,11 @@ $path = rtrim($path, '/');
 if (strpos($path, '/uploads/') === 0) {
     $file_path = __DIR__ . $path;
     
-    // Vérifier que le fichier existe et est dans le dossier uploads
-    if (file_exists($file_path) && strpos(realpath($file_path), realpath(__DIR__ . '/uploads/')) === 0) {
+    // Vérifier que le fichier existe et est dans le dossier uploads (sécurité renforcée)
+    if (file_exists($file_path) && 
+        strpos(realpath($file_path), realpath(__DIR__ . '/uploads/')) === 0 &&
+        !strpos($path, '..') && // Bloquer les tentatives de directory traversal
+        preg_match('/^\/uploads\/[a-zA-Z0-9\/_-]+\.[a-zA-Z0-9]+$/', $path)) { // Validation stricte du chemin
         // Déterminer le type MIME
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mime_type = finfo_file($finfo, $file_path);
