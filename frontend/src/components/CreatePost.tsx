@@ -3,9 +3,10 @@ import PostModal from './PostModal';
 import Avatar from './Avatar';
 import { useAuth } from '../context/AuthContext';
 import ReactDOM from 'react-dom';
+import type { Post } from '../api/feed';
 
 interface CreatePostProps {
-  onPostCreated: (post: unknown) => void; // TODO: typer précisément le post
+  onPostCreated: (post: Post) => void;
 }
 
 export default function CreatePost({ onPostCreated }: CreatePostProps) {

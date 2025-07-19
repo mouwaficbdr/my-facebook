@@ -8,11 +8,12 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
 import { uploadPostImage, createPost } from '../api/feed';
 import ReactDOM from 'react-dom';
+import type { Post } from '../api/feed';
 
 interface PostModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onPostCreated: (post: unknown) => void; // TODO: typer précisément le post
+  onPostCreated: (post: Post) => void;
 }
 
 export default function PostModal({

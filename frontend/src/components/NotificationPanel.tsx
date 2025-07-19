@@ -116,72 +116,83 @@ export default function NotificationPanel({
             )
           )}
           {notifications.length > 0 &&
-            notifications.map((notif) => (
-              <div
-                key={notif.id}
-                className={`flex items-start gap-3 px-4 md:px-5 py-3 md:py-4 border-b border-gray-50 transition-colors ${
-                  !notif.is_read ? 'bg-blue-50/60' : 'bg-white hover:bg-gray-50'
-                }`}
-              >
-                <div className="flex-shrink-0 mt-1">{getIcon(notif.type)}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    {notif.data?.avatar && (
-                      <Avatar
-                        userId={notif.data?.user_id}
-                        prenom={notif.data?.prenom || ''}
-                        nom={notif.data?.nom || ''}
-                        photo={notif.data?.avatar}
-                        size={32}
-                        className="h-8 w-8 ring-1 ring-blue-200"
-                      />
-                    )}
-                    <span className="font-medium text-gray-800 truncate">
-                      {notif.data?.title || 'Notification'}
-                    </span>
+            notifications.map((notif) => {
+              // Cast local pour éviter les erreurs de build
+              const data = notif.data as {
+                avatar?: string | null;
+                user_id?: number;
+                prenom?: string;
+                nom?: string;
+                title?: string;
+                description?: string;
+              };
+              return (
+                <div
+                  key={notif.id}
+                  className={`flex items-start gap-3 px-4 md:px-5 py-3 md:py-4 border-b border-gray-50 transition-colors ${
+                    !notif.is_read ? 'bg-blue-50/60' : 'bg-white hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex-shrink-0 mt-1">{getIcon(notif.type)}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      {data.avatar && (
+                        <Avatar
+                          userId={data.user_id}
+                          prenom={data.prenom || ''}
+                          nom={data.nom || ''}
+                          photo={data.avatar}
+                          size={32}
+                          className="h-8 w-8 ring-1 ring-blue-200"
+                        />
+                      )}
+                      <span className="font-medium text-gray-800 truncate">
+                        {data.title || 'Notification'}
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600 truncate">
+                      {data.description || ''}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      {formatRelative(notif.created_at)}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-600 truncate">
-                    {notif.data?.description || ''}
-                  </div>
-                  <div className="text-xs text-gray-400 mt-1">
-                    {formatRelative(notif.created_at)}
-                  </div>
+                  {!notif.is_read && (
+                    <button
+                      className="ml-2 mt-1 w-6 h-6 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center"
+                      title="Marquer comme lue"
+                      aria-label="Marquer la notification comme lue"
+                      onClick={() => handleMarkAsRead(notif.id)}
+                      disabled={loadingIds.includes(notif.id)}
+                    >
+                      {loadingIds.includes(notif.id) ? (
+                        <svg
+                          className="animate-spin h-4 w-4 text-blue-500"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          />
+                        </svg>
+                      ) : (
+                        <Eye className="w-4 h-4 text-blue-500" />
+                      )}
+                    </button>
+                  )}
                 </div>
-                {!notif.is_read && (
-                  <button
-                    className="ml-2 mt-1 w-6 h-6 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center"
-                    title="Marquer comme lue"
-                    aria-label="Marquer la notification comme lue"
-                    onClick={() => handleMarkAsRead(notif.id)}
-                    disabled={loadingIds.includes(notif.id)}
-                  >
-                    {loadingIds.includes(notif.id) ? (
-                      <svg
-                        className="animate-spin h-4 w-4 text-blue-500"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v8z"
-                        />
-                      </svg>
-                    ) : (
-                      <Eye className="w-4 h-4 text-blue-500" />
-                    )}
-                  </button>
-                )}
-              </div>
-            ))}
+              );
+            })}
         </div>
       </div>
     </div>
