@@ -1,116 +1,85 @@
-import { useState, useEffect, useRef } from 'react';
-import Spinner from './Spinner';
+import React, { useState, useEffect } from 'react';
+import { getMediaUrl } from '../utils/cdn';
 
 interface ImageLoaderProps {
-  src: string;
+  src?: string | null;
   alt: string;
   className?: string;
+  fallbackSrc?: string;
+  onError?: (e?: React.SyntheticEvent<HTMLImageElement, Event>) => void;
+  onLoad?: () => void;
+  objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
   spinnerSize?: 'small' | 'medium' | 'large';
   spinnerColor?: 'primary' | 'secondary' | 'white';
-  objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
-  onLoad?: () => void;
-  onError?: (e: React.SyntheticEvent<HTMLImageElement, Event>) => void;
   onClick?: () => void;
   style?: React.CSSProperties;
   [key: string]: any; // Pour accepter d'autres props HTML
 }
 
-/**
- * Composant ImageLoader : affiche un spinner pendant le chargement des images
- * - Utilise le composant Spinner pour indiquer le chargement
- * - Transition fluide entre le spinner et l'image
- * - Gestion des erreurs de chargement
- */
 const ImageLoader: React.FC<ImageLoaderProps> = ({
   src,
   alt,
   className = '',
-  spinnerSize = 'medium',
-  spinnerColor = 'primary',
-  objectFit = 'cover',
-  onLoad,
+  fallbackSrc = '/default-avatar.png',
   onError,
+  onLoad,
+  objectFit = 'cover',
   onClick,
   style,
   ...otherProps
 }) => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [imgSrc, setImgSrc] = useState<string>('');
   const [hasError, setHasError] = useState(false);
-  const [imageSrc, setImageSrc] = useState('');
-  const imageRef = useRef<HTMLImageElement>(null);
-  const currentSrcRef = useRef(src);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Si la source n'a pas changé, ne rien faire
-    if (currentSrcRef.current === src && imageSrc) {
+    if (!src) {
+      setImgSrc(fallbackSrc);
+      setHasError(false);
+      setIsLoading(false);
       return;
     }
 
-    // Mettre à jour la référence
-    currentSrcRef.current = src;
-
-    // Réinitialiser l'état
-    setIsLoading(true);
+    const imageUrl = getMediaUrl(src);
+    setImgSrc(imageUrl);
     setHasError(false);
+    setIsLoading(true);
+  }, [src, fallbackSrc]);
 
-    // Précharger l'image
-    const img = new Image();
-    img.src = src;
+  const handleError = (e?: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    console.warn(`Image failed to load: ${imgSrc}`);
+    setHasError(true);
+    setImgSrc(fallbackSrc);
+    setIsLoading(false);
+    onError?.(e);
+  };
 
-    img.onload = () => {
-      // Vérifier si la source est toujours la même
-      if (currentSrcRef.current === src) {
-        setImageSrc(src);
-        setIsLoading(false);
-        if (onLoad) onLoad();
-      }
-    };
-
-    img.onerror = (e) => {
-      if (currentSrcRef.current === src) {
-        setIsLoading(false);
-        setHasError(true);
-        if (onError) {
-          const event = e as unknown as React.SyntheticEvent<
-            HTMLImageElement,
-            Event
-          >;
-          onError(event);
-        }
-      }
-    };
-
-    return () => {
-      img.onload = null;
-      img.onerror = null;
-    };
-  }, [src, onLoad, onError, imageSrc]);
+  const handleLoad = () => {
+    setIsLoading(false);
+    onLoad?.();
+  };
 
   return (
     <div className={`relative ${className}`} style={style}>
-      {/* Spinner de chargement */}
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50">
-          <Spinner size={spinnerSize} color={spinnerColor} />
-        </div>
+        <div className="absolute inset-0 bg-gray-200 animate-pulse rounded" />
       )}
-
-      {/* Image avec transition */}
       <img
-        ref={imageRef}
-        src={hasError ? '/default-image.png' : imageSrc || src}
+        src={imgSrc}
         alt={alt}
-        className={`w-full h-full transition-opacity duration-300 ${
-          isLoading ? 'opacity-0' : 'opacity-100'
-        } ${className.includes('rounded-full') ? 'rounded-full' : ''}`}
+        className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
         style={{ objectFit }}
+        onError={handleError}
+        onLoad={handleLoad}
         onClick={onClick}
-        onError={(e) => {
-          setHasError(true);
-          if (onError) onError(e);
-        }}
+        loading="lazy"
         {...otherProps}
       />
+      {hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded">
+          <span className="text-gray-400 text-xs">Image non disponible</span>
+        </div>
+      )}
     </div>
   );
 };

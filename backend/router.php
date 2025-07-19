@@ -8,6 +8,33 @@ $path = parse_url($request_uri, PHP_URL_PATH);
 // Supprimer le slash final
 $path = rtrim($path, '/');
 
+// Gestion des fichiers statiques (uploads)
+if (strpos($path, '/uploads/') === 0) {
+    $file_path = __DIR__ . $path;
+    
+    // Vérifier que le fichier existe et est dans le dossier uploads
+    if (file_exists($file_path) && strpos(realpath($file_path), realpath(__DIR__ . '/uploads/')) === 0) {
+        // Déterminer le type MIME
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime_type = finfo_file($finfo, $file_path);
+        finfo_close($finfo);
+        
+        // Headers pour les images
+        header('Content-Type: ' . $mime_type);
+        header('Cache-Control: public, max-age=31536000'); // Cache 1 an
+        header('Access-Control-Allow-Origin: *');
+        
+        // Servir le fichier
+        readfile($file_path);
+        return true;
+    } else {
+        // Fichier non trouvé ou accès non autorisé
+        http_response_code(404);
+        echo json_encode(['success' => false, 'message' => 'Fichier non trouvé']);
+        return true;
+    }
+}
+
 // Routes API
 if (strpos($path, '/api/') === 0) {
     $api_path = substr($path, 5); // Enlever '/api/'

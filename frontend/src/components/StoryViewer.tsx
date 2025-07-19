@@ -226,7 +226,9 @@ export default function StoryViewer({
           spinnerColor="white"
           onLoad={() => setImageLoaded(true)}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/default-image.png';
+            if (e?.target) {
+              (e.target as HTMLImageElement).src = '/default-image.png';
+            }
           }}
         />
 

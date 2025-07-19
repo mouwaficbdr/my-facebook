@@ -392,9 +392,7 @@ function PostCard({
                   ) : (
                     <Bookmark className="w-4 h-4" />
                   )}
-                  <span>
-                    {isSaved ? 'Retirer des enregistrements' : 'Enregistrer'}
-                  </span>
+                  <span>{isSaved ? 'Retirer' : 'Enregistrer'}</span>
                 </button>
               )}
               {onDelete && user?.id === post.user_id && (

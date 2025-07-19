@@ -504,6 +504,18 @@ export default function MyProfilePage() {
     setCoverPreview(null);
   };
 
+  // Handler pour sauvegarder/retirer un post
+  const handleSavePost = useCallback(
+    (_postId: number, isSaved: boolean) => {
+      if (isSaved) {
+        toast.success('Post enregistré');
+      } else {
+        toast.success('Post retiré des enregistrements');
+      }
+    },
+    [toast]
+  );
+
   // Handler suppression profil
   const handleDeleteProfile = () => setConfirmDelete('profile');
   const confirmDeleteProfile = async () => {
@@ -1039,6 +1051,7 @@ export default function MyProfilePage() {
                               })
                             }
                             onComment={() => {}}
+                            onSave={handleSavePost}
                           />
                         </div>
                       </div>
