@@ -6,6 +6,7 @@ import ImageLoader from './ImageLoader';
 import { ChevronLeft, ChevronRight, XCircle, Eye, Trash2 } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
 import Avatar from './Avatar';
+import ReactDOM from 'react-dom';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -142,9 +143,9 @@ export default function StoryViewer({
     setTouchEnd(null);
   };
 
-  return (
+  return ReactDOM.createPortal(
     <div
-      className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm animate-fade-in flex items-center justify-center"
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onTouchStart={handleTouchStart}
@@ -227,7 +228,7 @@ export default function StoryViewer({
           onLoad={() => setImageLoaded(true)}
           onError={(e) => {
             if (e?.target) {
-            (e.target as HTMLImageElement).src = '/default-image.png';
+              (e.target as HTMLImageElement).src = '/default-image.png';
             }
           }}
         />
@@ -335,6 +336,7 @@ export default function StoryViewer({
         cancelText="Annuler"
         type="danger"
       />
-    </div>
+    </div>,
+    document.body
   );
 }

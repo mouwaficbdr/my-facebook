@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { createStory } from '../api/stories';
 import { useToast } from '../hooks/useToast';
 import { useAuth } from '../context/AuthContext';
+import ReactDOM from 'react-dom';
 
 interface StoryCreatorProps {
   onClose: () => void;
@@ -97,10 +98,10 @@ export default function StoryCreator({
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[95vh] overflow-y-auto">
-        <div className="flex justify-between items-center p-4 border-b">
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm animate-fade-in flex items-center justify-center">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 relative">
+        <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Créer une story</h2>
           <button
             onClick={onClose}
@@ -109,14 +110,12 @@ export default function StoryCreator({
             &times;
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="p-4">
           {error && (
             <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4">
               {error}
             </div>
           )}
-
           {!isAuthenticated && (
             <div className="bg-yellow-50 text-yellow-700 p-3 rounded-md mb-4">
               Vous devez être connecté pour publier une story.
@@ -218,6 +217,7 @@ export default function StoryCreator({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
