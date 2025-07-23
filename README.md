@@ -74,7 +74,7 @@
 - **Base de données** : MySQL 8.0 (Aiven Cloud)
 - **Authentification** : JWT (JSON Web Tokens)
 - **API** : RESTful avec JSON
-- **Email** : Mailtrap (dev) / SendGrid (prod)
+- **Email** : Mailtrap (dev) / GMAIL (prod)
 - **Déploiement** : Railway avec FrankenPHP
 
 ### **Base de Données**
