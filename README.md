@@ -176,37 +176,6 @@ cd backend
 railway up
 ```
 
-## 🔑 Identifiants de Test
-
-### **Comptes de Test**
-
-#### **Utilisateur Standard**
-
-- **Email** : `testuser@onepiece.com`
-- **Mot de passe** : `onepiece123`
-- **Rôle** : Utilisateur
-
-#### **Modérateur**
-
-- **Email** : `testmod@onepiece.com`
-- **Mot de passe** : `onepiece123`
-- **Rôle** : Modérateur
-- **Accès** : Modération des contenus
-
-#### **Administrateur**
-
-- **Email** : `testadmin@onepiece.com`
-- **Mot de passe** : `onepiece123`
-- **Rôle** : Administrateur
-- **Accès** : Back-office complet
-
-### **Accès Back-Office**
-
-- **URL** : `/admin-login`
-- **Interface séparée** avec authentification spécifique
-- **Dashboard** avec statistiques en temps réel
-- **Gestion des utilisateurs** et contenus
-
 ## 📁 Structure du Projet
 
 ```
