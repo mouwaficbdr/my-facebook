@@ -92,13 +92,26 @@ if ($errors) {
     exit;
 }
 
+error_log("DEBUG: Validation passed, checking email uniqueness");
+
 // 4. Vérification unicité email (case-insensitive)
 try {
+    error_log("DEBUG: About to call getPDO()");
     $pdo = getPDO();
+    error_log("DEBUG: PDO connection obtained successfully");
+    
+    error_log("DEBUG: Preparing SQL query for email check");
     $stmt = $pdo->prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1');
+    error_log("DEBUG: SQL prepared, executing with email: " . $input['email']);
+    
     $stmt->execute([$input['email']]);
+    error_log("DEBUG: SQL executed successfully");
+    
     $exists = $stmt->fetch();
+    error_log("DEBUG: Fetch complete. User exists: " . ($exists ? 'YES' : 'NO'));
 } catch (Throwable $e) {
+    error_log("DEBUG: EXCEPTION CAUGHT! Message: " . $e->getMessage());
+    error_log("DEBUG: Exception trace: " . $e->getTraceAsString());
     log_error('DB error (check email)', ['error' => $e->getMessage()]);
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erreur serveur.']);
