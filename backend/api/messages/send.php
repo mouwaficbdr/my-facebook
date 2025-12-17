@@ -87,7 +87,7 @@ try {
   // Insérer le message
   $stmt = $pdo->prepare("
         INSERT INTO messages (sender_id, receiver_id, contenu, type, created_at)
-        VALUES (?, ?, ?, ?, NOW())
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
     ");
   $stmt->execute([$userId, $receiverId, $contenu, $type]);
 
@@ -117,7 +117,7 @@ try {
   try {
     $stmt = $pdo->prepare("
             INSERT INTO notifications (user_id, from_user_id, type, title, message, data, created_at)
-            VALUES (?, ?, 'message', ?, ?, ?, NOW())
+            VALUES (?, ?, 'message', ?, ?, ?, CURRENT_TIMESTAMP)
         ");
 
     $notifTitle = "Nouveau message";

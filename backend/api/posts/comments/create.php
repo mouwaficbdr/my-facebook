@@ -45,7 +45,7 @@ try {
         exit;
     }
     // Insérer le commentaire
-    $stmt = $pdo->prepare('INSERT INTO comments (post_id, user_id, contenu, created_at) VALUES (:post_id, :user_id, :contenu, NOW())');
+    $stmt = $pdo->prepare('INSERT INTO comments (post_id, user_id, contenu, created_at) VALUES (:post_id, :user_id, :contenu, CURRENT_TIMESTAMP)');
     $stmt->execute([
         'post_id' => $post_id,
         'user_id' => $user['id'],

@@ -69,7 +69,7 @@ try {
     // Insertion du post
     $query = "
         INSERT INTO posts (user_id, contenu, image_url, type, is_public, created_at)
-        VALUES (?, ?, ?, ?, ?, NOW())
+        VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     ";
     
     $stmt = $pdo->prepare($query);

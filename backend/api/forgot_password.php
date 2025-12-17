@@ -37,7 +37,7 @@ if (empty($input['email']) || !filter_var($input['email'], FILTER_VALIDATE_EMAIL
 // 3. Recherche utilisateur
 try {
     $pdo = getPDO();
-    $stmt = $pdo->prepare('SELECT id, nom, prenom, email FROM users WHERE LOWER(email) = LOWER(?) AND email_confirmed = 1 LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id, nom, prenom, email FROM users WHERE LOWER(email) = LOWER(?) AND email_confirmed = true LIMIT 1');
     $stmt->execute([$input['email']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (Throwable $e) {

@@ -74,7 +74,7 @@ try {
         LEFT JOIN (
             SELECT sender_id, COUNT(*) as count
             FROM messages 
-            WHERE receiver_id = ? AND is_read = 0
+            WHERE receiver_id = ? AND is_read = false
             GROUP BY sender_id
         ) unread_count ON unread_count.sender_id = u.id
         WHERE m.sender_id = ? OR m.receiver_id = ?

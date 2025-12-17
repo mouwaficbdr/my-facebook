@@ -47,7 +47,7 @@ if (!preg_match('/^[a-f0-9]{64}$/', $input['token'])) {
 // 4. Recherche utilisateur avec token valide
 try {
     $pdo = getPDO();
-    $stmt = $pdo->prepare('SELECT id FROM users WHERE reset_password_token = ? AND reset_token_expiry > NOW() LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id FROM users WHERE reset_password_token = ? AND reset_token_expiry > CURRENT_TIMESTAMP LIMIT 1');
     $stmt->execute([$input['token']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (Throwable $e) {

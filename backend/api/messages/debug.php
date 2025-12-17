@@ -28,7 +28,7 @@ try {
   $messageCount = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
 
   // Test compteur non lus
-  $stmt = $pdo->prepare("SELECT COUNT(*) as unread_count FROM messages WHERE receiver_id = ? AND is_read = 0");
+  $stmt = $pdo->prepare("SELECT COUNT(*) as unread_count FROM messages WHERE receiver_id = ? AND is_read = false");
   $stmt->execute([$user['user_id']]);
   $unreadCount = $stmt->fetch(PDO::FETCH_ASSOC)['unread_count'];
 

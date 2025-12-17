@@ -29,7 +29,7 @@ try {
             (f.user_id = ? AND f.friend_id = u.id)
             OR (f.friend_id = ? AND f.user_id = u.id)
         )
-        WHERE f.status = 'accepted' AND u.is_active = 1 AND u.email_confirmed = 1
+        WHERE f.status = 'accepted' AND u.is_active = true AND u.email_confirmed = true
     ";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$user['user_id'], $user['user_id']]);

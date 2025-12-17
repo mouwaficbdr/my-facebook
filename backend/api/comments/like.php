@@ -88,7 +88,7 @@ try {
             $action = 'updated';
         } else {
             // Nouveau like
-            $insertQuery = "INSERT INTO comment_likes (user_id, comment_id, type, created_at) VALUES (?, ?, ?, NOW())";
+            $insertQuery = "INSERT INTO comment_likes (user_id, comment_id, type, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
             $insertStmt = $pdo->prepare($insertQuery);
             $insertStmt->execute([$user['id'], $input['comment_id'], $reactionType]);
             

@@ -54,7 +54,7 @@ try {
     }
     
     // Insérer la réponse
-    $stmt = $pdo->prepare('INSERT INTO comments (post_id, user_id, contenu, parent_id, created_at) VALUES (:post_id, :user_id, :contenu, :parent_id, NOW())');
+    $stmt = $pdo->prepare('INSERT INTO comments (post_id, user_id, contenu, parent_id, created_at) VALUES (:post_id, :user_id, :contenu, :parent_id, CURRENT_TIMESTAMP)');
     $stmt->execute([
         'post_id' => $parentComment['post_id'],
         'user_id' => $user['id'],

@@ -49,7 +49,7 @@ try {
             echo json_encode(['success' => true, 'message' => 'Déjà enregistré.']);
             exit;
         }
-        $insert = $pdo->prepare('INSERT INTO saved_posts (user_id, post_id, created_at) VALUES (?, ?, NOW())');
+        $insert = $pdo->prepare('INSERT INTO saved_posts (user_id, post_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)');
         $insert->execute([$user['user_id'], $post_id]);
         echo json_encode(['success' => true, 'message' => 'Post enregistré.']);
         exit;
