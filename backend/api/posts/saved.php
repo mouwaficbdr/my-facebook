@@ -56,10 +56,10 @@ try {
         WHERE sp.user_id = ?
         GROUP BY p.id, p.contenu, p.image_url, p.type, p.is_public, p.created_at, p.updated_at, u.id, u.nom, u.prenom, u.photo_profil, u.ville, u.pays, sp.created_at
         ORDER BY sp.created_at DESC
-        LIMIT ? OFFSET ?
+        LIMIT $limit OFFSET $offset
     ";
     $stmt = $pdo->prepare($query);
-    $stmt->execute([$user['user_id'], $user['user_id'], $user['user_id'], $limit, $offset]);
+    $stmt->execute([$user['user_id'], $user['user_id'], $user['user_id']]);
     $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Récupérer les commentaires récents pour chaque post (max 3)

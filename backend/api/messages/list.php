@@ -80,10 +80,10 @@ try {
             (m.sender_id = ? AND m.receiver_id = ?)
         )
         ORDER BY m.created_at DESC
-        LIMIT ? OFFSET ?
+        LIMIT $limit OFFSET $offset
     ");
 
-  $stmt->execute([$userId, $friendId, $friendId, $userId, $limit, $offset]);
+  $stmt->execute([$userId, $friendId, $friendId, $userId]);
   $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
   // Compter le total

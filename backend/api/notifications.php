@@ -33,11 +33,11 @@ try {
     $total = (int)$countStmt->fetchColumn();
     // Récupérer les notifications (non lues d'abord, puis plus récentes)
     if ($unreadOnly) {
-        $stmt = $pdo->prepare('SELECT id, type, data, is_read, created_at FROM notifications WHERE user_id = ? AND is_read = false ORDER BY created_at DESC LIMIT ? OFFSET ?');
-        $stmt->execute([$user['user_id'], $limit, $offset]);
+        $stmt = $pdo->prepare("SELECT id, type, data, is_read, created_at FROM notifications WHERE user_id = ? AND is_read = false ORDER BY created_at DESC LIMIT $limit OFFSET $offset");
+        $stmt->execute([$user['user_id']]);
     } else {
-        $stmt = $pdo->prepare('SELECT id, type, data, is_read, created_at FROM notifications WHERE user_id = ? ORDER BY is_read ASC, created_at DESC LIMIT ? OFFSET ?');
-        $stmt->execute([$user['user_id'], $limit, $offset]);
+        $stmt = $pdo->prepare("SELECT id, type, data, is_read, created_at FROM notifications WHERE user_id = ? ORDER BY is_read ASC, created_at DESC LIMIT $limit OFFSET $offset");
+        $stmt->execute([$user['user_id']]);
     }
     $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
     // Formatage
