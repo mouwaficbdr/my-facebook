@@ -1,29 +1,54 @@
-# Dockerfile pour Render (FrankenPHP)
-FROM dunglas/frankenphp:latest-php8.3
+# Dockerfile pour Render (Nginx + PHP-FPM)
+FROM php:8.3-fpm-alpine
 
-# Installer les extensions PHP nécessaires
-RUN install-php-extensions pdo pdo_pgsql pgsql mbstring zip gd exif
+# Installer Nginx et les dépendances système
+RUN apk add --no-cache \
+    nginx \
+    supervisor \
+    postgresql-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libzip-dev \
+    oniguruma-dev
 
-# Copier le code backend
-WORKDIR /app
-COPY . /app
+# Installer les extensions PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo \
+        pdo_pgsql \
+        pgsql \
+        mbstring \
+        zip \
+        gd \
+        exif
+
+# Créer le répertoire de travail
+WORKDIR /var/www/html
+
+# Copier le code
+COPY . /var/www/html
 
 # Créer les dossiers nécessaires
-RUN mkdir -p /app/logs /app/uploads
+RUN mkdir -p /var/www/html/logs \
+             /var/www/html/uploads \
+             /run/nginx \
+             /var/log/supervisor
 
 # Permissions
-RUN chown -R www-data:www-data /app/logs /app/uploads
-RUN chmod -R 775 /app/logs /app/uploads
+RUN chown -R www-data:www-data /var/www/html/logs /var/www/html/uploads
+RUN chmod -R 775 /var/www/html/logs /var/www/html/uploads
 
-# Variable d'environnement pour le port
-ENV PORT=8080
+# Copier la configuration Nginx
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copier le script de démarrage
-COPY start-container.sh /start.sh
-RUN chmod +x /start.sh
+# Copier la configuration Supervisor
+COPY supervisord.conf /etc/supervisord.conf
 
-# Exposer le port
-EXPOSE 8080
+# Port par défaut
+ENV PORT=10000
 
-# Démarrer FrankenPHP
-CMD ["/start.sh"]
+EXPOSE 10000
+
+# Démarrer Supervisor (qui gère Nginx + PHP-FPM)
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
