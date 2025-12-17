@@ -113,9 +113,10 @@ function add_story_view($story_id, $viewer_id)
 {
   $pdo = getPDO();
 
-  $stmt = $pdo->prepare("
-        INSERT IGNORE INTO story_views (story_id, user_id)
+    $stmt = $pdo->prepare("
+        INSERT INTO story_views (story_id, user_id)
         VALUES (?, ?)
+        ON CONFLICT (story_id, user_id) DO NOTHING
     ");
   $stmt->execute([$story_id, $viewer_id]);
 

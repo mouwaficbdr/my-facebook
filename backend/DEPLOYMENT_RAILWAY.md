@@ -2,7 +2,7 @@
 
 ## 1. Prérequis
 - **Compte Railway** (https://railway.app)
-- **Base de données MySQL** (Aiven ou Railway plugin)
+- **Base de données PostgreSQL** (Aiven ou Railway plugin)
 - **Mailtrap** (pour l'envoi d'emails en dev)
 - **Accès au repo backend**
 - **Railway CLI** (optionnel, pour déploiement local)
@@ -19,7 +19,7 @@ backend/
   composer.json       # Dépendances PHP
   php.ini             # Config PHP personnalisée
   start-container.sh  # Script de démarrage Railway/FrankenPHP
-  db_schema.sql       # Schéma SQL à jour
+  db_schema_postgres.sql # Schéma SQL à jour
 ```
 
 ## 3. Fichiers indispensables & rôle
@@ -55,7 +55,7 @@ backend/
 - **Le dossier logs/ doit être créé dynamiquement, jamais hardcodé**
 - **Les logs critiques doivent aller sur error_log() (donc visibles dans Railway)**
 - **Ne jamais exposer d'informations sensibles dans les messages d'erreur**
-- **Tenir à jour le schéma SQL (`db_schema.sql`)**
+- **Tenir à jour le schéma SQL (`db_schema_postgres.sql`)**
 - **Vérifier les droits d'écriture sur logs/ et les fichiers temporaires**
 
 ## 7. Vérification post-déploiement

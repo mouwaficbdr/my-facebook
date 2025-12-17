@@ -273,6 +273,40 @@ CREATE TABLE activity_stats (
 
 CREATE INDEX idx_activity_stats_date ON activity_stats(date);
 
+-- Procédure stockée pour mettre à jour les statistiques journalières
+CREATE OR REPLACE FUNCTION update_daily_stats()
+RETURNS VOID AS $$
+DECLARE
+    today DATE := CURRENT_DATE;
+BEGIN
+    INSERT INTO activity_stats (
+        date, 
+        new_users, 
+        new_posts, 
+        new_comments, 
+        new_likes, 
+        deleted_posts,
+        active_users
+    )
+    VALUES (
+        today,
+        (SELECT COUNT(*) FROM users WHERE date_inscription::DATE = today),
+        (SELECT COUNT(*) FROM posts WHERE created_at::DATE = today),
+        (SELECT COUNT(*) FROM comments WHERE created_at::DATE = today),
+        (SELECT COUNT(*) FROM likes WHERE created_at::DATE = today),
+        (SELECT COUNT(*) FROM deleted_posts WHERE deleted_at::DATE = today),
+        (SELECT COUNT(*) FROM users WHERE last_login::DATE >= today - 30)
+    )
+    ON CONFLICT (date) DO UPDATE SET
+        new_users = EXCLUDED.new_users,
+        new_posts = EXCLUDED.new_posts,
+        new_comments = EXCLUDED.new_comments,
+        new_likes = EXCLUDED.new_likes,
+        deleted_posts = EXCLUDED.deleted_posts,
+        active_users = EXCLUDED.active_users;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Commentaires et notes
 COMMENT ON TABLE users IS 'Table des utilisateurs avec authentification et profil';
 COMMENT ON TABLE posts IS 'Posts/publications des utilisateurs';

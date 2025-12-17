@@ -63,11 +63,11 @@ try {
   // Évolution activité (posts par jour sur 7 derniers jours)
   $stmt = $pdo->query('
         SELECT 
-            DATE(created_at) as date,
+            created_at::DATE as date,
             COUNT(*) as posts_count
         FROM posts 
         WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL \'7 days\'
-        GROUP BY DATE(created_at)
+        GROUP BY created_at::DATE
         ORDER BY date ASC
     ');
   $activity_chart = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -98,11 +98,11 @@ try {
   // Statistiques de modération
   $stmt = $pdo->query('
         SELECT 
-            DATE(created_at) as date,
+            created_at::DATE as date,
             COUNT(*) as count
         FROM moderation_logs
         WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL \'30 days\'
-        GROUP BY DATE(created_at)
+        GROUP BY created_at::DATE
         ORDER BY date ASC
     ');
   $moderation_stats = $stmt->fetchAll(PDO::FETCH_ASSOC);

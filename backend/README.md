@@ -7,7 +7,7 @@
 - `config/` : Connexion DB, variables d’environnement, config mail
 - `logs/` : Logs d’erreurs, rate limiting
 - `tests/` : Tests unitaires maison
-- `db_schema.sql` : Schéma de la base de données (à jour)
+- `db_schema_postgres.sql` : Schéma de la base de données PostgreSQL (à jour)
 
 ## 🧩 Choix d’architecture & sécurité
 
@@ -26,11 +26,12 @@
 ```
 APP_ENV=development
 APP_URL=http://localhost:3000
+DB_DRIVER=pgsql
 DB_HOST=...
 DB_NAME=...
 DB_USER=...
 DB_PASS=...
-DB_PORT=...
+DB_PORT=5432
 DB_SSL=true
 DB_SSL_CA_PATH=...
 MAIL_HOST=...
@@ -62,7 +63,7 @@ RATE_LIMIT_WINDOW=600
 
 ## 📝 À tenir à jour
 
-- `db_schema.sql` à chaque évolution du modèle
+- `db_schema_postgres.sql` à chaque évolution du modèle
 - `.env.local` pour chaque environnement
 
 ---
