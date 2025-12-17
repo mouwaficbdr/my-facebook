@@ -101,7 +101,7 @@ try {
         LEFT JOIN likes l ON p.id = l.post_id
         LEFT JOIN comments c ON p.id = c.post_id AND c.parent_id IS NULL
         WHERE p.user_id = ? AND p.is_public = true 
-        GROUP BY p.id
+        GROUP BY p.id, p.contenu, p.image_url, p.type, p.is_public, p.created_at, p.updated_at, u.id, u.nom, u.prenom, u.photo_profil, u.ville, u.pays, user_liked, user_like_type
         ORDER BY p.created_at DESC 
         LIMIT $limit OFFSET $offset
     ";

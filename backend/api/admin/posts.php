@@ -60,7 +60,7 @@ try {
             LEFT JOIN likes l ON p.id = l.post_id
             LEFT JOIN comments c ON p.id = c.post_id
             WHERE $where_clause
-            GROUP BY p.id
+            GROUP BY p.id, p.user_id, p.contenu, p.image_url, p.type, p.is_public, p.created_at, p.updated_at, u.nom, u.prenom, u.email, u.photo_profil
             ORDER BY p.created_at DESC
             LIMIT $limit OFFSET $offset
         ";

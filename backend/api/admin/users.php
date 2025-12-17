@@ -64,7 +64,7 @@ try {
             LEFT JOIN friendships f1 ON u.id = f1.user_id AND f1.status = 'accepted'
             LEFT JOIN friendships f2 ON u.id = f2.friend_id AND f2.status = 'accepted'
             WHERE $where_clause
-            GROUP BY u.id
+            GROUP BY u.id, u.nom, u.prenom, u.email, u.role, u.genre, u.date_inscription, u.last_login, u.is_active, u.email_confirmed, u.photo_profil, u.ville, u.pays
             ORDER BY u.date_inscription DESC
             LIMIT $limit OFFSET $offset
         ";
