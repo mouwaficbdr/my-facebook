@@ -58,6 +58,7 @@ error_log("DEBUG: JSON is valid array, continuing...");
 
 // 2. Rate limiting IP
 $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+error_log("DEBUG: About to check rate limit for IP: $ip");
 if (!rate_limit_check('signup', $ip)) {
     http_response_code(429);
     echo json_encode([
@@ -66,8 +67,10 @@ if (!rate_limit_check('signup', $ip)) {
     ]);
     exit;
 }
+error_log("DEBUG: Rate limit check passed");
 
 // 3. Validation centralisée
+error_log("DEBUG: About to validate input data");
 $rules = [
     'nom' => ['required', 'min:2', 'max:50', 'alpha_spaces'],
     'prenom' => ['required', 'min:2', 'max:50', 'alpha_spaces'],
@@ -76,7 +79,9 @@ $rules = [
     'genre' => ['required', 'in:Homme,Femme,Autre'],
     'date_naissance' => ['required', 'date', 'before:today', 'age_min:13']
 ];
+error_log("DEBUG: Calling validate()...");
 $errors = validate($input, $rules);
+error_log("DEBUG: Validation complete. Errors: " . json_encode($errors));
 if ($errors) {
     // Message UX explicite pour l'âge
     if (isset($errors['date_naissance']) && strpos($errors['date_naissance'], 'Âge minimum') !== false) {
