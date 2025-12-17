@@ -34,15 +34,27 @@ header('Content-Type: application/json');
 
 error_log("DEBUG: Before JSON parsing");
 
+error_log("DEBUG: About to read php://input");
+$rawInput = file_get_contents('php://input');
+error_log("DEBUG: Raw input received: " . substr($rawInput, 0, 100));
+
+error_log("DEBUG: About to json_decode");
+$input = json_decode($rawInput, true);
+error_log("DEBUG: JSON decoded, type: " . gettype($input));
+
+error_log("DEBUG: Line 36 - checking APP_ENV");
 $env = defined('APP_ENV') ? APP_ENV : (getenv('APP_ENV') ?: 'development');
+error_log("DEBUG: ENV value: $env");
 
 // 1. Parsing JSON POST
-$input = json_decode(file_get_contents('php://input'), true);
 if (!is_array($input)) {
+    error_log("DEBUG: Input is not array, returning 400");
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Requête invalide (JSON attendu).']);
     exit;
 }
+
+error_log("DEBUG: JSON is valid array, continuing...");
 
 // 2. Rate limiting IP
 $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
