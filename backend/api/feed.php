@@ -93,7 +93,7 @@ try {
             time_priority,
             shuffle_seed DESC,
             created_at DESC
-        LIMIT ? OFFSET ?
+        LIMIT $limit OFFSET $offset
     ";
 
     $stmt = $pdo->prepare($query);
@@ -104,8 +104,6 @@ try {
         $user['user_id'],  // Pour p.user_id = ?
         $user['user_id'],  // Pour friend_id = ?
         $user['user_id'],  // Pour user_id = ?
-        $limit,
-        $offset
     ]);
     $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

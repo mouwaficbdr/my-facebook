@@ -61,10 +61,10 @@ try {
         )
         WHERE f.status = 'accepted' AND u.is_active = true AND u.email_confirmed = true AND u.id != ?
         ORDER BY u.prenom, u.nom
-        LIMIT ? OFFSET ?
+        LIMIT $limit OFFSET $offset
     ";
     $stmt = $pdo->prepare($query);
-    $stmt->execute([$userId, $userId, $userId, $limit, $offset]);
+    $stmt->execute([$userId, $userId, $userId]);
     $friends = $stmt->fetchAll(PDO::FETCH_ASSOC);
     log_debug('friends/list.php result', ['userId' => $userId, 'friends_count' => count($friends), 'friends' => $friends]);
     foreach ($friends as &$friend) {
