@@ -25,7 +25,7 @@ if (!$currentUser) {
 try {
     $pdo = getPDO();
     $userId = intval($currentUser['user_id']);
-    $userQuery = "SELECT id, nom, prenom, bio, photo_profil, cover_url, ville, pays, date_naissance FROM users WHERE id = ? AND is_active = 1 AND email_confirmed = 1 LIMIT 1";
+    $userQuery = "SELECT id, nom, prenom, bio, photo_profil, cover_url, ville, pays, date_naissance FROM users WHERE id = ? AND is_active = true AND email_confirmed = true LIMIT 1";
     $userStmt = $pdo->prepare($userQuery);
     $userStmt->execute([$userId]);
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);

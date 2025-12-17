@@ -66,7 +66,7 @@ if (isset($validation['password'])) {
 try {
     $pdo = getPDO();
     $userId = intval($currentUser['user_id']);
-    $stmt = $pdo->prepare('SELECT password_hash FROM users WHERE id = ? AND is_active = 1 AND email_confirmed = 1 LIMIT 1');
+    $stmt = $pdo->prepare('SELECT password_hash FROM users WHERE id = ? AND is_active = true AND email_confirmed = true LIMIT 1');
     $stmt->execute([$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$user) {
@@ -86,7 +86,7 @@ try {
         exit;
     }
     $hash = password_hash($newPassword, PASSWORD_BCRYPT);
-    $update = $pdo->prepare('UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?');
+    $update = $pdo->prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
     $update->execute([$hash, $userId]);
     // Optionnel : Invalider les anciens tokens JWT ici si implémenté
     http_response_code(200);

@@ -34,7 +34,7 @@ if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
 // 3. Recherche utilisateur avec token
 try {
     $pdo = getPDO();
-    $stmt = $pdo->prepare('SELECT id, email_confirmed FROM users WHERE email_confirm_token = ? AND email_confirmed = 0 LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id, email_confirmed FROM users WHERE email_confirm_token = ? AND email_confirmed = false LIMIT 1');
     $stmt->execute([$token]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (Throwable $e) {
@@ -53,7 +53,7 @@ if (!$user) {
 
 // 5. Confirmation email
 try {
-    $stmt = $pdo->prepare('UPDATE users SET email_confirmed = 1, email_confirm_token = NULL WHERE id = ?');
+    $stmt = $pdo->prepare('UPDATE users SET email_confirmed = true, email_confirm_token = NULL WHERE id = ?');
     $stmt->execute([$user['id']]);
 } catch (Throwable $e) {
     log_error('DB error (update email confirmed)', ['error' => $e->getMessage()]);

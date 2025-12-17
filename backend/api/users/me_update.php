@@ -70,7 +70,7 @@ if (isset($input['date_naissance']) && $input['date_naissance'] !== '' && !valid
 try {
     $pdo = getPDO();
     $userId = intval($currentUser['user_id']);
-    $sql = "UPDATE users SET ".implode(', ', $update).", updated_at = NOW() WHERE id = ? AND is_active = 1 AND email_confirmed = 1";
+    $sql = "UPDATE users SET ".implode(', ', $update).", updated_at = CURRENT_TIMESTAMP WHERE id = ? AND is_active = true AND email_confirmed = true";
     $params[] = $userId;
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);

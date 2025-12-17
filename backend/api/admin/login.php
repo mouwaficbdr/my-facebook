@@ -61,7 +61,7 @@ try {
         FROM users 
         WHERE LOWER(email) = LOWER(?) 
         AND role IN (\'admin\', \'moderator\')
-        AND is_active = 1
+        AND is_active = true
         LIMIT 1
     ');
   $stmt->execute([$input['email']]);
@@ -109,7 +109,7 @@ $token = generate_jwt($payload);
 
 // 8. Mise à jour dernière connexion
 try {
-  $stmt = $pdo->prepare('UPDATE users SET last_login = NOW() WHERE id = ?');
+  $stmt = $pdo->prepare('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?');
   $stmt->execute([$user['id']]);
 } catch (Throwable $e) {
   log_error('DB error (update admin last login)', ['error' => $e->getMessage()]);
