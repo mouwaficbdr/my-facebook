@@ -120,7 +120,7 @@ if ($method === 'GET') {
             $userId = $user['id'];
 
             // Récupérer les stories de l'utilisateur et de ses amis
-            $sql = 'SELECT s.id, s.user_id, u.nom as user_nom, u.prenom as user_prenom, 
+            $sql = "SELECT s.id, s.user_id, u.nom as user_nom, u.prenom as user_prenom, 
                     u.photo_profil as user_avatar, s.image, s.legend, s.created_at,
                     (SELECT COUNT(*) FROM story_views WHERE story_id = s.id) as view_count,
                     (SELECT COUNT(*) FROM story_views WHERE story_id = s.id AND user_id = ?) as viewed_by_me
@@ -130,31 +130,31 @@ if ($method === 'GET') {
                     AND (
                         s.user_id = ?
                         OR s.user_id IN (
-                            SELECT IF(user_id = ?, friend_id, user_id) 
+                            SELECT CASE WHEN user_id = ? THEN friend_id ELSE user_id END
                             FROM friendships 
-                            WHERE status = "accepted" 
+                            WHERE status = 'accepted' 
                             AND (user_id = ? OR friend_id = ?)
                         )
                     )
-                    ORDER BY s.created_at DESC';
+                    ORDER BY s.created_at DESC";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$userId, $userId, $userId, $userId, $userId]);
         } else {
             // Récupérer toutes les stories (pour les 24 dernières heures)
-            $sql = 'SELECT s.id, s.user_id, u.nom as user_nom, u.prenom as user_prenom, 
+            $sql = "SELECT s.id, s.user_id, u.nom as user_nom, u.prenom as user_prenom, 
                     u.photo_profil as user_avatar, s.image, s.legend, s.created_at,
-                    (SELECT COUNT(*) FROM story_views WHERE story_id = s.id) as view_count';
+                    (SELECT COUNT(*) FROM story_views WHERE story_id = s.id) as view_count";
 
             // Ajouter le statut "vu par moi" si l'utilisateur est authentifié
             if (isset($GLOBALS['auth_user'])) {
                 $userId = $GLOBALS['auth_user']['id'];
-                $sql .= ', (SELECT COUNT(*) FROM story_views WHERE story_id = s.id AND user_id = ?) as viewed_by_me';
+                $sql .= ", (SELECT COUNT(*) FROM story_views WHERE story_id = s.id AND user_id = ?) as viewed_by_me";
             }
 
-            $sql .= ' FROM stories s
+            $sql .= " FROM stories s
                     JOIN users u ON s.user_id = u.id
                     WHERE s.created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours'
-                    ORDER BY s.created_at DESC';
+                    ORDER BY s.created_at DESC";
 
             $stmt = $pdo->prepare($sql);
             if (isset($GLOBALS['auth_user'])) {

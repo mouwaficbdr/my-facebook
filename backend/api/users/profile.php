@@ -103,10 +103,10 @@ try {
         WHERE p.user_id = ? AND p.is_public = true 
         GROUP BY p.id
         ORDER BY p.created_at DESC 
-        LIMIT ? OFFSET ?
+        LIMIT $limit OFFSET $offset
     ";
     $postsStmt = $pdo->prepare($postsQuery);
-    $postsStmt->execute([$currentUser['user_id'], $currentUser['user_id'], $userId, $limit, $offset]);
+    $postsStmt->execute([$currentUser['user_id'], $currentUser['user_id'], $userId]);
     $posts = $postsStmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($posts as &$post) {
         $post['id'] = intval($post['id']);
