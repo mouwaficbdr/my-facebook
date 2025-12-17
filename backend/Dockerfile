@@ -42,9 +42,6 @@ RUN chmod -R 775 /var/www/html/logs /var/www/html/uploads
 # Copier la configuration Nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copier la configuration PHP-FPM
-COPY php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
-
 # Copier la configuration Supervisor
 COPY supervisord.conf /etc/supervisord.conf
 
