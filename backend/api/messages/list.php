@@ -101,8 +101,8 @@ try {
   // Marquer les messages reçus comme lus
   $stmt = $pdo->prepare("
         UPDATE messages 
-        SET is_read = 1 
-        WHERE sender_id = ? AND receiver_id = ? AND is_read = 0
+        SET is_read = true 
+        WHERE sender_id = ? AND receiver_id = ? AND is_read = false
     ");
   $stmt->execute([$friendId, $userId]);
 

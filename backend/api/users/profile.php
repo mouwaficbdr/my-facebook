@@ -35,7 +35,7 @@ try {
     $pdo = getPDO();
 
     // 1. Infos publiques utilisateur
-    $userQuery = "SELECT id, nom, prenom, bio, photo_profil, cover_url, ville, pays, date_naissance FROM users WHERE id = ? AND is_active = 1 AND email_confirmed = 1 LIMIT 1";
+    $userQuery = "SELECT id, nom, prenom, bio, photo_profil, cover_url, ville, pays, date_naissance FROM users WHERE id = ? AND is_active = true AND email_confirmed = true LIMIT 1";
     $userStmt = $pdo->prepare($userQuery);
     $userStmt->execute([$userId]);
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);
@@ -46,7 +46,7 @@ try {
     }
 
     // 2. Nombre d'amis
-    $friendsQuery = "SELECT COUNT(*) as total FROM users u JOIN friendships f ON ((f.user_id = ? AND f.friend_id = u.id) OR (f.friend_id = ? AND f.user_id = u.id)) WHERE f.status = 'accepted' AND u.is_active = 1 AND u.email_confirmed = 1 AND u.id != ?";
+    $friendsQuery = "SELECT COUNT(*) as total FROM users u JOIN friendships f ON ((f.user_id = ? AND f.friend_id = u.id) OR (f.friend_id = ? AND f.user_id = u.id)) WHERE f.status = 'accepted' AND u.is_active = true AND u.email_confirmed = true AND u.id != ?";
     $friendsStmt = $pdo->prepare($friendsQuery);
     $friendsStmt->execute([$userId, $userId, $userId]);
     $user['friends_count'] = intval($friendsStmt->fetchColumn());
@@ -100,7 +100,7 @@ try {
         JOIN users u ON u.id = p.user_id 
         LEFT JOIN likes l ON p.id = l.post_id
         LEFT JOIN comments c ON p.id = c.post_id AND c.parent_id IS NULL
-        WHERE p.user_id = ? AND p.is_public = 1 
+        WHERE p.user_id = ? AND p.is_public = true 
         GROUP BY p.id
         ORDER BY p.created_at DESC 
         LIMIT ? OFFSET ?
@@ -144,7 +144,7 @@ try {
     unset($post);
 
     // 5. Pagination
-    $countQuery = "SELECT COUNT(*) as total FROM posts WHERE user_id = ? AND is_public = 1";
+    $countQuery = "SELECT COUNT(*) as total FROM posts WHERE user_id = ? AND is_public = true";
     $countStmt = $pdo->prepare($countQuery);
     $countStmt->execute([$userId]);
     $totalPosts = $countStmt->fetchColumn();

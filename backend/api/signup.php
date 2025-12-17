@@ -154,7 +154,9 @@ error_log("DEBUG: About to insert user into database");
 
 // 8. Insertion utilisateur
 try {
-    $stmt = $pdo->prepare('INSERT INTO users (nom, prenom, email, password_hash, genre, date_naissance, email_confirm_token, email_confirmed, date_inscription) VALUES (?, ?, ?, ?, ?, ?, ?, 0, NOW())');
+    error_log("DEBUG: Preparing INSERT statement");
+    $stmt = $pdo->prepare('INSERT INTO users (nom, prenom, email, password_hash, genre, date_naissance, email_confirm_token, email_confirmed, date_inscription) VALUES (?, ?, ?, ?, ?, ?, ?, false, CURRENT_TIMESTAMP)');
+    error_log("DEBUG: Executing INSERT with data");
     $stmt->execute([
         $input['nom'],
         $input['prenom'],
@@ -164,7 +166,10 @@ try {
         $input['date_naissance'],
         $token
     ]);
+    error_log("DEBUG: User inserted successfully");
 } catch (Throwable $e) {
+    error_log("DEBUG: INSERT EXCEPTION! Message: " . $e->getMessage());
+    error_log("DEBUG: Exception trace: " . $e->getTraceAsString());
     log_error('DB error (insert user)', ['error' => $e->getMessage()]);
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erreur serveur.']);

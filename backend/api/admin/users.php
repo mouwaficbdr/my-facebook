@@ -150,7 +150,7 @@ try {
 
     if ($is_active !== null) {
       $updates[] = 'is_active = ?';
-      $params[] = $is_active ? 1 : 0;
+      $params[] = $is_active ? 'true' : 'false';
     }
 
     if (empty($updates)) {
@@ -160,7 +160,7 @@ try {
     }
 
     $params[] = $user_id;
-    $sql = 'UPDATE users SET ' . implode(', ', $updates) . ', updated_at = NOW() WHERE id = ?';
+    $sql = 'UPDATE users SET ' . implode(', ', $updates) . ', updated_at = CURRENT_TIMESTAMP WHERE id = ?';
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
@@ -176,7 +176,7 @@ try {
     $stmt = $pdo->prepare('
             INSERT INTO moderation_logs 
             (admin_id, action_type, target_id, target_type, details, created_at) 
-            VALUES (?, ?, ?, ?, ?, NOW())
+            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         ');
     $details = [
       'previous_role' => $target_user['role'],
@@ -242,7 +242,7 @@ try {
     }
 
     // Désactiver plutôt que supprimer (soft delete)
-    $stmt = $pdo->prepare('UPDATE users SET is_active = 0, updated_at = NOW() WHERE id = ?');
+    $stmt = $pdo->prepare('UPDATE users SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
     $stmt->execute([$user_id]);
 
     // Log de l'action
@@ -256,7 +256,7 @@ try {
     $stmt = $pdo->prepare('
             INSERT INTO moderation_logs 
             (admin_id, action_type, target_id, target_type, details, created_at) 
-            VALUES (?, ?, ?, ?, ?, NOW())
+            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         ');
     $details = [
       'user_email' => $target_user['email'],

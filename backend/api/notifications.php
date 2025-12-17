@@ -24,7 +24,7 @@ try {
     $pdo = getPDO();
     // Compter le total
     if ($unreadOnly) {
-        $countStmt = $pdo->prepare('SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0');
+        $countStmt = $pdo->prepare('SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = false');
         $countStmt->execute([$user['user_id']]);
     } else {
         $countStmt = $pdo->prepare('SELECT COUNT(*) FROM notifications WHERE user_id = ?');
@@ -33,7 +33,7 @@ try {
     $total = (int)$countStmt->fetchColumn();
     // Récupérer les notifications (non lues d'abord, puis plus récentes)
     if ($unreadOnly) {
-        $stmt = $pdo->prepare('SELECT id, type, data, is_read, created_at FROM notifications WHERE user_id = ? AND is_read = 0 ORDER BY created_at DESC LIMIT ? OFFSET ?');
+        $stmt = $pdo->prepare('SELECT id, type, data, is_read, created_at FROM notifications WHERE user_id = ? AND is_read = false ORDER BY created_at DESC LIMIT ? OFFSET ?');
         $stmt->execute([$user['user_id'], $limit, $offset]);
     } else {
         $stmt = $pdo->prepare('SELECT id, type, data, is_read, created_at FROM notifications WHERE user_id = ? ORDER BY is_read ASC, created_at DESC LIMIT ? OFFSET ?');
