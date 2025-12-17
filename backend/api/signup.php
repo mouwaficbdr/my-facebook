@@ -1,10 +1,11 @@
 <?php
 // api/signup.php
 // Désactiver l'affichage des erreurs PHP en production (préserver la sortie JSON)
-if (getenv('APP_ENV') === 'production' || getenv('APP_ENV') === 'prod') {
-    error_reporting(0);
-    ini_set('display_errors', 0);
-}
+// TEMPORAIREMENT DÉSACTIVÉ POUR DEBUG
+// if (getenv('APP_ENV') === 'production' || getenv('APP_ENV') === 'prod') {
+//     error_reporting(0);
+//     ini_set('display_errors', 0);
+// }
 
 require_once __DIR__ . '/../lib/cors.php';
 error_log("DEBUG: Before require_once db.php");
