@@ -33,7 +33,7 @@ try {
   $stats = [];
 
   // Nombre total d'utilisateurs
-  $stmt = $pdo->query('SELECT COUNT(*) as total FROM users WHERE is_active = 1');
+  $stmt = $pdo->query('SELECT COUNT(*) as total FROM users WHERE is_active = true');
   $stats['total_users'] = (int) $stmt->fetchColumn();
 
   // Nombre total de posts
@@ -49,15 +49,15 @@ try {
   $stats['pending_friend_requests'] = (int) $stmt->fetchColumn();
 
   // Nouveaux utilisateurs cette semaine
-  $stmt = $pdo->query('SELECT COUNT(*) as total FROM users WHERE date_inscription >= DATE_SUB(NOW(), INTERVAL 7 DAY)');
+  $stmt = $pdo->query('SELECT COUNT(*) as total FROM users WHERE date_inscription >= CURRENT_TIMESTAMP - INTERVAL \'7 days\'');
   $stats['new_users_week'] = (int) $stmt->fetchColumn();
 
   // Posts cette semaine
-  $stmt = $pdo->query('SELECT COUNT(*) as total FROM posts WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)');
+  $stmt = $pdo->query('SELECT COUNT(*) as total FROM posts WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL \'7 days\'');
   $stats['new_posts_week'] = (int) $stmt->fetchColumn();
 
   // Utilisateurs actifs (connectés dans les 30 derniers jours)
-  $stmt = $pdo->query('SELECT COUNT(*) as total FROM users WHERE last_login >= DATE_SUB(NOW(), INTERVAL 30 DAY)');
+  $stmt = $pdo->query('SELECT COUNT(*) as total FROM users WHERE last_login >= CURRENT_TIMESTAMP - INTERVAL \'30 days\'');
   $stats['active_users_month'] = (int) $stmt->fetchColumn();
 
   // Évolution activité (posts par jour sur 7 derniers jours)
@@ -66,7 +66,7 @@ try {
             DATE(created_at) as date,
             COUNT(*) as posts_count
         FROM posts 
-        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL \'7 days\'
         GROUP BY DATE(created_at)
         ORDER BY date ASC
     ');
@@ -76,7 +76,7 @@ try {
   $stmt = $pdo->query('
         SELECT genre, COUNT(*) as count 
         FROM users 
-        WHERE is_active = 1 
+        WHERE is_active = true 
         GROUP BY genre
     ');
   $gender_stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -88,8 +88,8 @@ try {
             COUNT(p.id) as posts_count
         FROM users u
         LEFT JOIN posts p ON u.id = p.user_id
-        WHERE u.is_active = 1
-        GROUP BY u.id
+        WHERE u.is_active = true
+        GROUP BY u.id, u.prenom, u.nom, u.email, u.photo_profil
         ORDER BY posts_count DESC
         LIMIT 5
     ');
@@ -101,7 +101,7 @@ try {
             DATE(created_at) as date,
             COUNT(*) as count
         FROM moderation_logs
-        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL \'30 days\'
         GROUP BY DATE(created_at)
         ORDER BY date ASC
     ');

@@ -58,19 +58,19 @@ try {
                 COUNT(DISTINCT c.id) as comments_count,
                 EXISTS(SELECT 1 FROM likes WHERE post_id = p.id AND user_id = ?) as user_liked,
                 (SELECT type FROM likes WHERE post_id = p.id AND user_id = ? LIMIT 1) as user_like_type,
-                -- Priorité temporelle
+                -- Priorité temporelle (compatible Postgres)
                 CASE 
-                    WHEN p.created_at >= DATE_SUB(NOW(), INTERVAL 1 DAY) THEN 1
-                    WHEN p.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 2
+                    WHEN p.created_at >= CURRENT_TIMESTAMP - INTERVAL '1 day' THEN 1
+                    WHEN p.created_at >= CURRENT_TIMESTAMP - INTERVAL '7 days' THEN 2
                     ELSE 3
                 END as time_priority,
-                -- Seed pour le shuffle basé sur la date et l'ID
-                RAND(UNIX_TIMESTAMP(DATE(NOW())) + p.id + ?) as shuffle_seed
+                -- Seed pour le shuffle basé sur la date et l'ID (compatible Postgres)
+                RANDOM() * (EXTRACT(EPOCH FROM CURRENT_DATE)::BIGINT + p.id + ?) as shuffle_seed
             FROM posts p
             INNER JOIN users u ON p.user_id = u.id
             LEFT JOIN likes l ON p.id = l.post_id
             LEFT JOIN comments c ON p.id = c.post_id AND c.parent_id IS NULL
-            WHERE p.is_public = 1 AND u.is_active = 1 AND u.email_confirmed = 1
+            WHERE p.is_public = true AND u.is_active = true AND u.email_confirmed = true
             AND (
                 -- Posts de l'utilisateur lui-même
                 p.user_id = ?
@@ -86,7 +86,7 @@ try {
                     WHERE user_id = ? AND status = 'accepted'
                 )
             )
-            GROUP BY p.id
+            GROUP BY p.id, u.id, u.nom, u.prenom, u.photo_profil, u.ville, u.pays
         )
         SELECT * FROM ranked_posts
         ORDER BY 
@@ -202,7 +202,7 @@ try {
         SELECT COUNT(*) as total 
         FROM posts p
         INNER JOIN users u ON p.user_id = u.id
-        WHERE p.is_public = 1 AND u.is_active = 1 AND u.email_confirmed = 1
+        WHERE p.is_public = true AND u.is_active = true AND u.email_confirmed = true
         AND (
             -- Posts de l'utilisateur lui-même
             p.user_id = ?

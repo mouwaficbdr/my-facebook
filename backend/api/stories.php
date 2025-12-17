@@ -95,8 +95,8 @@ if ($method === 'GET') {
 
                 // Ne pas compter la vue si l'utilisateur est le propriétaire
                 if ($user['id'] != $story['user_id']) {
-                    // Insérer la vue (ignore si déjà vue)
-                    $viewSql = 'INSERT IGNORE INTO story_views (story_id, user_id) VALUES (?, ?)';
+                    // Insérer la vue (ignore si déjà vue - compatible Postgres)
+                    $viewSql = 'INSERT INTO story_views (story_id, user_id) VALUES (?, ?) ON CONFLICT (story_id, user_id) DO NOTHING';
                     $viewStmt = $pdo->prepare($viewSql);
                     $viewStmt->execute([$storyId, $user['id']]);
 
@@ -126,7 +126,7 @@ if ($method === 'GET') {
                     (SELECT COUNT(*) FROM story_views WHERE story_id = s.id AND user_id = ?) as viewed_by_me
                     FROM stories s
                     JOIN users u ON s.user_id = u.id
-                    WHERE s.created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                    WHERE s.created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours'
                     AND (
                         s.user_id = ?
                         OR s.user_id IN (
@@ -153,7 +153,7 @@ if ($method === 'GET') {
 
             $sql .= ' FROM stories s
                     JOIN users u ON s.user_id = u.id
-                    WHERE s.created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                    WHERE s.created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours'
                     ORDER BY s.created_at DESC';
 
             $stmt = $pdo->prepare($sql);

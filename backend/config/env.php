@@ -13,7 +13,9 @@ if (getenv('APP_ENV') !== 'production') {
     }
 }
 
-// Variables d'environnement pour la connexion MySQL
+// Variables d'environnement pour la connexion base de données
+// DB_DRIVER: 'mysql' (pour Aiven/XAMPP) ou 'pgsql' (pour Supabase Postgres)
+// Pour Supabase: DB_HOST sera du format '<project-ref>.supabase.co', DB_PORT=5432
 
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_NAME', getenv('DB_NAME') ?: 'myfacebook');
