@@ -7,6 +7,12 @@ if (!defined('RATE_LIMIT_MAX')) define('RATE_LIMIT_MAX', 5);
 if (!defined('RATE_LIMIT_WINDOW')) define('RATE_LIMIT_WINDOW', 600); // 10 minutes en secondes
 
 function rate_limit_check(string $action, string $ip): bool {
+    // TEMPORAIREMENT DÉSACTIVÉ pour debug sur Render (problème de permissions logs/)
+    // TODO: Réactiver une fois le problème de permissions résolu
+    error_log("[rate_limit] Rate limiting disabled temporarily");
+    return true;
+    
+    /* CODE ORIGINAL (à réactiver plus tard)
     ob_start(); // Capture tous les warnings/notices pour ne jamais polluer la sortie JSON
     $logFile = __DIR__ . '/../logs/rate_limit.json';
     $max = defined('RATE_LIMIT_MAX') ? RATE_LIMIT_MAX : 5;
@@ -47,7 +53,7 @@ function rate_limit_check(string $action, string $ip): bool {
         // Pas d'exception, on continue
     }
     ob_end_clean(); // On supprime tout output parasite
-    return true;
+    */
 }
 
 
