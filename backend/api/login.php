@@ -100,7 +100,7 @@ $token = generate_jwt($payload);
 
 // 8. Mise à jour dernière connexion
 try {
-    $stmt = $pdo->prepare('UPDATE users SET last_login = NOW() WHERE id = ?');
+    $stmt = $pdo->prepare('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?');
     $stmt->execute([$user['id']]);
 } catch (Throwable $e) {
     log_error('DB error (update last login)', ['error' => $e->getMessage()]);
