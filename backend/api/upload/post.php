@@ -50,6 +50,14 @@ if (!is_dir($uploadDir)) {
 }
 $destPath = $uploadDir . $filename;
 if (!move_uploaded_file($file['tmp_name'], $destPath)) {
+    $error = error_get_last();
+    log_error('Post upload move failed', [
+        'tmp_name' => $file['tmp_name'], 
+        'destPath' => $destPath,
+        'error' => $error,
+        'is_writable' => is_writable($uploadDir),
+        'disk_space' => disk_free_space($uploadDir)
+    ]);
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Erreur lors de l’enregistrement du fichier.']);
     exit;

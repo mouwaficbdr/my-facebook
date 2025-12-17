@@ -42,15 +42,15 @@ try {
         exit;
     }
     if ($method === 'POST') {
-        // Empêcher les doublons
-        $check = $pdo->prepare('SELECT 1 FROM saved_posts WHERE user_id = ? AND post_id = ?');
-        $check->execute([$user['user_id'], $post_id]);
-        if ($check->fetch()) {
-            echo json_encode(['success' => true, 'message' => 'Déjà enregistré.']);
-            exit;
-        }
-        $insert = $pdo->prepare('INSERT INTO saved_posts (user_id, post_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)');
+        // Empêcher les doublons avec ON CONFLICT (ignorer si déjà présent)
+        $insert = $pdo->prepare('
+            INSERT INTO saved_posts (user_id, post_id, created_at) 
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT (user_id, post_id) DO NOTHING
+        ');
         $insert->execute([$user['user_id'], $post_id]);
+        
+        // On considère que c'est un succès même si c'était déjà là
         echo json_encode(['success' => true, 'message' => 'Post enregistré.']);
         exit;
     } elseif ($method === 'DELETE') {
