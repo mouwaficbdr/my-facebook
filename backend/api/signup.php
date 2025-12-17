@@ -118,8 +118,11 @@ try {
     exit;
 }
 
+error_log("DEBUG: Email check complete, user does not exist");
+
 // 5. Masquage existence compte (prod)
 if ($exists) {
+    error_log("DEBUG: User exists, returning masked response");
     if ($env === 'production') {
         http_response_code(201);
         echo json_encode([
@@ -137,11 +140,17 @@ if ($exists) {
     }
 }
 
+error_log("DEBUG: About to hash password");
 // 6. Hashage mot de passe
 $hash = password_hash($input['password'], PASSWORD_BCRYPT);
+error_log("DEBUG: Password hashed successfully");
 
+error_log("DEBUG: Generating confirmation token");
 // 7. Génération token confirmation
 $token = bin2hex(random_bytes(32));
+error_log("DEBUG: Token generated: " . substr($token, 0, 10) . "...");
+
+error_log("DEBUG: About to insert user into database");
 
 // 8. Insertion utilisateur
 try {
