@@ -46,7 +46,7 @@ try {
             ) AS other_friends
             ON my_friends.friend_id = other_friends.friend_id
         )
-        AND u.is_active = 1 AND u.email_confirmed = 1
+        AND u.is_active = true AND u.email_confirmed = true
         ORDER BY u.prenom, u.nom
         LIMIT :limit OFFSET :offset
     ";

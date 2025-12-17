@@ -41,8 +41,8 @@ try {
                 (f.friend_id = ? AND f.user_id = u.id)
             )
             WHERE f.status = 'accepted' 
-            AND u.email_confirmed = 1 
-            AND u.is_active = 1 
+            AND u.email_confirmed = true 
+            AND u.is_active = true 
             AND u.id != ?
             AND (u.nom LIKE ? OR u.prenom LIKE ? OR u.email LIKE ?) 
             LIMIT 10
@@ -63,8 +63,8 @@ try {
         $sql = "
             SELECT id, nom, prenom, photo_profil 
             FROM users 
-            WHERE email_confirmed = 1 
-            AND is_active = 1 
+            WHERE email_confirmed = true 
+            AND is_active = true 
             AND (nom LIKE ? OR prenom LIKE ? OR email LIKE ?) 
             LIMIT 10
         ";

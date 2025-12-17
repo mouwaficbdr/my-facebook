@@ -26,7 +26,7 @@ if ($userId <= 0) {
 // Vérifier que l'utilisateur cible existe et est actif
 try {
     $pdo = getPDO();
-    $userCheck = $pdo->prepare("SELECT id FROM users WHERE id = ? AND is_active = 1 AND email_confirmed = 1 LIMIT 1");
+    $userCheck = $pdo->prepare("SELECT id FROM users WHERE id = ? AND is_active = true AND email_confirmed = true LIMIT 1");
     $userCheck->execute([$userId]);
     $userExists = $userCheck->fetchColumn();
     if (!$userExists) {
@@ -45,7 +45,7 @@ try {
             (f.user_id = ? AND f.friend_id = u.id)
             OR (f.friend_id = ? AND f.user_id = u.id)
         )
-        WHERE f.status = 'accepted' AND u.is_active = 1 AND u.email_confirmed = 1 AND u.id != ?
+        WHERE f.status = 'accepted' AND u.is_active = true AND u.email_confirmed = true AND u.id != ?
     ";
     $countStmt = $pdo->prepare($countQuery);
     $countStmt->execute([$userId, $userId, $userId]);
@@ -59,7 +59,7 @@ try {
             (f.user_id = ? AND f.friend_id = u.id)
             OR (f.friend_id = ? AND f.user_id = u.id)
         )
-        WHERE f.status = 'accepted' AND u.is_active = 1 AND u.email_confirmed = 1 AND u.id != ?
+        WHERE f.status = 'accepted' AND u.is_active = true AND u.email_confirmed = true AND u.id != ?
         ORDER BY u.prenom, u.nom
         LIMIT ? OFFSET ?
     ";

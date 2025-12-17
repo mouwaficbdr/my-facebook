@@ -64,8 +64,8 @@ try {
             ) AS total_friends
         FROM users u
         WHERE u.id != :me4
-          AND u.is_active = 1
-          AND u.email_confirmed = 1
+          AND u.is_active = true
+          AND u.email_confirmed = true
           AND NOT EXISTS(
             SELECT 1 FROM friendships f4
             WHERE ((f4.user_id = :me5 AND f4.friend_id = u.id)
