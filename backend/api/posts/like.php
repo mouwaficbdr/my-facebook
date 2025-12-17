@@ -64,7 +64,7 @@ try {
     $pdo = getPDO();
     
     // Vérification que le post existe
-    $postQuery = "SELECT id, user_id, contenu FROM posts WHERE id = ? AND is_public = 1";
+    $postQuery = "SELECT id, user_id, contenu FROM posts WHERE id = ? AND is_public = true";
     $postStmt = $pdo->prepare($postQuery);
     $postStmt->execute([$input['post_id']]);
     $post = $postStmt->fetch();
@@ -91,7 +91,7 @@ try {
             $action = 'updated';
         } else {
             // Nouveau like
-            $insertQuery = "INSERT INTO likes (user_id, post_id, type, created_at) VALUES (?, ?, ?, NOW())";
+            $insertQuery = "INSERT INTO likes (user_id, post_id, type, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
             $insertStmt = $pdo->prepare($insertQuery);
             $insertStmt->execute([$user['id'], $input['post_id'], $reactionType]);
             

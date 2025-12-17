@@ -60,7 +60,7 @@ try {
     // Supprimer toute relation existante (quel que soit le statut)
     $delete = $pdo->prepare("DELETE FROM friendships WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)");
     $delete->execute([$user['user_id'], $friendId, $friendId, $user['user_id']]);
-    $stmt = $pdo->prepare("INSERT INTO friendships (user_id, friend_id, status, created_at) VALUES (?, ?, 'pending', NOW())");
+    $stmt = $pdo->prepare("INSERT INTO friendships (user_id, friend_id, status, created_at) VALUES (?, ?, 'pending', CURRENT_TIMESTAMP)");
     $stmt->execute([$user['user_id'], $friendId]);
 
     // Générer une notification pour le destinataire

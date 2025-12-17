@@ -56,7 +56,7 @@ try {
     $pdo = getPDO();
     
     // Vérification que le post existe et est public
-    $postQuery = "SELECT id, user_id, contenu FROM posts WHERE id = ? AND is_public = 1";
+    $postQuery = "SELECT id, user_id, contenu FROM posts WHERE id = ? AND is_public = true";
     $postStmt = $pdo->prepare($postQuery);
     $postStmt->execute([$input['post_id']]);
     $post = $postStmt->fetch();
@@ -103,7 +103,7 @@ try {
     // Insérer le message dans la base de données
     $messageQuery = "
         INSERT INTO messages (sender_id, receiver_id, contenu, created_at) 
-        VALUES (?, ?, ?, NOW())
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
     ";
     $messageStmt = $pdo->prepare($messageQuery);
     $messageStmt->execute([

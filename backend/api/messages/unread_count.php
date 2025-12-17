@@ -31,7 +31,7 @@ try {
   $stmt = $pdo->prepare("
         SELECT COUNT(*) as unread_count
         FROM messages 
-        WHERE receiver_id = ? AND is_read = 0
+        WHERE receiver_id = ? AND is_read = false
     ");
   $stmt->execute([$userId]);
   $result = $stmt->fetch(PDO::FETCH_ASSOC);
