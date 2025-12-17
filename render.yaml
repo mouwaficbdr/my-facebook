@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: myfacebook-backend
+    runtime: docker
+    plan: free
+    region: frankfurt  # ou oregon, singapore selon votre localisation
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DB_DRIVER
+        value: pgsql
+      - key: DB_HOST
+        sync: false  # À remplir manuellement
+      - key: DB_PORT
+        value: 5432
+      - key: DB_NAME
+        value: postgres
+      - key: DB_USER
+        value: postgres
+      - key: DB_PASS
+        sync: false  # À remplir manuellement
+      - key: DB_SSL
+        value: true
+      - key: JWT_SECRET
+        sync: false  # À remplir manuellement
+      - key: JWT_EXPIRATION
+        value: 3600
+      - key: APP_ENV
+        value: production
+      - key: APP_URL
+        sync: false  # URL du frontend (Vercel)
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: 2525
+      - key: MAIL_USER
+        sync: false
+      - key: MAIL_PASS
+        sync: false
+      - key: MAIL_FROM
+        value: no-reply@myfacebook.com
+      - key: MAIL_FROM_NAME
+        value: MyFacebook
