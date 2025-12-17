@@ -62,11 +62,11 @@ try {
             WHERE $where_clause
             GROUP BY p.id
             ORDER BY p.created_at DESC
-            LIMIT ? OFFSET ?
+            LIMIT $limit OFFSET $offset
         ";
 
-    $params[] = $limit;
-    $params[] = $offset;
+    // $params[] = $limit;
+    // $params[] = $offset;
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);

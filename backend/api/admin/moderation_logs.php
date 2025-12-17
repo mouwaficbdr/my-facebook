@@ -52,11 +52,11 @@ try {
             JOIN users a ON ml.admin_id = a.id
             WHERE $where_clause
             ORDER BY ml.created_at DESC
-            LIMIT ? OFFSET ?
+            LIMIT $limit OFFSET $offset
         ";
 
-    $params[] = $limit;
-    $params[] = $offset;
+    // $params[] = $limit;
+    // $params[] = $offset;
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);

@@ -66,11 +66,11 @@ try {
             WHERE $where_clause
             GROUP BY u.id
             ORDER BY u.date_inscription DESC
-            LIMIT ? OFFSET ?
+            LIMIT $limit OFFSET $offset
         ";
 
-    $params[] = $limit;
-    $params[] = $offset;
+    // $params[] = $limit; // Enlevé pour Postgres
+    // $params[] = $offset; // Enlevé pour Postgres
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
