@@ -6,8 +6,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Vite](https://img.shields.io/badge/Vite-7.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 
-**MyFacebook** est une plateforme de réseau social sophistiquée, conçue pour offrir une expérience utilisateur fluide et moderne inspirée des standards actuels. Alliant la puissance de **React 19** en frontend et la robustesse de **PHP 8** couplé à **PostgreSQL** en backend, ce projet démontre une architecture full-stack complète et évolutive.
-
+**MyFacebook** est une plateforme de réseau social sophistiquée, conçue pour offrir une expérience utilisateur fluide et moderne inspirée des standards actuels, alliant la puissance de **React 19** en frontend et la robustesse de **PHP 8** couplé à **PostgreSQL** en backend.
 ---
 
 ## 📸 Aperçu de l'Interface
@@ -18,13 +17,11 @@
 ![Fil d'actualité et Stories](docs/screenshots/feed.png)
 *Le flux social principal intégrant les stories et le système de publications.*
 
-````carousel
-![Profil Utilisateur](docs/screenshots/profile.png)
-<!-- slide -->
-![Création de Post](docs/screenshots/create_post.png)
-<!-- slide -->
-![Expérience Reels](docs/screenshots/reels.png)
-````
+<p align="center">
+  <img src="docs/screenshots/profile.png" width="30%" alt="Profil Utilisateur" />
+  <img src="docs/screenshots/create_post.png" width="30%" alt="Création de Post" />
+  <img src="docs/screenshots/reels.png" width="30%" alt="Expérience Reels" />
+</p>
 
 ---
 
