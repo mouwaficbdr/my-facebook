@@ -1,262 +1,133 @@
 # 📘 MyFacebook
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/mouwaficbdr/my-facebook)
-[![React](https://img.shields.io/badge/React-19.1.0-blue)](https://reactjs.org/)
-[![PHP](https://img.shields.io/badge/PHP-8.0+-purple)](https://php.net/)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-orange)](https://mysql.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1.11-38B2AC)](https://tailwindcss.com/)
-
-## 🎯 Description du Projet
-
-**MyFacebook** est un réseau social moderne inspiré de Facebook. Le projet offre une expérience utilisateur complète avec toutes les fonctionnalités essentielles d'un réseau social.
-
-### ✨ Fonctionnalités Principales
-
-#### 👥 **Gestion des Utilisateurs**
-
-- Inscription et connexion sécurisées avec JWT
-- Confirmation d'email avec templates HTML
-- Réinitialisation de mot de passe par email
-- Profils personnalisables (photo, couverture, bio, localisation)
-- Gestion des rôles (utilisateur, modérateur, administrateur)
-
-#### 📱 **Flux Social**
-
-- Création de posts texte et images
-- Système de likes
-- Commentaires et réponses avec likes
-- Partage et sauvegarde de posts
-- Stories avec images et légendes
-
-#### 👫 **Gestion des Amis**
-
-- Envoi et réception de demandes d'amis
-- Acceptation/refus des demandes
-- Suggestions d'amis intelligentes
-- Anniversaires des amis
-- Amis en commun
-
-#### 💬 **Messagerie en Temps Réel**
-
-- Chat privé entre amis
-- Envoi de messages texte et images
-- Recherche de conversations
-- Interface responsive mobile/desktop
-
-#### 🔔 **Notifications**
-
-- Notifications temps réel pour likes, commentaires, demandes d'amis
-- Système de badges non lus
-
-#### 🛡️ **Back-Office Administratif**
-
-- Dashboard avec statistiques détaillées
-- Modération des posts et commentaires
-- Gestion des utilisateurs (bannissement, changement de rôle)
-- Logs de modération
-- Interface séparée et sécurisée
-
-## 🏗️ Architecture Technique
-
-### **Frontend** (React + TypeScript + Tailwind CSS)
-
-- **Framework** : React 19.1.0 avec TypeScript
-- **Styling** : Tailwind CSS 4.1.11
-- **Routing** : React Router DOM 7.6.3
-- **Icons** : Lucide React
-- **Emojis** : Emoji Mart
-- **Build** : Vite 7.0.0
-- **Déploiement** : Vercel
-
-### **Backend** (PHP Natif + MySQL)
-
-- **Language** : PHP 8.0+
-- **Base de données** : MySQL 8.0 (Aiven Cloud)
-- **Authentification** : JWT (JSON Web Tokens)
-- **API** : RESTful avec JSON
-- **Email** : Mailtrap (dev) / GMAIL (prod)
-- **Déploiement** : Railway avec FrankenPHP
-
-### **Base de Données**
-
-- **Tables principales** : users, posts, comments, likes, friendships, messages, notifications, stories
-- **Sécurité** : Contraintes de clés étrangères, index optimisés
-- **Performance** : Requêtes optimisées avec PDO
-
-## 🚀 Mode de Fonctionnement
-
-### **Installation Locale**
-
-1. **Cloner le projet**
-
-   ```bash
-   git clone https://github.com/your-username/my-facebook.git
-   cd my-facebook
-   ```
-
-2. **Configuration Backend**
-
-   ```bash
-   cd backend
-   composer install
-   cp .env.example .env.local
-   # Configurer les variables d'environnement
-   ```
-
-3. **Configuration Frontend**
-
-   ```bash
-   cd frontend
-   npm install
-   cp .env.example .env.local
-   # Configurer VITE_API_BASE_URL
-   ```
-
-4. **Base de données**
-
-   ```bash
-   # Importer le schéma
-   mysql -u username -p database_name < backend/db_schema.sql
-   ```
-
-5. **Lancer le développement**
-
-   ```bash
-   # Terminal 1 - Backend
-   cd backend
-   php -S localhost:8000
-
-   # Terminal 2 - Frontend
-   cd frontend
-   npm run dev
-   ```
-
-### **Variables d'Environnement**
-
-#### **Backend** (`.env.local`)
-
-```env
-# Base de données
-DB_HOST=your-mysql-host
-DB_PORT=3306
-DB_NAME=your-database
-DB_USER=your-username
-DB_PASSWORD=your-password
-
-# JWT
-JWT_SECRET=your-super-secret-jwt-key
-
-# Email
-MAIL_DRIVER=mailtrap
-MAIL_HOST=smtp.mailtrap.io
-MAIL_PORT=2525
-MAIL_USER=your-mailtrap-user
-MAIL_PASS=your-mailtrap-pass
-```
-
-#### **Frontend** (`.env.local`)
-
-```env
-VITE_API_BASE_URL=http://localhost:8000/api
-```
-
-### **Déploiement Production**
-
-#### **Frontend (Vercel)**
-
-```bash
-npm run build
-vercel --prod
-```
-
-#### **Backend (Railway)**
-
-```bash
-cd backend
-railway up
-```
-
-## 📁 Structure du Projet
-
-```
-my-facebook/
-├── frontend/                 # Application React
-│   ├── src/
-│   │   ├── components/      # Composants réutilisables
-│   │   ├── pages/          # Pages de l'application
-│   │   ├── context/        # Contextes React
-│   │   ├── hooks/          # Hooks personnalisés
-│   │   ├── api/            # Services API
-│   │   └── utils/          # Utilitaires
-│   ├── public/             # Assets statiques
-│   └── package.json
-├── backend/                 # API PHP
-│   ├── api/                # Endpoints API
-│   │   ├── admin/          # Back-office
-│   │   ├── auth/           # Authentification
-│   │   ├── posts/          # Gestion des posts
-│   │   ├── users/          # Gestion des utilisateurs
-│   │   ├── friends/        # Gestion des amis
-│   │   ├── messages/       # Messagerie
-│   │   └── notifications/  # Notifications
-│   ├── config/             # Configuration
-│   ├── lib/                # Bibliothèques
-│   ├── uploads/            # Fichiers uploadés
-│   └── tests/              # Tests unitaires
-├── docs/                   # Documentation
-└── README.md
-```
-
-## 🔧 Scripts Disponibles
-
-### **Racine du projet**
-
-```bash
-npm run build    # Build complet (frontend + backend)
-npm run dev      # Développement frontend
-```
-
-### **Frontend**
-
-```bash
-npm run dev      # Serveur de développement
-npm run build    # Build de production
-npm run lint     # Vérification du code
-npm run preview  # Prévisualisation du build
-```
-
-### **Backend**
-
-```bash
-composer install # Installation des dépendances
-php -S localhost:8000 # Serveur de développement
-```
-
-## 🧪 Tests
-
-### **Tests Backend**
-
-```bash
-cd backend/tests
-php test_runner.php
-```
-
-### **Tests Frontend**
-
-```bash
-cd frontend
-npm test
-```
-
-## 🤝 Contribution
-
-1. Fork le projet
-2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Commit les changements (`git commit -m 'Add AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
-
+[![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+[![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Vite](https://img.shields.io/badge/Vite-7.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+
+**MyFacebook** est une plateforme de réseau social sophistiquée, conçue pour offrir une expérience utilisateur fluide et moderne inspirée des standards actuels. Alliant la puissance de **React 19** en frontend et la robustesse de **PHP 8** couplé à **PostgreSQL** en backend, ce projet démontre une architecture full-stack complète et évolutive.
 
 ---
 
-**MyFacebook**
+## 📸 Aperçu de l'Interface
+
+> [!NOTE]
+> L'interface a été conçue avec une attention particulière à l'esthétique et à l'ergonomie, utilisant Tailwind CSS pour un rendu premium.
+
+![Fil d'actualité et Stories](docs/screenshots/feed.png)
+*Le flux social principal intégrant les stories et le système de publications.*
+
+````carousel
+![Profil Utilisateur](docs/screenshots/profile.png)
+<!-- slide -->
+![Création de Post](docs/screenshots/create_post.png)
+<!-- slide -->
+![Expérience Reels](docs/screenshots/reels.png)
+````
+
+---
+
+## ✨ Fonctionnalités Clés
+
+### 👤 Gestion du Compte & Profil
+- **Sécurité Avancée** : Authentification via **JWT (JSON Web Tokens)** avec gestion des sessions.
+- **Cycle de vie** : Inscription avec confirmation d'email (templates HTML pros) et réinitialisation de mot de passe sécurisée.
+- **Personnalisation** : Profil complet avec photo, couverture, bio riche et statistiques d'activité.
+
+### 🌐 Social & Engagement
+- **Flux Dynamique** : Système de publications (texte, images) avec interactions en temps réel.
+- **Engagement** : Likes polymorphes, commentaires imbriqués et système de partage.
+- **Stories** : Partage de moments éphémères avec légendes personnalisées.
+- **Mises en relation** : Système d'amitié complet avec suggestions intelligentes basées sur les amis en commun.
+
+### 💬 Communication & Notifications
+- **Messagerie Instantanée** : Chat privé fluide avec historique des conversations.
+- **Notifications Alertes** : Système de notifications en temps réel pour toutes les interactions sociales.
+
+### 🛡️ Administration & Modération
+- **Dashboard Analytique** : Vue d'ensemble des statistiques de la plateforme (KPIs).
+- **Contrôle Total** : Modération des contenus, gestion granulaire des rôles et logs d'audit.
+
+---
+
+## 🏗️ Architecture Technique
+
+### Frontend
+- **Core** : React 19.1 (Hooks, Context API)
+- **Langage** : TypeScript pour une robustesse maximale
+- **Style** : Tailwind CSS 4.0 avec un design system cohérent
+- **Navigation** : React Router 7
+- **Utilitaires** : Lucide React (Icônes), Emoji Mart
+
+### Backend
+- **Core API** : PHP 8.0+ (Natif, architecture orientée services)
+- **Base de Données** : PostgreSQL (Optimisé pour les relations complexes)
+- **Serveur** : Compatible FrankenPHP / Docker pour un déploiement moderne
+- **Sécurité** : Protection contre les failles XSS, CSRF et injections SQL (PDO)
+
+---
+
+## 🚀 Installation Rapide
+
+### Prérequis
+- PHP 8.1+ & Composer
+- Node.js 20+
+- Instance PostgreSQL (ou MySQL)
+
+### 1. Clonage et Dépendances
+```bash
+git clone https://github.com/mouwaficbdr/my-facebook.git
+cd my-facebook
+
+# Backend
+cd backend && composer install
+
+# Frontend
+cd ../frontend && npm install
+```
+
+### 2. Configuration (`.env`)
+Créez un fichier `.env.local` à la racine pour le backend :
+```env
+DB_DRIVER=pgsql
+DB_HOST=your_host
+DB_NAME=myfacebook
+DB_USER=your_user
+DB_PASS=your_password
+JWT_SECRET=votre_cle_secrete_ultra_longue
+```
+
+### 3. Initialisation de la Base de Données
+Exécutez le script SQL fourni pour PostgreSQL :
+```bash
+psql -h localhost -U user -d myfacebook -f backend/db_schema_postgres.sql
+```
+
+### 4. Lancement
+```bash
+# Terminal 1 - Backend
+cd backend && php -S localhost:8000
+
+# Terminal 2 - Frontend
+cd frontend && npm run dev
+```
+
+---
+
+## 🛠️ Maintenance & Tests
+- **Backend** : Tests unitaires via `backend/tests/test_runner.php`
+- **Qualité de code** : ESLint configuré pour le frontend
+- **CI/CD** : Prêt pour un déploiement automatisé sur Vercel (Frontend) et Railway/Render (Backend)
+
+---
+
+## 🤝 Contribution
+Les contributions sont les bienvenues !
+1. Forkez le projet
+2. Créez votre branche `feat/amazing-feature`
+3. Commitez vos changements avec des messages explicites
+4. Ouvrez une Pull Request
+
+---
+*Réalisé avec passion par [Mouwafic](https://github.com/mouwaficbdr)*
