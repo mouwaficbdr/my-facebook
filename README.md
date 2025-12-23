@@ -6,9 +6,6 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Vite](https://img.shields.io/badge/Vite-7.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 
-**MyFacebook** est une plateforme de réseau social sophistiquée, conçue pour offrir une expérience utilisateur fluide et moderne inspirée des standards actuels, alliant la puissance de **React 19** en frontend et la robustesse de **PHP 8** couplé à **PostgreSQL** en backend.
----
-
 ## 📸 Aperçu de l'Interface
 
 > [!NOTE]
